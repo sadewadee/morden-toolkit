@@ -1,0 +1,114 @@
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/blogs.dir/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/cache/
+wp-content/cache/supercache/
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.atom/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+/build/
+/dist/
+*.min.js
+*.min.css
+!admin/assets/*.min.*
+!public/assets/*.min.*
+
+# Testing
+/coverage/
+/.nyc_output/
+phpunit.xml
+.phpunit.result.cache
+tests/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Package managers
+package-lock.json
+yarn.lock
+composer.lock
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Plugin specific
+/languages/*.mo
+/languages/*.po
+!/languages/morden-toolkit.pot
+
+# Development tools
+.phpcs.xml
+.eslintrc.js
+webpack.config.js
+gulpfile.js
+Gruntfile.js
+
+# Documentation build
+/docs/_build/
+/docs/.doctrees/
+docs/
+
+# Local development
+/local/
+/dev/
+/staging/
+
+# WordPress plugin directory
+!/admin/
+!/includes/
+!/public/
+!/data/
+!/languages/
+!morden-toolkit.php
+!uninstall.php
+!README.md
+!CHANGELOG.md
+!LICENSE

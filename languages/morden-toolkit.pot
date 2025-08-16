@@ -1,0 +1,433 @@
+# Morden Toolkit POT file
+# Copyright (C) 2024 Morden Pro
+# This file is distributed under the same license as the Morden Toolkit package.
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Morden Toolkit 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/morden-pro/mt/issues\n"
+"POT-Creation-Date: 2024-08-16 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: admin/views/page-toolkit.php:25
+msgid "Morden Toolkit"
+msgstr ""
+
+#: admin/views/page-toolkit.php:27
+msgid "Developer tools untuk WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets."
+msgstr ""
+
+#: admin/views/page-toolkit.php:34
+msgid "Debug Management"
+msgstr ""
+
+#: admin/views/page-toolkit.php:38
+msgid "Query Monitor"
+msgstr ""
+
+#: admin/views/page-toolkit.php:42
+msgid "File Editor"
+msgstr ""
+
+#: admin/views/page-toolkit.php:46
+msgid "PHP Config"
+msgstr ""
+
+#: admin/views/page-toolkit.php:54
+msgid "Debug Mode Control"
+msgstr ""
+
+#: admin/views/page-toolkit.php:58
+msgid "Enable Debug Mode"
+msgstr ""
+
+#: admin/views/page-toolkit.php:68
+msgid "Debug Settings"
+msgstr ""
+
+#: admin/views/page-toolkit.php:86
+msgid "Clear Debug Log"
+msgstr ""
+
+#: admin/views/page-toolkit.php:90
+msgid "View Logs"
+msgstr ""
+
+#: admin/views/page-toolkit.php:95
+msgid "Status:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:96
+msgid "Debug Enabled"
+msgstr ""
+
+#: admin/views/page-toolkit.php:96
+msgid "Debug Disabled"
+msgstr ""
+
+#: admin/views/page-toolkit.php:100
+msgid "Log File Size:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:108
+msgid "Performance Monitoring"
+msgstr ""
+
+#: admin/views/page-toolkit.php:112
+msgid "Enable Performance Bar"
+msgstr ""
+
+#: admin/views/page-toolkit.php:121
+msgid "Menampilkan bar performa di bagian bawah halaman untuk user yang login."
+msgstr ""
+
+#: admin/views/page-toolkit.php:125
+msgid "Frontend Display Preview"
+msgstr ""
+
+#: admin/views/page-toolkit.php:146
+msgid "Show for logged-in users only"
+msgstr ""
+
+#: admin/views/page-toolkit.php:154
+msgid ".htaccess Editor"
+msgstr ""
+
+#: admin/views/page-toolkit.php:159
+msgid "Backups:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:165
+msgid "Last backup:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:171
+msgid ".htaccess file is not writable. Please check file permissions."
+msgstr ""
+
+#: admin/views/page-toolkit.php:179
+msgid "Backup & Save"
+msgstr ""
+
+#: admin/views/page-toolkit.php:184
+msgid "Restore"
+msgstr ""
+
+#: admin/views/page-toolkit.php:199
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/page-toolkit.php:203
+msgid "Common Snippets"
+msgstr ""
+
+#: admin/views/page-toolkit.php:217
+msgid "PHP Configuration Presets"
+msgstr ""
+
+#: admin/views/page-toolkit.php:221
+msgid "Configuration Method:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:226
+msgid "Select Preset:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:270
+msgid "Current Configuration"
+msgstr ""
+
+#: admin/views/page-toolkit.php:284
+msgid "Apply Configuration"
+msgstr ""
+
+#: admin/views/page-toolkit.php:295
+msgid "Processing..."
+msgstr ""
+
+#: admin/views/page-logs.php:15
+msgid "Debug Logs"
+msgstr ""
+
+#: admin/views/page-logs.php:17
+msgid "View dan manage WordPress debug logs."
+msgstr ""
+
+#: admin/views/page-logs.php:23
+msgid "Refresh"
+msgstr ""
+
+#: admin/views/page-logs.php:27
+msgid "Clear"
+msgstr ""
+
+#: admin/views/page-logs.php:31
+msgid "Download"
+msgstr ""
+
+#: admin/views/page-logs.php:37
+msgid "File Size:"
+msgstr ""
+
+#: admin/views/page-logs.php:42
+msgid "No log file found"
+msgstr ""
+
+#: admin/views/page-logs.php:49
+msgid "Level:"
+msgstr ""
+
+#: admin/views/page-logs.php:51
+msgid "All Levels"
+msgstr ""
+
+#: admin/views/page-logs.php:52
+msgid "Error"
+msgstr ""
+
+#: admin/views/page-logs.php:53
+msgid "Warning"
+msgstr ""
+
+#: admin/views/page-logs.php:54
+msgid "Notice"
+msgstr ""
+
+#: admin/views/page-logs.php:55
+msgid "Deprecated"
+msgstr ""
+
+#: admin/views/page-logs.php:60
+msgid "Time:"
+msgstr ""
+
+#: admin/views/page-logs.php:62
+msgid "All Time"
+msgstr ""
+
+#: admin/views/page-logs.php:63
+msgid "Last Hour"
+msgstr ""
+
+#: admin/views/page-logs.php:64
+msgid "Last 24 Hours"
+msgstr ""
+
+#: admin/views/page-logs.php:65
+msgid "Last 7 Days"
+msgstr ""
+
+#: admin/views/page-logs.php:70
+msgid "Search:"
+msgstr ""
+
+#: admin/views/page-logs.php:71
+msgid "Search logs..."
+msgstr ""
+
+#: admin/views/page-logs.php:78
+msgid "No Debug Logs Found"
+msgstr ""
+
+#: admin/views/page-logs.php:79
+msgid "Debug logging is not enabled or no errors have been logged yet."
+msgstr ""
+
+#: admin/views/page-logs.php:82
+msgid "Enable Debug Mode"
+msgstr ""
+
+#: admin/views/page-logs.php:88
+msgid "Loading logs..."
+msgstr ""
+
+#: admin/views/page-logs.php:98
+msgid "Previous"
+msgstr ""
+
+#: admin/views/page-logs.php:102
+msgid "Next"
+msgstr ""
+
+#: includes/class-debug.php:150
+msgid "Are you sure you want to clear all debug logs?"
+msgstr ""
+
+#: includes/class-debug.php:151
+msgid "Are you sure you want to restore this backup?"
+msgstr ""
+
+#: includes/class-debug.php:152
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: includes/class-debug.php:153
+msgid "Operation completed successfully."
+msgstr ""
+
+#: includes/class-debug.php:154
+msgid "Permission denied."
+msgstr ""
+
+#: includes/class-debug.php:155
+msgid "Debug mode enabled."
+msgstr ""
+
+#: includes/class-debug.php:156
+msgid "Debug mode disabled."
+msgstr ""
+
+#: includes/class-debug.php:157
+msgid "Failed to toggle debug mode."
+msgstr ""
+
+#: includes/class-debug.php:158
+msgid "Debug log cleared."
+msgstr ""
+
+#: includes/class-debug.php:159
+msgid "Failed to clear debug log."
+msgstr ""
+
+#: includes/class-debug.php:160
+msgid "Query Monitor enabled."
+msgstr ""
+
+#: includes/class-debug.php:161
+msgid "Query Monitor disabled."
+msgstr ""
+
+#: includes/class-debug.php:162
+msgid ".htaccess file saved successfully."
+msgstr ""
+
+#: includes/class-debug.php:163
+msgid "Failed to save .htaccess file."
+msgstr ""
+
+#: includes/class-debug.php:164
+msgid ".htaccess file restored successfully."
+msgstr ""
+
+#: includes/class-debug.php:165
+msgid "Failed to restore .htaccess file."
+msgstr ""
+
+#: includes/class-debug.php:166
+msgid "PHP configuration applied successfully."
+msgstr ""
+
+#: includes/class-debug.php:167
+msgid "Failed to apply PHP configuration."
+msgstr ""
+
+#: includes/class-htaccess.php:220
+msgid "WordPress Rewrite Rules"
+msgstr ""
+
+#: includes/class-htaccess.php:224
+msgid "Browser Caching"
+msgstr ""
+
+#: includes/class-htaccess.php:228
+msgid "GZIP Compression"
+msgstr ""
+
+#: includes/class-htaccess.php:232
+msgid "Security Headers"
+msgstr ""
+
+#: includes/class-php-config.php:45
+msgid "Basic"
+msgstr ""
+
+#: includes/class-php-config.php:46
+msgid "Suitable for small sites with light traffic"
+msgstr ""
+
+#: includes/class-php-config.php:56
+msgid "Medium"
+msgstr ""
+
+#: includes/class-php-config.php:57
+msgid "Good for most WordPress sites"
+msgstr ""
+
+#: includes/class-php-config.php:67
+msgid "High Performance"
+msgstr ""
+
+#: includes/class-php-config.php:68
+msgid "For high-traffic sites and complex applications"
+msgstr ""
+
+#: includes/class-php-config.php:350
+msgid ".htaccess"
+msgstr ""
+
+#: includes/class-php-config.php:351
+msgid "Apply via Apache .htaccess file"
+msgstr ""
+
+#: includes/class-php-config.php:358
+msgid "wp-config.php"
+msgstr ""
+
+#: includes/class-php-config.php:359
+msgid "Apply via WordPress configuration file"
+msgstr ""
+
+#: includes/class-php-config.php:366
+msgid ".user.ini"
+msgstr ""
+
+#: includes/class-php-config.php:367
+msgid "Apply via PHP .user.ini file"
+msgstr ""
+
+#: includes/class-query-monitor.php:120
+msgid "queries"
+msgstr ""
+
+#: includes/class-query-monitor.php:125
+msgid "time"
+msgstr ""
+
+#: includes/class-query-monitor.php:130
+msgid "memory"
+msgstr ""
+
+#: includes/class-query-monitor.php:140
+msgid "Performance Details"
+msgstr ""
+
+#: includes/class-query-monitor.php:143
+msgid "Database Queries:"
+msgstr ""
+
+#: includes/class-query-monitor.php:147
+msgid "Execution Time:"
+msgstr ""
+
+#: includes/class-query-monitor.php:151
+msgid "Peak Memory:"
+msgstr ""
+
+#: includes/class-query-monitor.php:155
+msgid "Memory Used:"
+msgstr ""
+
+#: includes/class-query-monitor.php:159
+msgid "PHP Version:"
+msgstr ""
+
+#: includes/class-query-monitor.php:163
+msgid "WordPress Version:"
+msgstr ""

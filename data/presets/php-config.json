@@ -1,0 +1,38 @@
+{
+  "basic": {
+    "name": "Basic",
+    "description": "Suitable for small sites with light traffic",
+    "settings": {
+      "memory_limit": "128M",
+      "upload_max_filesize": "8M",
+      "post_max_size": "16M",
+      "max_execution_time": "60",
+      "max_input_vars": "1000",
+      "max_input_time": "60"
+    }
+  },
+  "medium": {
+    "name": "Medium",
+    "description": "Good for most WordPress sites",
+    "settings": {
+      "memory_limit": "256M",
+      "upload_max_filesize": "16M",
+      "post_max_size": "32M",
+      "max_execution_time": "120",
+      "max_input_vars": "3000",
+      "max_input_time": "120"
+    }
+  },
+  "high": {
+    "name": "High Performance",
+    "description": "For high-traffic sites and complex applications",
+    "settings": {
+      "memory_limit": "512M",
+      "upload_max_filesize": "32M",
+      "post_max_size": "64M",
+      "max_execution_time": "300",
+      "max_input_vars": "5000",
+      "max_input_time": "300"
+    }
+  }
+}
