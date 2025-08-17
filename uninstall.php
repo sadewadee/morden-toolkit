@@ -14,15 +14,15 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 /**
  * Clean up plugin options
  */
-function morden_toolkit_cleanup_options() {
+function mt_cleanup_options() {
     $options_to_delete = array(
         'morden_debug_enabled',
-        'morden_query_monitor_enabled',
+        'mt_query_monitor_enabled',
         'morden_htaccess_backups',
-        'morden_php_preset',
+        'mt_php_preset',
         'morden_wp_config_backups',
         'morden_user_ini_backups',
-        'morden_toolkit_version'
+        'mt_version'
     );
 
     foreach ($options_to_delete as $option) {
@@ -33,7 +33,7 @@ function morden_toolkit_cleanup_options() {
 /**
  * Clean up debug settings from wp-config.php
  */
-function morden_toolkit_cleanup_wp_config() {
+function mt_cleanup_wp_config() {
     $wp_config_path = ABSPATH . 'wp-config.php';
 
     // Try parent directory if not found in root
@@ -74,7 +74,7 @@ function morden_toolkit_cleanup_wp_config() {
 /**
  * Clean up .htaccess modifications
  */
-function morden_toolkit_cleanup_htaccess() {
+function mt_cleanup_htaccess() {
     $htaccess_path = ABSPATH . '.htaccess';
 
     if (!file_exists($htaccess_path) || !is_writable($htaccess_path)) {
@@ -84,7 +84,7 @@ function morden_toolkit_cleanup_htaccess() {
     $htaccess_content = file_get_contents($htaccess_path);
 
     // Remove Morden Toolkit PHP config block
-    $pattern = '/# BEGIN Morden Toolkit PHP Config.*?# END Morden Toolkit PHP Config/s';
+    $pattern = '/# BEGIN MT PHP Config.*?# END MT PHP Config/s';
     $htaccess_content = preg_replace($pattern, '', $htaccess_content);
 
     // Clean up extra newlines
@@ -96,7 +96,7 @@ function morden_toolkit_cleanup_htaccess() {
 /**
  * Clean up .user.ini file
  */
-function morden_toolkit_cleanup_user_ini() {
+function mt_cleanup_user_ini() {
     $user_ini_path = ABSPATH . '.user.ini';
 
     if (!file_exists($user_ini_path)) {
@@ -138,7 +138,7 @@ function morden_toolkit_cleanup_user_ini() {
 /**
  * Clean up temporary files
  */
-function morden_toolkit_cleanup_temp_files() {
+function mt_cleanup_temp_files() {
     $temp_pattern = ABSPATH . '*.tmp';
     $temp_files = glob($temp_pattern);
 
@@ -152,35 +152,35 @@ function morden_toolkit_cleanup_temp_files() {
 /**
  * Clean up transients
  */
-function morden_toolkit_cleanup_transients() {
+function mt_cleanup_transients() {
     global $wpdb;
 
     // Delete performance metrics transients
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_morden_toolkit_metrics_%'");
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_morden_toolkit_metrics_%'");
+    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_mt_metrics_%'");
+    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_mt_metrics_%'");
 }
 
 /**
  * Log uninstall action
  */
-function morden_toolkit_log_uninstall() {
+function mt_log_uninstall() {
     if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-        error_log('Morden Toolkit: Plugin uninstalled and cleaned up');
+        error_log('MT: Plugin uninstalled and cleaned up');
     }
 }
 
 // Execute cleanup functions
 try {
-    morden_toolkit_cleanup_options();
-    morden_toolkit_cleanup_wp_config();
-    morden_toolkit_cleanup_htaccess();
-    morden_toolkit_cleanup_user_ini();
-    morden_toolkit_cleanup_temp_files();
-    morden_toolkit_cleanup_transients();
-    morden_toolkit_log_uninstall();
+    mt_cleanup_options();
+    mt_cleanup_wp_config();
+    mt_cleanup_htaccess();
+    mt_cleanup_user_ini();
+    mt_cleanup_temp_files();
+    mt_cleanup_transients();
+    mt_log_uninstall();
 } catch (Exception $e) {
     // Silently fail to prevent blocking uninstall process
     if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('Morden Toolkit uninstall error: ' . $e->getMessage());
+        error_log('MT uninstall error: ' . $e->getMessage());
     }
 }

@@ -19,7 +19,7 @@ class MT_Query_Monitor {
      * Constructor
      */
     public function __construct() {
-        if (get_option('morden_query_monitor_enabled') && is_user_logged_in()) {
+        if (get_option('mt_query_monitor_enabled') && is_user_logged_in()) {
             add_action('init', array($this, 'start_performance_tracking'));
             add_action('wp_footer', array($this, 'display_performance_bar'));
             add_action('admin_footer', array($this, 'display_performance_bar'));
@@ -104,17 +104,17 @@ class MT_Query_Monitor {
                 <div class="mt-perf-item">
                     <span class="mt-perf-icon">🔄</span>
                     <span class="mt-perf-value"><?php echo esc_html($query_count); ?></span>
-                    <span class="mt-perf-label"><?php _e('queries', 'mt-toolkit'); ?></span>
+                    <span class="mt-perf-label"><?php _e('queries', 'mt'); ?></span>
                 </div>
                 <div class="mt-perf-item">
                     <span class="mt-perf-icon">⏱️</span>
                     <span class="mt-perf-value"><?php echo esc_html($time_formatted); ?></span>
-                    <span class="mt-perf-label"><?php _e('time', 'mt-toolkit'); ?></span>
+                    <span class="mt-perf-label"><?php _e('time', 'mt'); ?></span>
                 </div>
                 <div class="mt-perf-item">
                     <span class="mt-perf-icon">💾</span>
                     <span class="mt-perf-value"><?php echo esc_html($memory_formatted); ?></span>
-                    <span class="mt-perf-label"><?php _e('memory', 'mt-toolkit'); ?></span>
+                    <span class="mt-perf-label"><?php _e('memory', 'mt'); ?></span>
                 </div>
                 <div class="mt-perf-toggle">
                     <button type="button" id="mt-perf-details-btn">
@@ -125,30 +125,30 @@ class MT_Query_Monitor {
 
             <div id="mt-perf-details" class="mt-perf-details" style="display: none;">
                 <div class="mt-perf-details-content">
-                    <h4><?php _e('Performance Details', 'mt-toolkit'); ?></h4>
+                    <h4><?php _e('Performance Details', 'mt'); ?></h4>
                     <table class="mt-perf-table">
                         <tr>
-                            <td><?php _e('Database Queries:', 'mt-toolkit'); ?></td>
+                            <td><?php _e('Database Queries:', 'mt'); ?></td>
                             <td><?php echo esc_html($query_count); ?></td>
                         </tr>
                         <tr>
-                            <td><?php _e('Execution Time:', 'mt-toolkit'); ?></td>
+                            <td><?php _e('Execution Time:', 'mt'); ?></td>
                             <td><?php echo esc_html($time_formatted); ?></td>
                         </tr>
                         <tr>
-                            <td><?php _e('Peak Memory:', 'mt-toolkit'); ?></td>
+                            <td><?php _e('Peak Memory:', 'mt'); ?></td>
                             <td><?php echo esc_html($memory_formatted); ?></td>
                         </tr>
                         <tr>
-                            <td><?php _e('Memory Used:', 'mt-toolkit'); ?></td>
+                            <td><?php _e('Memory Used:', 'mt'); ?></td>
                             <td><?php echo esc_html(mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>
                         </tr>
                         <tr>
-                            <td><?php _e('PHP Version:', 'mt-toolkit'); ?></td>
+                            <td><?php _e('PHP Version:', 'mt'); ?></td>
                             <td><?php echo esc_html(PHP_VERSION); ?></td>
                         </tr>
                         <tr>
-                            <td><?php _e('WordPress Version:', 'mt-toolkit'); ?></td>
+                            <td><?php _e('WordPress Version:', 'mt'); ?></td>
                             <td><?php echo esc_html(get_bloginfo('version')); ?></td>
                         </tr>
                     </table>

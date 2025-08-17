@@ -1,9 +1,30 @@
 /**
- * Morden Toolkit Admin JavaScript
+ * MT Admin JavaScript
  */
 
 (function($) {
     'use strict';
+
+    /**
+     * Toggle debug settings availability
+     */
+    function toggleDebugSettings(enabled) {
+        const $toggleGroup = $('.mt-toggle-group');
+        const $wrappers = $toggleGroup.find('.mt-toggle-wrapper');
+        const $inputs = $wrappers.find('input[type="checkbox"]');
+        const $toggles = $wrappers.find('.mt-toggle');
+
+        if (enabled) {
+            $toggleGroup.removeAttr('data-disabled');
+            $wrappers.removeClass('disabled');
+            $inputs.prop('disabled', false);
+        } else {
+            $toggleGroup.attr('data-disabled', 'true');
+            $wrappers.addClass('disabled');
+            $inputs.prop('disabled', true).prop('checked', false);
+            $toggles.removeClass('active');
+        }
+    }
 
     // Initialize when document is ready
     $(document).ready(function() {
@@ -14,6 +35,10 @@
         initializeHtaccessEditor();
         initializePHPConfig();
         initializeLogsPage();
+
+        // Initialize debug settings state based on master toggle
+        const debugEnabled = $('#debug-mode-toggle').is(':checked');
+        toggleDebugSettings(debugEnabled);
     });
 
     /**
@@ -30,6 +55,108 @@
             // Update tab contents
             $('.mt-tab-content').removeClass('active');
             $('#tab-' + tabId).addClass('active');
+        });
+    }
+
+    /**
+     * Toggle debug settings availability
+     */
+    function toggleDebugSettings(enabled) {
+        const $toggleGroup = $('.mt-toggle-group');
+        const $wrappers = $toggleGroup.find('.mt-toggle-wrapper');
+        const $inputs = $wrappers.find('input[type="checkbox"]');
+        const $toggles = $wrappers.find('.mt-toggle');
+
+        if (enabled) {
+            $toggleGroup.removeAttr('data-disabled');
+            $wrappers.removeClass('disabled');
+            $inputs.prop('disabled', false);
+        } else {
+            $toggleGroup.attr('data-disabled', 'true');
+            $wrappers.addClass('disabled');
+            $inputs.prop('disabled', true).prop('checked', false);
+            $toggles.removeClass('active');
+        }
+    }
+
+    /**
+     * Initialize debug actions
+     */
+    function initializeDebugActions() {
+        // Debug mode toggle
+        $('#debug-mode-toggle').on('change', function() {
+            const enabled = $(this).is(':checked');
+
+            // Enable/disable child toggles immediately for better UX
+            toggleDebugSettings(enabled);
+
+            showLoading();
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_toggle_debug',
+                enabled: enabled,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    showNotice(response.data.message, 'success');
+                    updateDebugStatus(enabled);
+                } else {
+                    showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
+                    // Revert toggle state and settings
+                    $('#debug-mode-toggle').prop('checked', !enabled);
+                    toggleDebugSettings(!enabled);
+                }
+            }).fail(function() {
+                hideLoading();
+                showNotice(mtToolkit.strings.error_occurred, 'error');
+                // Revert toggle state and settings
+                $('#debug-mode-toggle').prop('checked', !enabled);
+                toggleDebugSettings(!enabled);
+            });
+        });
+
+        // Individual debug constants
+        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle').on('change', function() {
+            // Prevent action if master debug is disabled
+            if (!$('#debug-mode-toggle').is(':checked')) {
+                $(this).prop('checked', false);
+                showNotice('Please enable Debug Mode first', 'error');
+                return;
+            }
+
+            let constantName = $(this).attr('id').replace('-toggle', '').toUpperCase().replace(/\-/g, '_');
+
+            // Special handling for display_errors (it's an ini setting, not a constant)
+            if ($(this).attr('id') === 'display-errors-toggle') {
+                constantName = 'display_errors';
+            }
+
+            const enabled = $(this).is(':checked');
+
+            showLoading();
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_toggle_debug_constant',
+                constant: constantName,
+                enabled: enabled,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    showNotice(response.data.message, 'success');
+                } else {
+                    showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
+                    // Revert toggle state
+                    $(this).prop('checked', !enabled);
+                }
+            }).fail(function() {
+                hideLoading();
+                showNotice(mtToolkit.strings.error_occurred, 'error');
+                $(this).prop('checked', !enabled);
+            });
         });
     }
 
@@ -53,61 +180,6 @@
     }
 
     /**
-     * Initialize debug management actions
-     */
-    function initializeDebugActions() {
-        // Debug mode toggle
-        $('#debug-mode-toggle').on('change', function() {
-            const enabled = $(this).is(':checked');
-
-            showLoading();
-
-            $.post(mtToolkit.ajaxurl, {
-                action: 'morden_toggle_debug',
-                enabled: enabled,
-                nonce: mtToolkit.nonce
-            }, function(response) {
-                hideLoading();
-
-                if (response.success) {
-                    showNotice(response.data.message, 'success');
-                    updateDebugStatus(enabled);
-                } else {
-                    showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
-                    // Revert toggle state
-                    $('#debug-mode-toggle').prop('checked', !enabled).trigger('change');
-                }
-            }).fail(function() {
-                hideLoading();
-                showNotice(mtToolkit.strings.error_occurred, 'error');
-                $('#debug-mode-toggle').prop('checked', !enabled).trigger('change');
-            });
-        });
-
-        // Clear debug log
-        $('#clear-debug-log').on('click', function() {
-            if (!confirm(mtToolkit.strings.confirm_clear_logs)) {
-                return;
-            }
-
-            showLoading();
-
-            $.post(mtToolkit.ajaxurl, {
-                action: 'morden_clear_debug_log',
-                nonce: mtToolkit.nonce
-            }, function(response) {
-                hideLoading();
-
-                if (response.success) {
-                    showNotice(response.data, 'success');
-                } else {
-                    showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
-                }
-            });
-        });
-    }
-
-    /**
      * Initialize query monitor actions
      */
     function initializeQueryMonitor() {
@@ -117,7 +189,7 @@
             showLoading();
 
             $.post(mtToolkit.ajaxurl, {
-                action: 'morden_toggle_query_monitor',
+                action: 'mt_toggle_query_monitor',
                 enabled: enabled,
                 nonce: mtToolkit.nonce
             }, function(response) {
@@ -146,7 +218,7 @@
             showLoading();
 
             $.post(mtToolkit.ajaxurl, {
-                action: 'morden_save_htaccess',
+                action: 'mt_save_htaccess',
                 content: content,
                 nonce: mtToolkit.nonce
             }, function(response) {
@@ -178,7 +250,7 @@
             showLoading();
 
             $.post(mtToolkit.ajaxurl, {
-                action: 'morden_restore_htaccess',
+                action: 'mt_restore_htaccess',
                 backup_index: backupIndex,
                 nonce: mtToolkit.nonce
             }, function(response) {
@@ -236,7 +308,7 @@
             showLoading();
 
             $.post(mtToolkit.ajaxurl, {
-                action: 'morden_apply_php_preset',
+                action: 'mt_apply_php_preset',
                 preset: preset,
                 nonce: mtToolkit.nonce
             }, function(response) {
@@ -276,7 +348,7 @@
             showLoading();
 
             $.post(mtToolkit.ajaxurl, {
-                action: 'morden_clear_debug_log',
+                action: 'mt_clear_debug_log',
                 nonce: mtToolkit.nonce
             }, function(response) {
                 hideLoading();
@@ -293,7 +365,7 @@
         // Download logs
         $('#download-logs').on('click', function() {
             // Create download link
-            const downloadUrl = mtToolkit.ajaxurl + '?action=morden_download_logs&nonce=' + mtToolkit.nonce;
+            const downloadUrl = mtToolkit.ajaxurl + '?action=mt_download_logs&nonce=' + mtToolkit.nonce;
             const link = document.createElement('a');
             link.href = downloadUrl;
             link.download = 'debug-logs-' + new Date().toISOString().slice(0, 10) + '.txt';
@@ -323,7 +395,7 @@
         $logsContent.hide();
 
         $.post(mtToolkit.ajaxurl, {
-            action: 'morden_get_debug_log',
+            action: 'mt_get_debug_log',
             nonce: mtToolkit.nonce
         }, function(response) {
             $logsLoading.hide();

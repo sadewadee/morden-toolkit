@@ -31,7 +31,7 @@ define('MT_PLUGIN_BASENAME', plugin_basename(__FILE__));
 // Load plugin text domain
 function mt_load_textdomain() {
     load_plugin_textdomain(
-        'morden-toolkit',
+        'mt',
         false,
         dirname(plugin_basename(__FILE__)) . '/languages/'
     );
@@ -59,13 +59,26 @@ register_activation_hook(__FILE__, function() {
     if (!get_option('mt_debug_enabled')) {
         add_option('mt_debug_enabled', false);
     }
-    if (!get_option('mt_query_monitor_enabled')) {
+
+    // Migrate old query monitor option name to new standardized name
+    $old_query_monitor = get_option('morden_query_monitor_enabled');
+    if ($old_query_monitor !== false) {
+        update_option('mt_query_monitor_enabled', $old_query_monitor);
+        delete_option('morden_query_monitor_enabled');
+    } elseif (!get_option('mt_query_monitor_enabled')) {
         add_option('mt_query_monitor_enabled', false);
     }
+
     if (!get_option('mt_htaccess_backups')) {
         add_option('mt_htaccess_backups', array());
     }
-    if (!get_option('mt_php_preset')) {
+
+    // Migrate old PHP preset option name to new standardized name
+    $old_php_preset = get_option('morden_php_preset');
+    if ($old_php_preset !== false) {
+        update_option('mt_php_preset', $old_php_preset);
+        delete_option('morden_php_preset');
+    } elseif (!get_option('mt_php_preset')) {
         add_option('mt_php_preset', 'medium');
     }
 });

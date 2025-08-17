@@ -34,5 +34,17 @@
       "max_input_vars": "5000",
       "max_input_time": "300"
     }
+  },
+  "custom": {
+    "name": "Custom High Memory",
+    "description": "Maximum performance with 2GB memory (70% server capacity)",
+    "settings": {
+      "memory_limit": "2048M",
+      "upload_max_filesize": "64M",
+      "post_max_size": "128M",
+      "max_execution_time": "600",
+      "max_input_vars": "10000",
+      "max_input_time": "600"
+    }
   }
 }

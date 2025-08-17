@@ -45,6 +45,7 @@ class MT_Plugin {
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
         add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
+        add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
         add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
         add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
         add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
@@ -187,6 +188,40 @@ class MT_Plugin {
         }
     }
 
+    public function ajax_toggle_debug_constant() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
+            mt_send_json_error(__('Permission denied.', 'mt'));
+        }
+
+        $constant = sanitize_text_field($_POST['constant']);
+        $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
+
+        // Validate constant name
+        $allowed_constants = array('WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'display_errors');
+        if (!in_array($constant, $allowed_constants)) {
+            mt_send_json_error(__('Invalid debug constant.', 'mt'));
+        }
+
+        $result = $this->services['debug']->toggle_debug_constant($constant, $enabled);
+
+        if ($result) {
+            // Get current status to return
+            $status = $this->services['debug']->get_debug_status();
+
+            mt_send_json_success(array(
+                'constant' => $constant,
+                'enabled' => $enabled,
+                'status' => $status,
+                'message' => sprintf(
+                    $enabled ? __('%s enabled.', 'mt') : __('%s disabled.', 'mt'),
+                    $constant
+                )
+            ));
+        } else {
+            mt_send_json_error(__('Failed to toggle debug constant.', 'mt'));
+        }
+    }
+
     public function ajax_clear_debug_log() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
             mt_send_json_error(__('Permission denied.', 'mt'));
@@ -216,7 +251,7 @@ class MT_Plugin {
         }
 
         $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
-        update_option('morden_query_monitor_enabled', $enabled);
+        update_option('mt_query_monitor_enabled', $enabled);
 
         mt_send_json_success(array(
             'enabled' => $enabled,
@@ -263,7 +298,7 @@ class MT_Plugin {
         $result = $this->services['php_config']->apply_preset($preset);
 
         if ($result) {
-            update_option('morden_php_preset', $preset);
+            update_option('mt_php_preset', $preset);
             mt_send_json_success(__('PHP configuration applied successfully.', 'mt'));
         } else {
             mt_send_json_error(__('Failed to apply PHP configuration.', 'mt'));

@@ -1,6 +1,6 @@
 <?php
 /**
- * Helper functions for Morden Toolkit
+ * Helper functions for MT
  */
 
 // Prevent direct access

@@ -1,5 +1,5 @@
 /**
- * Morden Toolkit Admin Styles
+ * MT Admin Styles
  */
 
 /* Main Container */
@@ -48,6 +48,71 @@
 }
 
 /* Tab Contents */
+.mt-tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.mt-tab-content.active {
+    display: block;
+}
+
+/* Debug Status Styling */
+.mt-debug-status {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.mt-debug-status strong {
+    color: #32373c;
+}
+
+#wp-config-status #wp-debug-value {
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+#wp-config-status .enabled {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+#wp-config-status .disabled {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+#wp-config-status .not-set {
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+}
+
+#sync-indicator {
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+#sync-indicator.synced {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+#sync-indicator.not-synced {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+/* Animation for status updates */
+.status-updating {
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+/* Tab Contents (previous) */
 .mt-tab-contents {
     position: relative;
 }
@@ -148,6 +213,32 @@
 
 .mt-toggle.active .mt-toggle-slider {
     transform: translateX(26px);
+}
+
+/* Disabled Toggle State */
+.mt-toggle-wrapper.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.mt-toggle.disabled {
+    cursor: not-allowed;
+    background: #f0f0f0;
+}
+
+.mt-toggle.active.disabled {
+    background: #a0a5aa;
+}
+
+.mt-toggle-label.disabled {
+    cursor: not-allowed;
+    color: #666;
+}
+
+.mt-toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 /* Status Indicators */
@@ -478,6 +569,44 @@
 .config-value {
     font-family: Consolas, Monaco, monospace;
     font-weight: 600;
+    color: #1d2327;
+}
+
+/* Server Memory Information */
+.mt-server-memory-info h3 {
+    color: #1d2327;
+    font-size: 14px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mt-server-memory-info h3 .dashicons {
+    color: #0073aa;
+}
+
+.mt-memory-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mt-memory-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+}
+
+.mt-memory-row span {
+    color: #646970;
+    font-weight: 500;
+}
+
+.mt-memory-row strong {
+    font-family: Consolas, Monaco, monospace;
     color: #1d2327;
 }
 

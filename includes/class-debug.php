@@ -11,6 +11,38 @@ if (!defined('ABSPATH')) {
 class MT_Debug {
 
     /**
+     * Constructor - sync debug status on load
+     */
+    public function __construct() {
+        $this->sync_debug_status();
+    }
+
+    /**
+     * Sync debug status with actual wp-config.php
+     */
+    public function sync_debug_status() {
+        $actual_wp_debug = defined('WP_DEBUG') && WP_DEBUG;
+        $stored_option = get_option('mt_debug_enabled', null);
+
+        // If no option set or different from actual status, sync it
+        if ($stored_option === null || $stored_option !== $actual_wp_debug) {
+            update_option('mt_debug_enabled', $actual_wp_debug);
+
+            // Optional: Log the sync action
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                //error_log('MT Debug: Synchronized debug status - WP_DEBUG is ' . ($actual_wp_debug ? 'enabled' : 'disabled'));
+            }
+        }
+    }
+
+    /**
+     * Check if wp-config.php is readable and can detect debug status
+     */
+    public function can_detect_debug_status() {
+        return defined('WP_DEBUG');
+    }
+
+    /**
      * Toggle debug mode
      */
     public function toggle_debug($enable = true) {
@@ -43,6 +75,123 @@ class MT_Debug {
      */
     public function disable_debug() {
         return $this->toggle_debug(false);
+    }
+
+    /**
+     * Toggle individual debug constant
+     */
+    public function toggle_debug_constant($constant, $enable) {
+        $wp_config_path = mt_get_wp_config_path();
+
+        if (!$wp_config_path || !mt_is_file_writable($wp_config_path)) {
+            return false;
+        }
+
+        $config_content = file_get_contents($wp_config_path);
+
+        // Auto-enable WP_DEBUG if any debug constant is being enabled
+        if ($enable && $constant !== 'WP_DEBUG') {
+            $config_content = $this->set_debug_constant($config_content, 'WP_DEBUG', true);
+        }
+
+        // Set the requested constant
+        $config_content = $this->set_debug_constant($config_content, $constant, $enable);
+
+        return file_put_contents($wp_config_path, $config_content) !== false;
+    }
+
+    /**
+     * Set individual debug constant
+     */
+    private function set_debug_constant($content, $constant, $enable) {
+        $value = $enable ? 'true' : 'false';
+
+        // Handle special cases
+        if ($constant === 'display_errors') {
+            return $this->set_ini_setting($content, 'display_errors', $enable ? '1' : '0');
+        }
+
+        // Handle WP_DEBUG conditional wrapper
+        if ($constant === 'WP_DEBUG') {
+            // Pattern for conditional WP_DEBUG - SAFE version
+            $conditional_pattern = "/if\s*\(\s*!\s*defined\s*\(\s*['\"]WP_DEBUG['\"]\s*\)\s*\)\s*{\s*define\s*\(\s*['\"]WP_DEBUG['\"]\s*,\s*[^;)]+\s*\)\s*;\s*}/i";
+            if (preg_match($conditional_pattern, $content)) {
+                $replacement = "if ( ! defined( 'WP_DEBUG' ) ) {\n\tdefine('WP_DEBUG', " . $value . ");\n}";
+                $content = preg_replace($conditional_pattern, $replacement, $content);
+                return $content;
+            }
+        }
+
+        // Standard define pattern - more flexible regex
+        $patterns = array(
+            "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^;)]+\s*\)\s*;/i",
+            "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^;)]+\s*\);/i"
+        );
+
+        $replacement = "define('" . $constant . "', " . $value . ");";
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $content)) {
+                $content = preg_replace($pattern, $replacement, $content);
+                return $content;
+            }
+        }
+
+        // If constant not found, add it before "/* That's all" comment
+        $insert_position = strpos($content, "/* That's all");
+        if ($insert_position !== false) {
+            $before = substr($content, 0, $insert_position);
+            $after = substr($content, $insert_position);
+            $content = $before . "define('" . $constant . "', " . $value . ");\n\n" . $after;
+        } else {
+            // Fallback: add at the end before closing PHP tag
+            $content = rtrim($content);
+            if (substr($content, -2) === '?>') {
+                $content = substr($content, 0, -2) . "\ndefine('" . $constant . "', " . $value . ");\n?>";
+            } else {
+                $content .= "\ndefine('" . $constant . "', " . $value . ");\n";
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * Set ini_set directive in wp-config.php
+     */
+    private function set_ini_setting($content, $setting, $value) {
+        // Pattern for existing ini_set calls
+        $patterns = array(
+            "/@?ini_set\s*\(\s*['\"]" . $setting . "['\"]\s*,\s*[^)]+\s*\)\s*;/i",
+            "/ini_set\s*\(\s*['\"]" . $setting . "['\"]\s*,\s*[^)]+\s*\)\s*;/i"
+        );
+
+        $replacement = "@ini_set('" . $setting . "', '" . $value . "');";
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $content)) {
+                $content = preg_replace($pattern, $replacement, $content);
+                return $content;
+            }
+        }
+
+        // If not found, add it before "/* That's all" comment
+        $insert_position = strpos($content, "/* That's all");
+        if ($insert_position !== false) {
+            $before = substr($content, 0, $insert_position);
+            $after = substr($content, $insert_position);
+            $content = $before . "@ini_set('" . $setting . "', '" . $value . "');\n\n" . $after;
+        } else {
+            // Fallback: add at the end before closing PHP tag
+            $content = rtrim($content);
+            if (substr($content, -2) === '?>') {
+                $content = substr($content, 0, -2) . "\n@ini_set('" . $setting . "', '" . $value . "');\n?>";
+            } else {
+                $content .= "\n@ini_set('" . $setting . "', '" . $value . "');\n";
+            }
+        }
+
+        return $content;
     }
 
     /**
@@ -89,10 +238,21 @@ class MT_Debug {
             'WP_DEBUG' => 'false',
             'WP_DEBUG_LOG' => 'false',
             'WP_DEBUG_DISPLAY' => 'false',
-            'SCRIPT_DEBUG' => 'false'
+            'SCRIPT_DEBUG' => 'false',
+            'SAVEQUERIES' => 'false'
         );
 
         foreach ($constants as $constant => $value) {
+            if ($constant === 'WP_DEBUG') {
+                // Handle conditional WP_DEBUG
+                $conditional_pattern = "/if\s*\(\s*!\s*defined\s*\(\s*['\"]WP_DEBUG['\"]\s*\)\s*\)\s*{\s*define\s*\(\s*['\"]WP_DEBUG['\"]\s*,\s*[^}]+\s*}/i";
+                if (preg_match($conditional_pattern, $content)) {
+                    $replacement = "if ( ! defined( 'WP_DEBUG' ) ) {\n\tdefine('WP_DEBUG', " . $value . ");\n}";
+                    $content = preg_replace($conditional_pattern, $replacement, $content);
+                    continue;
+                }
+            }
+
             $pattern = "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^)]+\s*\)\s*;/i";
             $replacement = "define('" . $constant . "', " . $value . ");";
 
@@ -100,6 +260,9 @@ class MT_Debug {
                 $content = preg_replace($pattern, $replacement, $content);
             }
         }
+
+        // Also disable display_errors ini setting
+        $content = $this->set_ini_setting($content, 'display_errors', '0');
 
         return $content;
     }
@@ -198,12 +361,26 @@ class MT_Debug {
      * Get current debug status
      */
     public function get_debug_status() {
+        // Check actual wp-config.php status
+        $actual_wp_debug = defined('WP_DEBUG') && WP_DEBUG;
+
+        // Sync option with actual status if different
+        $stored_option = get_option('mt_debug_enabled', false);
+        if ($stored_option !== $actual_wp_debug) {
+            update_option('mt_debug_enabled', $actual_wp_debug);
+        }
+
+        // Check display_errors ini setting
+        $display_errors = ini_get('display_errors') == '1' || ini_get('display_errors') === 'On';
+
         return array(
-            'enabled' => get_option('mt_debug_enabled', false),
-            'wp_debug' => defined('WP_DEBUG') && WP_DEBUG,
+            'enabled' => $actual_wp_debug, // Use actual status, not stored option
+            'wp_debug' => $actual_wp_debug,
             'wp_debug_log' => defined('WP_DEBUG_LOG') && WP_DEBUG_LOG,
             'wp_debug_display' => defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY,
             'script_debug' => defined('SCRIPT_DEBUG') && SCRIPT_DEBUG,
+            'savequeries' => defined('SAVEQUERIES') && SAVEQUERIES,
+            'display_errors' => $display_errors,
             'log_file_exists' => file_exists(mt_get_debug_log_path()),
             'log_file_size' => file_exists(mt_get_debug_log_path()) ?
                 mt_format_bytes(filesize(mt_get_debug_log_path())) : '0 B'
