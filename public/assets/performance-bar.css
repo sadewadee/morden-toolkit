@@ -11,7 +11,6 @@
     color: #ffffff !important;
     z-index: 99999 !important;
     border-top: 2px solid #0073aa !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     font-size: 13px !important;
     line-height: 1.4 !important;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
@@ -76,7 +75,6 @@
     background: #32373c !important;
     border-top: 1px solid #464b50 !important;
     padding: 15px 20px !important;
-    display: none !important;
 }
 
 .mt-perf-details-content {
@@ -112,7 +110,6 @@
 .mt-perf-table td:last-child {
     color: #ffffff !important;
     font-weight: 600 !important;
-    font-family: Consolas, Monaco, monospace !important;
 }
 
 /* Performance status colors */

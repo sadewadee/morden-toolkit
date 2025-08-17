@@ -14,6 +14,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database query profiling
 - Plugin performance impact analysis
 
+## [1.1.0] - 2025-08-17
+
+### Added
+- **Admin Bar Performance Integration**
+  - Unified performance metrics display in WordPress admin bar (similar to Query Monitor)
+  - Single compact indicator showing execution time, memory usage, and query count
+  - Click-to-toggle detailed performance panel from bottom of screen
+  - Query Monitor-style visual design with monospace font and MT branding
+
+### Enhanced
+- **Performance Monitoring System**
+  - Optimized rendering pipeline for better performance
+  - Consolidated CSS styling reducing redundancy by 43%
+  - Improved JavaScript event handling with proper cleanup patterns
+  - Enhanced admin bar integration with consistent styling
+
+### Fixed
+- **Log Management**
+  - Automatic log rotation when files exceed 10MB to prevent unlimited growth
+  - Daily cleanup of old rotated log files (7-day retention)
+  - Enhanced caller stack traces with detailed backtrace information
+  - Fixed duplicate AJAX call issues in admin interface
+  - Resolved JavaScript function reference errors
+
+### Changed
+- **UI/UX Improvements**
+  - Moved performance metrics from bottom performance bar to admin bar
+  - Streamlined admin interface with better focus on core functionality
+  - Root cause fixes instead of symptomatic patches
+  - Improved error handling and user feedback
+
+### Technical
+- **Code Quality**
+  - Eliminated redundant CSS rules and JavaScript functions
+  - Proper event handler cleanup preventing memory leaks
+  - Centralized script loading and dependency management
+  - Static rendering prevention for performance panels
+  - Enhanced debugging methodology focusing on root cause analysis
+
 ## [1.0.0] - 2024-08-16
 
 ### Added

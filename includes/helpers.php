@@ -96,6 +96,31 @@ function mt_get_debug_log_path() {
 }
 
 /**
+ * Get query log file path
+ */
+function mt_get_query_log_path() {
+    return WP_CONTENT_DIR . '/query.log';
+}
+
+/**
+ * Get query log maximum size before rotation
+ *
+ * @return int Maximum size in bytes (default: 10MB)
+ */
+function mt_get_query_log_max_size() {
+    return apply_filters('mt_query_log_max_size', 10 * 1024 * 1024);
+}
+
+/**
+ * Get debug log maximum size before truncation
+ *
+ * @return int Maximum size in bytes (default: 50MB)
+ */
+function mt_get_debug_log_max_size() {
+    return apply_filters('mt_debug_log_max_size', 50 * 1024 * 1024);
+}
+
+/**
  * Check if file is writable with proper error handling
  */
 function mt_is_file_writable($file_path) {

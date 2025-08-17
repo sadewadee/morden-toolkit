@@ -35,6 +35,7 @@
         initializeHtaccessEditor();
         initializePHPConfig();
         initializeLogsPage();
+        initializeAdminBarPerformance();
 
         // Initialize debug settings state based on master toggle
         const debugEnabled = $('#debug-mode-toggle').is(':checked');
@@ -84,7 +85,7 @@
      */
     function initializeDebugActions() {
         // Debug mode toggle
-        $('#debug-mode-toggle').on('change', function() {
+        $('#debug-mode-toggle').off('change').on('change', function() {
             const enabled = $(this).is(':checked');
 
             // Enable/disable child toggles immediately for better UX
@@ -183,7 +184,7 @@
      * Initialize query monitor actions
      */
     function initializeQueryMonitor() {
-        $('#query-monitor-toggle').on('change', function() {
+        $('#query-monitor-toggle').off('change').on('change', function() {
             const enabled = $(this).is(':checked');
 
             showLoading();
@@ -199,9 +200,52 @@
                     showNotice(response.data.message, 'success');
                 } else {
                     showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
-                    $('#query-monitor-toggle').prop('checked', !enabled).trigger('change');
+                    $('#query-monitor-toggle').prop('checked', !enabled);
                 }
             });
+        });
+    }
+
+    /**
+     * Initialize admin bar performance toggle
+     */
+    function initializeAdminBarPerformance() {
+        // Handle admin bar performance metrics clicks
+        $(document).on('click', '#wp-admin-bar-mt-performance-monitor .ab-item, .mt-admin-perf-toggle', function(e) {
+            e.preventDefault();
+
+            const $detailsPanel = $('#mt-perf-details');
+
+            if ($detailsPanel.length) {
+                if ($detailsPanel.is(':visible')) {
+                    $detailsPanel.fadeOut(200);
+                } else {
+                    $detailsPanel.fadeIn(200);
+                }
+            }
+
+            return false;
+        });
+
+        // Close details panel when clicking outside
+        $(document).on('click', function(e) {
+            const $detailsPanel = $('#mt-perf-details');
+
+            if ($detailsPanel.length && $detailsPanel.is(':visible')) {
+                if (!$(e.target).closest('#mt-perf-details, #wp-admin-bar-mt-performance-monitor, .mt-admin-perf-toggle').length) {
+                    $detailsPanel.fadeOut(200);
+                }
+            }
+        });
+
+        // Close details panel on Escape key
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const $detailsPanel = $('#mt-perf-details');
+                if ($detailsPanel.length && $detailsPanel.is(':visible')) {
+                    $detailsPanel.fadeOut(200);
+                }
+            }
         });
     }
 
@@ -515,7 +559,7 @@
         type = type || 'info';
 
         const noticeClass = 'notice notice-' + type;
-        const $notice = $('<div class="' + noticeClass + ' is-dismissible"><p>' + message + '</p></div>');
+        const $notice = $('<div class="' + noticeClass + ' is-dismissible"><p>' + message + '</p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss</span></button></div>');
 
         // Insert after page title
         $('.wrap h1').after($notice);
@@ -532,6 +576,9 @@
             $notice.remove();
         });
     }
+
+    // Expose showNotice globally for other scripts
+    window.mtShowNotice = showNotice;
 
     /**
      * Escape HTML
@@ -556,5 +603,11 @@
             timeout = setTimeout(later, wait);
         };
     }
+
+    // Expose utility functions globally for other scripts
+    window.mtUtils = {
+        escapeHtml: escapeHtml,
+        debounce: debounce
+    };
 
 })(jQuery);

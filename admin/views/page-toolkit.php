@@ -122,7 +122,7 @@ $server_memory_info = $php_config_service->get_server_memory_info();
                             </div>
                             <label for="savequeries-toggle" class="mt-toggle-label">
                                 <span>SAVEQUERIES</span>
-                                <small class="description"><?php _e('Save database queries for analysis', 'mt'); ?></small>
+                                <small class="description"><?php _e('Save database queries to query.log for analysis', 'mt'); ?></small>
                             </label>
                         </div>
                         <div class="mt-toggle-wrapper <?php echo !$debug_enabled ? 'disabled' : ''; ?>">
@@ -138,17 +138,6 @@ $server_memory_info = $php_config_service->get_server_memory_info();
                     </div>
                 </div>
 
-                <div class="mt-debug-actions">
-                    <button type="button" id="clear-debug-log" class="button">
-                        <span class="dashicons dashicons-trash"></span>
-                        <?php _e('Clear Debug Log', 'mt'); ?>
-                    </button>
-                    <a href="<?php echo admin_url('tools.php?page=mt-toolkit-logs'); ?>" class="button">
-                        <span class="dashicons dashicons-visibility"></span>
-                        <?php _e('View Logs', 'mt'); ?>
-                    </a>
-                </div>
-
                 <div class="mt-status-info">
                     <div class="mt-status-item">
                         <span class="mt-status-indicator <?php echo $debug_enabled ? 'active' : 'inactive'; ?>"></span>
@@ -159,7 +148,29 @@ $server_memory_info = $php_config_service->get_server_memory_info();
                     <?php if (file_exists(mt_get_debug_log_path())): ?>
                     <div class="mt-status-item">
                         <span class="dashicons dashicons-media-text"></span>
-                        <span><?php _e('Log File Size:', 'mt'); ?> <?php echo mt_format_bytes(filesize(mt_get_debug_log_path())); ?></span>
+                        <span><?php _e('Debug Log Size:', 'mt'); ?> <?php echo mt_format_bytes(filesize(mt_get_debug_log_path())); ?></span>
+                        <a href="<?php echo admin_url('tools.php?page=mt-logs'); ?>" class="button button-small" style="margin-left: 10px;">
+                            <?php _e('View Debug Logs', 'mt'); ?>
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (defined('SAVEQUERIES') && SAVEQUERIES): ?>
+                    <div class="mt-status-item">
+                        <span class="dashicons dashicons-database"></span>
+                        <span><?php _e('Query Logging:', 'mt'); ?>
+                            <?php echo defined('SAVEQUERIES') && SAVEQUERIES ? __('Enabled', 'mt') : __('Disabled', 'mt'); ?>
+                        </span>
+                        <?php if (file_exists(mt_get_query_log_path())): ?>
+                        <span style="margin-left: 10px; color: #646970;">
+                            <?php _e('Size:', 'mt'); ?> <?php echo mt_format_bytes(filesize(mt_get_query_log_path())); ?>
+                            <small style="margin-left: 5px; color: #007cba;">
+                                (<?php _e('Auto-rotates at', 'mt'); ?> <?php echo mt_format_bytes(mt_get_query_log_max_size()); ?>)
+                            </small>
+                        </span>
+                        <?php endif; ?>
+                        <a href="<?php echo admin_url('tools.php?page=mt-query-logs'); ?>" class="button button-small" style="margin-left: 10px;">
+                            <?php _e('View Query Logs', 'mt'); ?>
+                        </a>
                     </div>
                     <?php endif; ?>
                 </div>

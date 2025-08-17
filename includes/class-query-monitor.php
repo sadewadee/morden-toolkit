@@ -21,8 +21,7 @@ class MT_Query_Monitor {
     public function __construct() {
         if (get_option('mt_query_monitor_enabled') && is_user_logged_in()) {
             add_action('init', array($this, 'start_performance_tracking'));
-            add_action('wp_footer', array($this, 'display_performance_bar'));
-            add_action('admin_footer', array($this, 'display_performance_bar'));
+            add_action('admin_bar_menu', array($this, 'add_admin_bar_metrics'), 999);
         }
     }
 
@@ -68,15 +67,62 @@ class MT_Query_Monitor {
     }
 
     /**
-     * Display performance bar in frontend
+     * Add performance metrics to admin bar
      */
-    public function display_performance_bar() {
+    public function add_admin_bar_metrics($wp_admin_bar) {
         if (!current_user_can('manage_options')) {
             return;
         }
 
         $metrics = $this->get_metrics();
+        if (empty($metrics)) {
+            return;
+        }
 
+        $query_count = isset($metrics['query_count']) ? $metrics['query_count'] : 0;
+        $execution_time = isset($metrics['execution_time']) ? $metrics['execution_time'] : 0;
+        $peak_memory = isset($metrics['peak_memory']) ? $metrics['peak_memory'] : 0;
+
+        $time_formatted = mt_format_time($execution_time);
+        $memory_formatted = mt_format_bytes($peak_memory);
+
+        // Format like Query Monitor: time, memory, database time, queries
+        $label_content = sprintf(
+            '%s&nbsp;&nbsp;%s&nbsp;&nbsp;%s<small>Q</small>',
+            esc_html($time_formatted),
+            esc_html($memory_formatted),
+            esc_html($query_count)
+        );
+
+        // Add single admin bar item with all metrics
+        $wp_admin_bar->add_node(array(
+            'id'    => 'mt-performance-monitor',
+            'title' => '<span class="ab-icon">MT</span><span class="ab-label">' . $label_content . '</span>',
+            'href'  => '#',
+            'meta'  => array(
+                'class' => 'menupop mt-admin-perf-toggle',
+                'onclick' => 'return false;'
+            )
+        ));
+
+        // Render details panel immediately when admin bar is rendered
+        add_action('wp_footer', array($this, 'render_details_panel'), 9999);
+        add_action('admin_footer', array($this, 'render_details_panel'), 9999);
+    }
+
+    /**
+     * Render only the details panel for admin bar integration
+     */
+    public function render_details_panel() {
+        static $rendered = false;
+
+        // Prevent multiple renders
+        if ($rendered) {
+            return;
+        }
+        $rendered = true;
+
+        $metrics = $this->get_metrics();
         if (empty($metrics)) {
             return;
         }
@@ -85,7 +131,7 @@ class MT_Query_Monitor {
     }
 
     /**
-     * Render performance bar HTML
+     * Render performance details panel for admin bar integration
      */
     private function render_performance_bar($metrics) {
         $query_count = isset($metrics['query_count']) ? $metrics['query_count'] : 0;
@@ -95,136 +141,88 @@ class MT_Query_Monitor {
         $time_formatted = mt_format_time($execution_time);
         $memory_formatted = mt_format_bytes($peak_memory);
 
-        // Determine performance status
-        $status_class = $this->get_performance_status_class($execution_time, $query_count, $peak_memory);
-
         ?>
-        <div id="mt-performance-bar" class="mt-performance-bar <?php echo esc_attr($status_class); ?>">
-            <div class="mt-perf-container">
-                <div class="mt-perf-item">
-                    <span class="mt-perf-icon">🔄</span>
-                    <span class="mt-perf-value"><?php echo esc_html($query_count); ?></span>
-                    <span class="mt-perf-label"><?php _e('queries', 'mt'); ?></span>
-                </div>
-                <div class="mt-perf-item">
-                    <span class="mt-perf-icon">⏱️</span>
-                    <span class="mt-perf-value"><?php echo esc_html($time_formatted); ?></span>
-                    <span class="mt-perf-label"><?php _e('time', 'mt'); ?></span>
-                </div>
-                <div class="mt-perf-item">
-                    <span class="mt-perf-icon">💾</span>
-                    <span class="mt-perf-value"><?php echo esc_html($memory_formatted); ?></span>
-                    <span class="mt-perf-label"><?php _e('memory', 'mt'); ?></span>
-                </div>
-                <div class="mt-perf-toggle">
-                    <button type="button" id="mt-perf-details-btn">
-                        <span class="dashicons dashicons-info"></span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="mt-perf-details" class="mt-perf-details" style="display: none;">
-                <div class="mt-perf-details-content">
-                    <h4><?php _e('Performance Details', 'mt'); ?></h4>
-                    <table class="mt-perf-table">
-                        <tr>
-                            <td><?php _e('Database Queries:', 'mt'); ?></td>
-                            <td><?php echo esc_html($query_count); ?></td>
-                        </tr>
-                        <tr>
-                            <td><?php _e('Execution Time:', 'mt'); ?></td>
-                            <td><?php echo esc_html($time_formatted); ?></td>
-                        </tr>
-                        <tr>
-                            <td><?php _e('Peak Memory:', 'mt'); ?></td>
-                            <td><?php echo esc_html($memory_formatted); ?></td>
-                        </tr>
-                        <tr>
-                            <td><?php _e('Memory Used:', 'mt'); ?></td>
-                            <td><?php echo esc_html(mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>
-                        </tr>
-                        <tr>
-                            <td><?php _e('PHP Version:', 'mt'); ?></td>
-                            <td><?php echo esc_html(PHP_VERSION); ?></td>
-                        </tr>
-                        <tr>
-                            <td><?php _e('WordPress Version:', 'mt'); ?></td>
-                            <td><?php echo esc_html(get_bloginfo('version')); ?></td>
-                        </tr>
-                    </table>
-                </div>
+        <div id="mt-perf-details" class="mt-perf-details" style="display: none;">
+            <div class="mt-perf-details-content">
+                <h4><?php _e('Performance Details', 'mt'); ?></h4>
+                <table class="mt-perf-table">
+                    <tr>
+                        <td><?php _e('Database Queries:', 'mt'); ?></td>
+                        <td><?php echo esc_html($query_count); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php _e('Execution Time:', 'mt'); ?></td>
+                        <td><?php echo esc_html($time_formatted); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php _e('Peak Memory:', 'mt'); ?></td>
+                        <td><?php echo esc_html($memory_formatted); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php _e('Memory Used:', 'mt'); ?></td>
+                        <td><?php echo esc_html(mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php _e('PHP Version:', 'mt'); ?></td>
+                        <td><?php echo esc_html(PHP_VERSION); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php _e('WordPress Version:', 'mt'); ?></td>
+                        <td><?php echo esc_html(get_bloginfo('version')); ?></td>
+                    </tr>
+                </table>
             </div>
         </div>
 
         <style>
-        .mt-performance-bar {
+        /* Admin bar MT performance styling - similar to Query Monitor */
+        #wp-admin-bar-mt-performance-monitor .ab-icon {
+            background-color: #0073aa !important;
+            color: #fff !important;
+            font-weight: bold !important;
+            width: auto !important;
+            padding: 0 6px !important;
+            border-radius: 2px !important;
+            margin-right: 6px !important;
+            font-size: 11px !important;
+            line-height: 20px !important;
+        }
+
+        #wp-admin-bar-mt-performance-monitor .ab-icon {
+            display: none !important;
+        }
+
+        #wp-admin-bar-mt-performance-monitor .ab-label small {
+            font-size: 9px !important;
+            font-weight: normal !important;
+        }
+
+        #wp-admin-bar-mt-performance-monitor:hover .ab-icon {
+            background-color: #005a87 !important;
+        }
+
+        #wp-admin-bar-mt-performance-monitor.menupop .ab-item {
+            cursor: pointer !important;
+        }
+
+        .mt-perf-details {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: #23282d;
+            background: #32373c;
             color: #ffffff;
             z-index: 99999;
             border-top: 2px solid #0073aa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
             font-size: 13px;
-        }
-
-        .mt-perf-container {
-            display: flex;
-            align-items: center;
-            padding: 8px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .mt-perf-item {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
-        }
-
-        .mt-perf-icon {
-            margin-right: 5px;
-            font-size: 14px;
-        }
-
-        .mt-perf-value {
-            font-weight: 600;
-            margin-right: 3px;
-        }
-
-        .mt-perf-label {
-            color: #a0a5aa;
-            font-size: 12px;
-        }
-
-        .mt-perf-toggle {
-            margin-left: auto;
-        }
-
-        .mt-perf-toggle button {
-            background: none;
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 3px;
-        }
-
-        .mt-perf-toggle button:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .mt-perf-details {
-            background: #32373c;
-            border-top: 1px solid #464b50;
-            padding: 15px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
 
         .mt-perf-details-content {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 15px 20px;
         }
 
         .mt-perf-details h4 {
@@ -251,58 +249,7 @@ class MT_Query_Monitor {
             color: #ffffff;
             font-weight: 500;
         }
-
-        /* Performance status colors */
-        .mt-performance-bar.good {
-            border-top-color: #00a32a;
-        }
-
-        .mt-performance-bar.warning {
-            border-top-color: #dba617;
-        }
-
-        .mt-performance-bar.poor {
-            border-top-color: #d63638;
-        }
-
-        /* Admin bar adjustment */
-        .admin-bar .mt-performance-bar {
-            bottom: 32px;
-        }
-
-        @media screen and (max-width: 782px) {
-            .admin-bar .mt-performance-bar {
-                bottom: 46px;
-            }
-
-            .mt-perf-container {
-                flex-wrap: wrap;
-                padding: 6px 15px;
-            }
-
-            .mt-perf-item {
-                margin-right: 15px;
-                margin-bottom: 2px;
-            }
-        }
         </style>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var detailsBtn = document.getElementById('mt-perf-details-btn');
-            var detailsPanel = document.getElementById('mt-perf-details');
-
-            if (detailsBtn && detailsPanel) {
-                detailsBtn.addEventListener('click', function() {
-                    if (detailsPanel.style.display === 'none') {
-                        detailsPanel.style.display = 'block';
-                    } else {
-                        detailsPanel.style.display = 'none';
-                    }
-                });
-            }
-        });
-        </script>
         <?php
     }
 

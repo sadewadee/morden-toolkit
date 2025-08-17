@@ -14,11 +14,14 @@ Morden Toolkit adalah plugin WordPress yang menyediakan tools essential untuk de
 - **Safe configuration** - Auto-backup wp-config.php sebelum modifikasi
 - **Clear debug logs** - Bersihkan log dengan satu klik
 
-### 📊 Query Monitor
-- **Performance bar frontend** - Tampilkan metrics di bottom browser
+### 📊 Query Monitor & Performance
+- **Admin bar integration** - Performance metrics terintegrasi dengan WordPress admin bar
+- **Unified display** - Execution time, memory usage, dan query count dalam satu indicator
+- **Query Monitor style** - Visual design konsisten dengan developer tools populer
+- **Click-to-expand details** - Panel detail muncul dari bawah layar saat diklik
 - **Real-time monitoring** - Database queries, execution time, memory usage
 - **Detailed metrics** - PHP version, WordPress version, peak memory
-- **User-friendly display** - Clean interface dengan status indicators
+- **Mobile responsive** - Optimal display di semua device sizes
 
 ### 📝 File Editor
 - **Safe .htaccess editing** - Built-in syntax validation

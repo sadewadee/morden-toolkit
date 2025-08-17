@@ -633,6 +633,17 @@
     gap: 8px;
 }
 
+.mt-logs-actions button.button {
+    display: flex
+;
+    align-items: center;
+    flex-direction: row;
+    align-content: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+}
+
 .mt-logs-info {
     display: flex;
     align-items: center;
@@ -650,6 +661,7 @@
     background: #ffffff;
     border: 1px solid #ccd0d4;
     border-radius: 4px;
+    flex-wrap: wrap;
 }
 
 .mt-filter-group {
@@ -666,6 +678,8 @@
 .mt-filter-group select,
 .mt-filter-group input[type="text"] {
     padding: 4px 8px;
+    padding-left: 10px;
+    padding-right: 32px;
     border: 1px solid #ddd;
     border-radius: 3px;
 }
