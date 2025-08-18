@@ -1,5 +1,25 @@
 # Bug Report & Fixes - Morden Toolkit
 
+## PHP Configuration Block Duplication (fix_008)
+
+**Problem:** PHP configuration blocks being added repeatedly to wp-config.php instead of being replaced
+- Multiple identical configuration blocks accumulating in wp-config.php file
+- String "Safe WordPress Implementation" appearing in configuration block comments
+- Regex patterns not properly detecting all variants of existing MT configuration blocks
+- Users experiencing bloated wp-config.php files with duplicate entries
+
+**Solution:** Enhanced block detection and replacement logic
+- Updated `generate_wp_config_constants_block()` to remove "Safe WordPress Implementation" string
+- Enhanced regex patterns in `remove_wp_config_php_block()` to detect all block variants
+- Added specific pattern to match blocks with "Safe WordPress Implementation" string
+- Added patterns for standard PHP config blocks without extra descriptive text
+- Improved block replacement logic to prevent duplication
+
+**Status:** Fixed
+**File:** includes/class-php-config.php
+**Severity:** Medium
+**Date:** 2025-01-17
+
 ## Query Logs JavaScript Errors (fix_007)
 
 **Problem:** Query Logs page showing "Invalid Date" and "source-name Unknown" errors

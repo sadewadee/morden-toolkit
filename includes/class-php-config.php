@@ -1141,7 +1141,7 @@ class MT_PHP_Config {
      * Generate wp-config.php constants-only block - SAFE VERSION with ini_set fallback
      */
     private function generate_wp_config_constants_block($settings) {
-        $php_block = "/* BEGIN Morden Toolkit PHP Configuration - Safe WordPress Implementation */\n";
+        $php_block = "/* BEGIN Morden Toolkit PHP Configuration */\n";
 
         foreach ($settings as $setting => $value) {
             // Use WordPress constants for supported settings
@@ -1238,8 +1238,13 @@ class MT_PHP_Config {
         $patterns = [
             // Match exactly our /* style PHP config blocks with defines */
             '/\/\*\s*BEGIN\s+Morden\s+Toolkit\s+PHP\s+Configuration\s*-\s*WordPress\s+Constants\s+Only\s*\*\/.*?\/\*\s*END\s+Morden\s+Toolkit\s+PHP\s+Configuration\s*\*\//s',
+            // Match blocks with "Safe WordPress Implementation" string
+            '/\/\*\s*BEGIN\s+Morden\s+Toolkit\s+PHP\s+Configuration\s*-\s*Safe\s+WordPress\s+Implementation\s*\*\/.*?\/\*\s*END\s+Morden\s+Toolkit\s+PHP\s+Configuration\s*\*\//s',
             // Match exactly our /* style PHP config blocks (short version) */
             '/\/\*\s*BEGIN\s+Morden\s+Toolkit\s+PHP\s+Config\s*-\s*WordPress\s+Constants\s+Only\s*\*\/.*?\/\*\s*END\s+Morden\s+Toolkit\s+PHP\s+Config\s*\*\//s',
+            // Match standard PHP config blocks
+            '/\/\*\s*BEGIN\s+Morden\s+Toolkit\s+PHP\s+Configuration\s*\*\/.*?\/\*\s*END\s+Morden\s+Toolkit\s+PHP\s+Configuration\s*\*\//s',
+            '/\/\*\s*BEGIN\s+Morden\s+Toolkit\s+PHP\s+Config\s*\*\/.*?\/\*\s*END\s+Morden\s+Toolkit\s+PHP\s+Config\s*\*\//s',
             // Match our // style comments (legacy)
             '/\/\/\s*BEGIN\s+Morden\s+Toolkit\s+PHP\s+Config.*?define\s*\(.*?\/\/\s*END\s+Morden\s+Toolkit\s+PHP\s+Config/s'
         ];
@@ -1884,9 +1889,7 @@ class MT_PHP_Config {
         }
 
         if (function_exists('update_option')) {
-            if (function_exists('update_option')) {
             update_option('morden_php_config_backup_registry', $registry);
-        }
         }
     }
 
@@ -1903,7 +1906,9 @@ class MT_PHP_Config {
             }
         }
 
-        update_option('morden_php_config_backup_registry', $registry);
+        if (function_exists('update_option')) {
+            update_option('morden_php_config_backup_registry', $registry);
+        }
     }
 
     /**

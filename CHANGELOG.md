@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced error handling in parseUrlSource and formatCaller functions
 - Improved timestamp parsing with multiple format support
 - Added try-catch blocks to prevent JavaScript errors in Query Logs display
+- Fixed PHP configuration block duplication in wp-config.php - blocks are now properly replaced instead of added repeatedly
+- Removed "Safe WordPress Implementation" string from PHP configuration block comments
+- Enhanced regex patterns to properly detect and remove all variants of existing MT configuration blocks
 
 ## [1.0.4] - 2024-01-27
 
