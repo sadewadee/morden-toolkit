@@ -5,6 +5,31 @@ All notable changes to Morden Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.13] - 2025-08-18
+
+### Fixed
+- Fixed WPConfigTransformer class redeclaration fatal error by adding proper class_exists() check
+- Fixed PHP configuration block duplication in wp-config.php - blocks are now properly replaced instead of added repeatedly
+- Fixed performance metrics calculation inconsistency between admin bar and details panel by implementing unified calculation logic
+- Fixed query count inconsistency between WordPress admin bar and performance monitor tabs
+- Fixed "Invalid Date" and "source-name Unknown" errors in Query Logs page
+- Fixed Scripts (%d) and Styles (%d) tab labels showing placeholder instead of actual counts
+- Enhanced error handling and fallback mechanisms in Query Logs JavaScript
+- Improved performance monitoring with consistent metrics calculation across all UI components
+
+### Improved
+- Enhanced WPConfigTransformer integration with proper class existence checking
+- Better backup cleanup for deleted configuration files
+- Improved regex patterns for detecting and removing existing MT configuration blocks
+- Enhanced JavaScript error handling in admin interface
+- Better file path handling and validation throughout the codebase
+
+### Changed
+- Unified query counting logic for consistency across admin bar and performance tabs
+- Enhanced backup system to automatically clean up old backup files
+- Improved constants validation with better error handling
+- Updated WPConfigTransformer usage with proper parameter handling
+
 ## [Unreleased]
 
 ### Added
