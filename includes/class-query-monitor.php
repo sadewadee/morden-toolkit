@@ -7,6 +7,90 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// WordPress function fallbacks for standalone testing
+if (!function_exists('is_user_logged_in')) {
+    function is_user_logged_in() { return true; }
+}
+if (!function_exists('add_action')) {
+    function add_action($hook, $callback, $priority = 10) { return true; }
+}
+if (!function_exists('current_user_can')) {
+    function current_user_can($capability) { return true; }
+}
+if (!function_exists('esc_html')) {
+    function esc_html($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
+}
+if (!function_exists('esc_attr')) {
+    function esc_attr($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
+}
+if (!function_exists('esc_url')) {
+    function esc_url($url) { return htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); }
+}
+if (!function_exists('_e')) {
+    function _e($text, $domain = 'default') { echo $text; }
+}
+if (!function_exists('__')) {
+    function __($text, $domain = 'default') { return $text; }
+}
+if (!function_exists('printf')) {
+    function printf($format, ...$args) { echo sprintf($format, ...$args); }
+}
+if (!function_exists('get_transient')) {
+    function get_transient($transient) { return false; }
+}
+if (!function_exists('set_transient')) {
+    function set_transient($transient, $value, $expiration = 0) { return true; }
+}
+if (!function_exists('get_current_user_id')) {
+    function get_current_user_id() { return 1; }
+}
+if (!function_exists('get_bloginfo')) {
+    function get_bloginfo($show = '') { return 'Test Site'; }
+}
+if (!function_exists('get_option')) {
+    function get_option($option, $default = false) { return $default; }
+}
+if (!function_exists('mt_format_bytes')) {
+    function mt_format_bytes($bytes) {
+        if ($bytes >= 1073741824) {
+            return number_format($bytes / 1073741824, 2) . 'GB';
+        } elseif ($bytes >= 1048576) {
+            return number_format($bytes / 1048576, 2) . 'MB';
+        } elseif ($bytes >= 1024) {
+            return number_format($bytes / 1024, 2) . 'KB';
+        } else {
+            return $bytes . 'B';
+        }
+    }
+}
+
+// Mock global variables for testing
+if (!isset($wpdb)) {
+    $wpdb = new stdClass();
+    $wpdb->num_queries = 0;
+    $wpdb->queries = array();
+}
+if (!isset($wp_scripts)) {
+    $wp_scripts = new stdClass();
+    $wp_scripts->done = array();
+    $wp_scripts->registered = array();
+    $wp_scripts->groups = array();
+}
+if (!isset($wp_styles)) {
+    $wp_styles = new stdClass();
+    $wp_styles->done = array();
+    $wp_styles->registered = array();
+}
+if (!defined('ABSPATH')) {
+    define('ABSPATH', '/var/www/html/');
+}
+if (!defined('SAVEQUERIES')) {
+    define('SAVEQUERIES', false);
+}
+if (!defined('SCRIPT_DEBUG')) {
+    define('SCRIPT_DEBUG', false);
+}
+
 class MT_Query_Monitor {
 
     private $metrics = array();
@@ -34,7 +118,20 @@ class MT_Query_Monitor {
         $this->metrics['execution_time'] = $this->metrics['end_time'] - $this->metrics['start_time'];
         $this->metrics['memory_usage'] = $this->metrics['end_memory'] - $this->metrics['start_memory'];
         $this->metrics['peak_memory'] = memory_get_peak_usage();
-        $this->metrics['query_count'] = $wpdb->num_queries;
+        
+        // Use more accurate query count calculation
+        if (defined('SAVEQUERIES') && SAVEQUERIES && !empty($wpdb->queries)) {
+            $this->metrics['query_count'] = count($wpdb->queries);
+            // Calculate total query time for more accurate performance measurement
+            $total_query_time = 0;
+            foreach ($wpdb->queries as $query) {
+                $total_query_time += $query[1];
+            }
+            $this->metrics['query_time'] = $total_query_time;
+        } else {
+            $this->metrics['query_count'] = $wpdb->num_queries;
+            $this->metrics['query_time'] = 0;
+        }
 
         // Store metrics in transient for display
         set_transient('mt_metrics_' . get_current_user_id(), $this->metrics, 30);
@@ -45,12 +142,25 @@ class MT_Query_Monitor {
      */
     public function get_metrics() {
         $cached_metrics = get_transient('mt_metrics_' . get_current_user_id());
-
         if ($cached_metrics) {
             return $cached_metrics;
         }
-
         return $this->metrics;
+    }
+
+    /**
+     * Get accurate query count using consistent logic
+     */
+    private function get_accurate_query_count($metrics) {
+        global $wpdb;
+        
+        // Prioritize SAVEQUERIES data for accuracy
+        if (defined('SAVEQUERIES') && SAVEQUERIES && !empty($wpdb->queries)) {
+            return count($wpdb->queries);
+        }
+        
+        // Fallback to stored metrics
+        return isset($metrics['query_count']) ? $metrics['query_count'] : 0;
     }
 
     /**
@@ -66,18 +176,22 @@ class MT_Query_Monitor {
             return;
         }
 
-        $query_count = isset($metrics['query_count']) ? $metrics['query_count'] : 0;
+        // Use consistent query count calculation
+        $query_count = $this->get_accurate_query_count($metrics);
         $execution_time = isset($metrics['execution_time']) ? $metrics['execution_time'] : 0;
         $peak_memory = isset($metrics['peak_memory']) ? $metrics['peak_memory'] : 0;
+        $query_time = isset($metrics['query_time']) ? $metrics['query_time'] : 0;
 
-        $time_formatted = mt_format_time($execution_time);
-        $memory_formatted = mt_format_bytes($peak_memory);
+        $time_formatted = number_format($execution_time, 3) . 's';
+        $memory_formatted = $this->mt_format_bytes($peak_memory);
+        $db_time_formatted = number_format($query_time * 1000, 1) . 'ms';
 
         // Format like Query Monitor: time, memory, database time, queries
         $label_content = sprintf(
-            '%s&nbsp;&nbsp;%s&nbsp;&nbsp;%s<small>Q</small>',
+            '%s&nbsp;&nbsp;%s&nbsp;&nbsp;%s&nbsp;&nbsp;%s<small>Q</small>',
             esc_html($time_formatted),
             esc_html($memory_formatted),
+            esc_html($db_time_formatted),
             esc_html($query_count)
         );
 
@@ -121,15 +235,199 @@ class MT_Query_Monitor {
      * Render performance details panel for admin bar integration
      */
     private function render_performance_bar($metrics) {
-        $query_count = isset($metrics['query_count']) ? $metrics['query_count'] : 0;
+        // Use consistent calculation methods
+        $query_count = $this->get_accurate_query_count($metrics);
         $execution_time = isset($metrics['execution_time']) ? $metrics['execution_time'] : 0;
         $peak_memory = isset($metrics['peak_memory']) ? $metrics['peak_memory'] : 0;
+        $query_time = isset($metrics['query_time']) ? $metrics['query_time'] : 0;
 
-        $time_formatted = mt_format_time($execution_time);
-        $memory_formatted = mt_format_bytes($peak_memory);
+        $time_formatted = number_format($execution_time, 3) . 's';
+        $memory_formatted = $this->mt_format_bytes($peak_memory);
+        $db_time_formatted = number_format($query_time * 1000, 1) . 'ms';
 
-        ?>        <div id="mt-perf-details" class="mt-perf-details" style="display: none;">            <div class="mt-perf-details-content">                <div class="mt-perf-sidebar">                    <ul class="mt-perf-tabs">                        <li class="mt-perf-tab active" data-tab="overview">                            <span class="dashicons dashicons-dashboard"></span>                            <?php _e('Overview', 'morden-toolkit'); ?>                        </li>                        <li class="mt-perf-tab" data-tab="queries">                            <span class="dashicons dashicons-database"></span>                            <?php _e('Queries', 'morden-toolkit'); ?>                        </li>                        <?php if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG): ?>                        <li class="mt-perf-tab" data-tab="scripts">                            <span class="dashicons dashicons-media-code"></span>                            <?php _e('Scripts', 'morden-toolkit'); ?>                        </li>                        <li class="mt-perf-tab" data-tab="styles">                            <span class="dashicons dashicons-admin-appearance"></span>                            <?php _e('Styles', 'morden-toolkit'); ?>                        </li>                        <?php endif; ?>                    </ul>                </div>                <div class="mt-perf-content">                    <!-- Overview Tab -->                    <div id="mt-perf-tab-overview" class="mt-perf-tab-content active">                        <h4><?php _e('Performance Details', 'morden-toolkit'); ?></h4>                        <table class="mt-perf-table">                            <tr>                                <td><?php _e('Database Queries:', 'morden-toolkit'); ?></td>                                <td><?php echo esc_html($query_count); ?></td>                            </tr>                            <tr>                                <td><?php _e('Execution Time:', 'morden-toolkit'); ?></td>                                <td><?php echo esc_html($time_formatted); ?></td>                            </tr>                            <tr>                                <td><?php _e('Peak Memory:', 'morden-toolkit'); ?></td>                                <td><?php echo esc_html($memory_formatted); ?></td>                            </tr>                            <tr>                                <td><?php _e('Memory Used:', 'morden-toolkit'); ?></td>                                <td><?php echo esc_html(mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>                            </tr>                            <tr>                                <td><?php _e('PHP Version:', 'morden-toolkit'); ?></td>                                <td><?php echo esc_html(PHP_VERSION); ?></td>                            </tr>                            <tr>                                <td><?php _e('WordPress Version:', 'morden-toolkit'); ?></td>                                <td><?php echo esc_html(get_bloginfo('version')); ?></td>                            </tr>                        </table>                    </div>                    <!-- Queries Tab -->                    <div id="mt-perf-tab-queries" class="mt-perf-tab-content">                        <h4><?php _e('Database Queries', 'morden-toolkit'); ?></h4>                        <div class="mt-queries-container">                            <?php $this->render_queries_tab(); ?>                        </div>                    </div>                    <?php if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG): ?>                    <!-- Scripts Tab -->                    <div id="mt-perf-tab-scripts" class="mt-perf-tab-content">                        <h4><?php _e('Loaded Scripts', 'morden-toolkit'); ?></h4>                        <div class="mt-scripts-container">                            <?php $this->render_scripts_tab(); ?>                        </div>                    </div>                    <!-- Styles Tab -->                    <div id="mt-perf-tab-styles" class="mt-perf-tab-content">                        <h4><?php _e('Loaded Styles', 'morden-toolkit'); ?></h4>                        <div class="mt-styles-container">                            <?php $this->render_styles_tab(); ?>                        </div>                    </div>                    <?php endif; ?>                </div>            </div>        </div>
-
+        // Get counts for tab titles - use same logic as admin bar
+        global $wpdb, $wp_scripts, $wp_styles;
+        $tab_query_count = $query_count; // Use consistent query count
+        // Scripts count: jumlah script yang sudah di-load oleh WordPress
+        $scripts_count = !empty($wp_scripts->done) ? count($wp_scripts->done) : 0;
+        // Styles count: jumlah stylesheet yang sudah di-load oleh WordPress
+        $styles_count = !empty($wp_styles->done) ? count($wp_styles->done) : 0;
+        ?>
+        <div id="mt-perf-details" class="mt-perf-details" style="display: none;">
+            <div class="mt-perf-details-content">
+                <div class="mt-perf-sidebar">
+                    <ul class="mt-perf-tabs">
+                        <li class="mt-perf-tab active" data-tab="overview">
+                            <span class="dashicons dashicons-dashboard"></span>
+                            <?php
+                            if (function_exists('_e')) {
+                                _e('Overview', 'morden-toolkit');
+                            } else {
+                                echo 'Overview';
+                            }
+                            ?>
+                        </li>
+                        <li class="mt-perf-tab" data-tab="queries">
+                            <span class="dashicons dashicons-database"></span>
+                            <?php
+                            if (function_exists('printf') && function_exists('__')) {
+                                printf(__('Queries (%d)', 'morden-toolkit'), $tab_query_count);
+                            } else {
+                                echo 'Queries';
+                            }
+                            ?>
+                        </li>
+                        <?php if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG): ?>
+                        <li class="mt-perf-tab" data-tab="scripts">
+                            <span class="dashicons dashicons-media-code"></span>
+                            <?php
+                            if (function_exists('printf') && function_exists('__')) {
+                                printf(__('Scripts (%d)', 'morden-toolkit'), $scripts_count);
+                            } else {
+                                echo 'Scripts';
+                            }
+                            ?>
+                        </li>
+                        <li class="mt-perf-tab" data-tab="styles">
+                            <span class="dashicons dashicons-admin-appearance"></span>
+                            <?php
+                            if (function_exists('printf') && function_exists('__')) {
+                                printf(__('Styles (%d)', 'morden-toolkit'), $styles_count);
+                            } else {
+                                echo 'Styles';
+                            }
+                            ?>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+                <div class="mt-perf-content">
+                    <!-- Overview Tab -->
+                    <div id="mt-perf-tab-overview" class="mt-perf-tab-content active">
+                        <h4><?php
+                        if (function_exists('_e')) {
+                            _e('Performance Details', 'morden-toolkit');
+                        } else {
+                            echo 'Performance Details';
+                        }
+                        ?></h4>
+                        <table class="mt-perf-table">
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('Database Queries:', 'morden-toolkit');
+                                } else {
+                                    echo 'Database Queries:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html($tab_query_count) : htmlspecialchars($tab_query_count); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('Execution Time:', 'morden-toolkit');
+                                } else {
+                                    echo 'Execution Time:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html($time_formatted) : htmlspecialchars($time_formatted); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('Database Time:', 'morden-toolkit');
+                                } else {
+                                    echo 'Database Time:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html($db_time_formatted) : htmlspecialchars($db_time_formatted); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('Peak Memory:', 'morden-toolkit');
+                                } else {
+                                    echo 'Peak Memory:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html($memory_formatted) : htmlspecialchars($memory_formatted); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('Memory Used:', 'morden-toolkit');
+                                } else {
+                                    echo 'Memory Used:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html(function_exists('mt_format_bytes') ? mt_format_bytes($metrics['memory_usage'] ?? 0) : $this->mt_format_bytes($metrics['memory_usage'] ?? 0)) : htmlspecialchars($this->mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('PHP Version:', 'morden-toolkit');
+                                } else {
+                                    echo 'PHP Version:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html(PHP_VERSION) : htmlspecialchars(PHP_VERSION); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php
+                                if (function_exists('_e')) {
+                                    _e('WordPress Version:', 'morden-toolkit');
+                                } else {
+                                    echo 'WordPress Version:';
+                                }
+                                ?></td>
+                                <td><?php echo function_exists('esc_html') && function_exists('get_bloginfo') ? esc_html(get_bloginfo('version')) : 'N/A'; ?></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!-- Queries Tab -->
+                    <div id="mt-perf-tab-queries" class="mt-perf-tab-content">
+                        <h4><?php
+                        if (function_exists('printf') && function_exists('__')) {
+                             printf(__('Database Queries (%d)', 'morden-toolkit'), $tab_query_count);
+                         } else {
+                             echo 'Database Queries (' . $tab_query_count . ')';
+                         }
+                        ?></h4>
+                        <div class="mt-queries-container">
+                            <?php $this->render_queries_tab(); ?>
+                        </div>
+                    </div>
+                    <?php if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG): ?>
+                    <!-- Scripts Tab -->
+                    <div id="mt-perf-tab-scripts" class="mt-perf-tab-content">
+                        <h4><?php
+                        if (function_exists('_e')) {
+                            _e('Loaded Scripts', 'morden-toolkit');
+                        } else {
+                            echo 'Loaded Scripts';
+                        }
+                        ?></h4>
+                        <div class="mt-scripts-container">
+                            <?php $this->render_scripts_tab(); ?>
+                        </div>
+                    </div>
+                    <!-- Styles Tab -->
+                    <div id="mt-perf-tab-styles" class="mt-perf-tab-content">
+                        <h4><?php
+                        if (function_exists('_e')) {
+                            _e('Loaded Styles', 'morden-toolkit');
+                        } else {
+                            echo 'Loaded Styles';
+                        }
+                        ?></h4>
+                        <div class="mt-styles-container">
+                            <?php $this->render_styles_tab(); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
         <style>
         /* Admin bar MT performance styling - similar to Query Monitor */
         #wp-admin-bar-mt-performance-monitor .ab-icon {
@@ -258,36 +556,249 @@ class MT_Query_Monitor {
         global $wpdb;
 
         if (!defined('SAVEQUERIES') || !SAVEQUERIES) {
-            echo '<p>' . __('Query logging is not enabled. Add define(\'SAVEQUERIES\', true); to wp-config.php to enable.', 'morden-toolkit') . '</p>';
+            echo '<p>' . (function_exists('__') ? __('Query logging is not enabled. Add define(\'SAVEQUERIES\', true); to wp-config.php to enable.', 'morden-toolkit') : 'Query logging is not enabled. Add define(\'SAVEQUERIES\', true); to wp-config.php to enable.') . '</p>';
             return;
         }
 
         if (empty($wpdb->queries)) {
-            echo '<p>' . __('No queries recorded for this page.', 'morden-toolkit') . '</p>';
+            echo '<p>' . (function_exists('__') ? __('No queries recorded for this page.', 'morden-toolkit') : 'No queries recorded for this page.') . '</p>';
             return;
         }
 
-        echo '<div class="mt-queries-list">';
+        echo '<table class="query-log-table">';
+        echo '<thead>';
+        echo '<tr>';
+        echo '<th>No</th>';
+        echo '<th>Time</th>';
+        echo '<th>Query</th>';
+        echo '<th>Caller Stack</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
+
         foreach ($wpdb->queries as $index => $query) {
             $sql = $query[0];
             $time = $query[1];
             $stack = $query[2] ?? '';
 
             $query_type = $this->get_query_type($sql);
-            $time_class = $time > 0.05 ? 'slow' : ($time > 0.01 ? 'medium' : 'fast');
+            $time_class = $time > 0.05 ? 'slow-query' : '';
+            $time_formatted = number_format($time * 1000, 2) . 'ms';
 
-            echo '<div class="mt-query-item ' . esc_attr($time_class) . '">';
-            echo '<div class="mt-query-header">';
-            echo '<span class="mt-query-type">' . esc_html($query_type) . '</span>';
-            echo '<span class="mt-query-time">' . esc_html(number_format($time * 1000, 2)) . 'ms</span>';
-            echo '</div>';
-            echo '<div class="mt-query-sql">' . esc_html($sql) . '</div>';
-            if (!empty($stack)) {
-                echo '<div class="mt-query-stack">' . esc_html($stack) . '</div>';
+            echo '<tr class="' . esc_attr($time_class) . '" data-query-type="' . esc_attr($query_type) . '">';
+            echo '<td class="query-number">' . ($index + 1) . '</td>';
+            echo '<td class="query-time">';
+            if ($time > 0.05) {
+                echo '<span class="slow-indicator" title="Slow Query">⚠️</span> ';
             }
+            echo (function_exists('esc_html') ? esc_html($time_formatted) : htmlspecialchars($time_formatted)) . '</td>';
+            echo '<td class="query-sql">';
+            echo '<div class="sql-container">';
+            echo '<code>' . (function_exists('esc_html') ? esc_html($sql) : htmlspecialchars($sql)) . '</code>';
+            echo '<button type="button" class="button-link copy-sql" title="Copy SQL">';
+            echo '<span class="dashicons dashicons-admin-page"></span>';
+            echo '</button>';
             echo '</div>';
+            echo '</td>';
+            echo '<td class="query-caller">' . (function_exists('esc_html') ? esc_html($stack) : htmlspecialchars($stack)) . '</td>';
+            echo '</tr>';
         }
-        echo '</div>';
+
+        echo '</tbody>';
+        echo '</table>';
+    }
+
+    /**
+     * Get remote file size with safe measurement
+     */
+    private function get_remote_file_size($url) {
+        // Use cached result if available
+        $cache_key = 'mt_file_size_' . md5($url);
+        $cached_size = get_transient($cache_key);
+        if ($cached_size !== false) {
+            return $cached_size;
+        }
+
+        // Try to get actual file size with safe timeout
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // 3 second timeout
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 2 second connect timeout
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Morden Toolkit Performance Monitor/1.0');
+
+            $headers = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($http_code === 200 && $headers) {
+                if (preg_match('/Content-Length:\s*(\d+)/i', $headers, $matches)) {
+                    $size_bytes = intval($matches[1]);
+                    $formatted_size = function_exists('mt_format_bytes') ? mt_format_bytes($size_bytes) : $this->mt_format_bytes($size_bytes);
+                    // Cache for 1 hour
+                    if (function_exists('set_transient')) {
+                        set_transient($cache_key, $formatted_size, 3600);
+                    }
+                    return $formatted_size;
+                }
+            }
+        }
+
+        // Fallback to domain-based estimates
+        $domain = parse_url($url, PHP_URL_HOST);
+        $fallback_size = 'Unknown';
+
+        if (strpos($domain, 'fonts.googleapis.com') !== false) {
+            $fallback_size = '~3KB';
+        } elseif (strpos($domain, 'fonts.gstatic.com') !== false) {
+            $fallback_size = '~25KB';
+        } else {
+            $fallback_size = '~50KB';
+        }
+
+        // Cache fallback for 30 minutes
+        if (function_exists('set_transient')) {
+            set_transient($cache_key, $fallback_size, 1800);
+        }
+        return $fallback_size;
+    }
+
+    /**
+     * Get estimated load time with real measurement
+     */
+    private function get_estimated_load_time($url, $file_size = null) {
+        // Use cached result if available
+        $cache_key = 'mt_load_time_' . md5($url);
+        $cached_time = get_transient($cache_key);
+        if ($cached_time !== false) {
+            return $cached_time;
+        }
+
+        // For local files, estimate based on file size
+        if ($file_size && !filter_var($url, FILTER_VALIDATE_URL)) {
+            if ($file_size < 10000) return $this->format_load_time_with_color(5, 'good');
+            if ($file_size < 50000) return $this->format_load_time_with_color(25, 'good');
+            if ($file_size < 100000) return $this->format_load_time_with_color(75, 'warning');
+            if ($file_size < 500000) return $this->format_load_time_with_color(150, 'warning');
+            return $this->format_load_time_with_color(300, 'danger');
+        }
+
+        // For external files, try real measurement
+        if (strpos($url, 'http') === 0 && function_exists('curl_init')) {
+            $start_time = microtime(true);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // 3 second connect timeout
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Morden Toolkit Performance Monitor/1.0');
+
+            $result = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            $end_time = microtime(true);
+            $load_time_ms = round(($end_time - $start_time) * 1000);
+
+            if ($http_code === 200) {
+                $formatted_time = $this->format_load_time_with_color($load_time_ms, $this->get_load_time_status($load_time_ms));
+                // Cache for 30 minutes
+                if (function_exists('set_transient')) {
+                    set_transient($cache_key, $formatted_time, 1800);
+                }
+                return $formatted_time;
+            }
+        }
+
+        // Fallback estimates
+        if (strpos($url, 'http') === 0) {
+            return $this->format_load_time_with_color(120, 'warning'); // Default external estimate
+        }
+
+        return 'N/A';
+    }
+
+    /**
+     * Get load time status based on milliseconds
+     */
+    private function get_load_time_status($ms) {
+        if ($ms <= 100) return 'good';
+        if ($ms <= 300) return 'warning';
+        return 'danger';
+    }
+
+    /**
+     * Format load time with color coding
+     */
+    private function format_load_time_with_color($ms, $status) {
+        $class = 'load-time-' . $status;
+        return '<span class="' . $class . '">' . $ms . 'ms</span>';
+    }
+
+    /**
+     * Get file size status and format with color
+     */
+    private function format_file_size_with_color($size_str) {
+        if (empty($size_str) || $size_str === 'N/A' || $size_str === 'Unknown') {
+            return $size_str;
+        }
+
+        // Extract numeric value for comparison
+        $size_bytes = 0;
+        if (preg_match('/(\d+(?:\.\d+)?)\s*(KB|MB|GB|B)/i', $size_str, $matches)) {
+            $value = floatval($matches[1]);
+            $unit = strtoupper($matches[2]);
+
+            switch ($unit) {
+                case 'GB':
+                    $size_bytes = $value * 1024 * 1024 * 1024;
+                    break;
+                case 'MB':
+                    $size_bytes = $value * 1024 * 1024;
+                    break;
+                case 'KB':
+                    $size_bytes = $value * 1024;
+                    break;
+                default:
+                    $size_bytes = $value;
+            }
+        }
+
+        $status = 'good';
+        if ($size_bytes > 500000) { // > 500KB
+            $status = 'danger';
+        } elseif ($size_bytes > 100000) { // > 100KB
+            $status = 'warning';
+        }
+
+        $class = 'file-size-' . $status;
+        return '<span class="' . $class . '">' . $size_str . '</span>';
+    }
+
+    /**
+     * Format bytes to human readable format
+     */
+    private function mt_format_bytes($bytes) {
+        if ($bytes >= 1073741824) {
+            return number_format($bytes / 1073741824, 2) . 'GB';
+        } elseif ($bytes >= 1048576) {
+            return number_format($bytes / 1048576, 2) . 'MB';
+        } elseif ($bytes >= 1024) {
+            return number_format($bytes / 1024, 2) . 'KB';
+        } else {
+            return $bytes . 'B';
+        }
     }
 
     /**
@@ -311,6 +822,8 @@ class MT_Query_Monitor {
         echo '<th>Source</th>';
         echo '<th>Komponen</th>';
         echo '<th>Version</th>';
+        echo '<th>File Size</th>';
+        echo '<th>Load Time</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -334,6 +847,8 @@ class MT_Query_Monitor {
             $source_path = $src;
             $component_type = 'WordPress Core';
             $clickable_url = $src;
+            $file_size = 'N/A';
+            $load_time = 'N/A';
 
             if ($src) {
                 // Handle full URLs
@@ -341,14 +856,31 @@ class MT_Query_Monitor {
                     $parsed_url = parse_url($src);
                     if (isset($parsed_url['host'])) {
                         $hostname = $parsed_url['host'];
+
+                        // Check for external sources like Google Fonts
+                        if (strpos($hostname, 'fonts.googleapis.com') !== false ||
+                            strpos($hostname, 'fonts.gstatic.com') !== false) {
+                            $component_type = 'WordPress Core Component (Herald Fonts)';
+                        }
                     }
-                    $clickable_url = '<a href="' . esc_url($src) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . esc_html($src) . '</a>';
+                    $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($src) : htmlspecialchars($src)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
+
+                    // Try to get file size for external files (simulated)
+                    $file_size = $this->get_remote_file_size($src);
+                    $load_time = $this->get_estimated_load_time($src);
                 } else {
                     // Handle relative URLs - get site URL
                     $site_url = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
                     $hostname = $site_url;
                     $full_url = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $site_url . $src;
-                    $clickable_url = '<a href="' . esc_url($full_url) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . esc_html($src) . '</a>';
+                    $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($full_url) : htmlspecialchars($full_url)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
+
+                    // Try to get local file size
+                    $local_path = ABSPATH . ltrim($src, '/');
+                    if (file_exists($local_path)) {
+                        $file_size = function_exists('mt_format_bytes') ? mt_format_bytes(filesize($local_path)) : $this->mt_format_bytes(filesize($local_path));
+                        $load_time = $this->get_estimated_load_time($src, filesize($local_path));
+                    }
                 }
 
                 if (strpos($src, '/plugins/') !== false) {
@@ -370,12 +902,14 @@ class MT_Query_Monitor {
 
             echo '<tr>';
             echo '<td class="query-number">' . $counter . '</td>';
-            echo '<td>' . esc_html($position) . '</td>';
-            echo '<td class="mt-script-handle">' . esc_html($handle) . '</td>';
-            echo '<td>' . esc_html($hostname) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($position) : htmlspecialchars($position)) . '</td>';
+            echo '<td class="mt-script-handle">' . (function_exists('esc_html') ? esc_html($handle) : htmlspecialchars($handle)) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($hostname) : htmlspecialchars($hostname)) . '</td>';
             echo '<td class="query-sql"><div class="sql-container"><code>' . $clickable_url . '</code></div></td>';
-            echo '<td>' . esc_html($component_type) . '</td>';
-            echo '<td>' . esc_html($version) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($component_type) : htmlspecialchars($component_type)) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($version) : htmlspecialchars($version)) . '</td>';
+            echo '<td>' . $this->format_file_size_with_color($file_size) . '</td>';
+            echo '<td>' . $load_time . '</td>';
             echo '</tr>';
 
             $counter++;
@@ -406,6 +940,8 @@ class MT_Query_Monitor {
         echo '<th>Source</th>';
         echo '<th>Komponen</th>';
         echo '<th>Version</th>';
+        echo '<th>File Size</th>';
+        echo '<th>Load Time</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -427,6 +963,8 @@ class MT_Query_Monitor {
             $source_path = $src;
             $component_type = 'WordPress Core';
             $clickable_url = $src;
+            $file_size = 'N/A';
+            $load_time = 'N/A';
 
             if ($src) {
                 // Handle full URLs
@@ -434,14 +972,31 @@ class MT_Query_Monitor {
                     $parsed_url = parse_url($src);
                     if (isset($parsed_url['host'])) {
                         $hostname = $parsed_url['host'];
+
+                        // Check for external sources like Google Fonts
+                        if (strpos($hostname, 'fonts.googleapis.com') !== false ||
+                            strpos($hostname, 'fonts.gstatic.com') !== false) {
+                            $component_type = 'WordPress Core Component (Herald Fonts)';
+                        }
                     }
-                    $clickable_url = '<a href="' . esc_url($src) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . esc_html($src) . '</a>';
+                    $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($src) : htmlspecialchars($src)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
+
+                    // Try to get file size for external files (simulated)
+                    $file_size = $this->get_remote_file_size($src);
+                    $load_time = $this->get_estimated_load_time($src);
                 } else {
                     // Handle relative URLs - get site URL
                     $site_url = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
                     $hostname = $site_url;
                     $full_url = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $site_url . $src;
-                    $clickable_url = '<a href="' . esc_url($full_url) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . esc_html($src) . '</a>';
+                    $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($full_url) : htmlspecialchars($full_url)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
+
+                    // Try to get local file size
+                    $local_path = ABSPATH . ltrim($src, '/');
+                    if (file_exists($local_path)) {
+                        $file_size = function_exists('mt_format_bytes') ? mt_format_bytes(filesize($local_path)) : $this->mt_format_bytes(filesize($local_path));
+                        $load_time = $this->get_estimated_load_time($src, filesize($local_path));
+                    }
                 }
 
                 if (strpos($src, '/plugins/') !== false) {
@@ -463,12 +1018,14 @@ class MT_Query_Monitor {
 
             echo '<tr>';
             echo '<td class="query-number">' . $counter . '</td>';
-            echo '<td>' . esc_html($position) . '</td>';
-            echo '<td class="mt-style-handle">' . esc_html($handle) . '</td>';
-            echo '<td>' . esc_html($hostname) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($position) : htmlspecialchars($position)) . '</td>';
+            echo '<td class="mt-style-handle">' . (function_exists('esc_html') ? esc_html($handle) : htmlspecialchars($handle)) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($hostname) : htmlspecialchars($hostname)) . '</td>';
             echo '<td class="query-sql"><div class="sql-container"><code>' . $clickable_url . '</code></div></td>';
-            echo '<td>' . esc_html($component_type) . '</td>';
-            echo '<td>' . esc_html($version) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($component_type) : htmlspecialchars($component_type)) . '</td>';
+            echo '<td>' . (function_exists('esc_html') ? esc_html($version) : htmlspecialchars($version)) . '</td>';
+            echo '<td>' . $this->format_file_size_with_color($file_size) . '</td>';
+            echo '<td>' . $load_time . '</td>';
             echo '</tr>';
 
             $counter++;

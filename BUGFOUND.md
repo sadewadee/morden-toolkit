@@ -1,5 +1,68 @@
 # Bug Report & Fixes - Morden Toolkit
 
+## Performance Metrics Calculation Inconsistency (fix_012)
+
+**Problem:** Performance metrics showing different values between admin bar and details panel
+- Admin bar using cached metrics from transient storage
+- Details panel recalculating metrics using different logic
+- Query count inconsistency between wp-admin-bar-mt-performance-monitor and mt-perf-details
+- Missing database query time tracking in details panel
+- Users seeing conflicting performance data across different UI components
+
+**Solution:** Implemented unified calculation logic for consistent metrics
+- Created `get_accurate_query_count()` method that prioritizes SAVEQUERIES data
+- Enhanced `capture_final_metrics()` to calculate precise query_time from individual queries
+- Updated `render_performance_bar()` to use consistent calculation methods
+- Added database time display in overview tab for comprehensive performance analysis
+- Ensured both admin bar and details panel use same data sources and calculation logic
+- Modified capture_final_metrics, add_admin_bar_metrics, and render_performance_bar methods
+
+**Status:** Fixed
+**File:** includes/class-query-monitor.php
+**Severity:** High
+**Date:** 2025-01-18
+
+## Query Count Inconsistency Between Admin Bar and Tabs (fix_010)
+
+**Problem:** Total queries displayed in WordPress admin bar different from queries shown in tabs
+- Admin bar showing query count from `$wpdb->num_queries` (WordPress internal counter)
+- Tabs showing query count from `count($wpdb->queries)` (only available when SAVEQUERIES is enabled)
+- Two different counting methods causing inconsistent values across UI
+- Users seeing different query numbers in admin bar vs performance monitor tabs
+- Confusion about actual number of database queries executed
+
+**Solution:** Unified query counting logic for consistency
+- Created `$tab_query_count` variable that prioritizes `count($wpdb->queries)` when SAVEQUERIES is enabled
+- Falls back to admin bar's `$query_count` when SAVEQUERIES is disabled
+- Updated all tab references from `$query_count` to `$tab_query_count`
+- Ensured consistent query count display across admin bar and all tabs
+- Modified lines 216, 241, 289, 348 in class-query-monitor.php
+
+**Status:** Fixed
+**File:** includes/class-query-monitor.php
+**Severity:** Medium
+**Date:** 2025-01-17
+
+## Scripts and Styles Tab Count Display Error (fix_011)
+
+**Problem:** Scripts (%d) and Styles (%d) tab labels showing placeholder %d instead of actual counts
+- Tab labels displaying "Scripts (%d)" and "Styles (%d)" literally instead of formatted numbers
+- Using `_e()` function with %d placeholder but no parameters provided
+- Missing count variables in printf-style formatting
+- Users seeing malformed tab labels with unresolved placeholders
+
+**Solution:** Fixed tab label formatting with proper printf usage
+- Changed from `_e('Scripts (%d)', 'morden-toolkit')` to `printf(__('Scripts (%d)', 'morden-toolkit'), $scripts_count)`
+- Changed from `_e('Styles (%d)', 'morden-toolkit')` to `printf(__('Styles (%d)', 'morden-toolkit'), $styles_count)`
+- Added proper parameter passing for count values
+- Ensured consistent formatting with other tab labels
+- Modified lines 251 and 261 in class-query-monitor.php
+
+**Status:** Fixed
+**File:** includes/class-query-monitor.php
+**Severity:** Medium
+**Date:** 2025-01-17
+
 ## PHP Configuration Block Duplication (fix_008)
 
 **Problem:** PHP configuration blocks being added repeatedly to wp-config.php instead of being replaced
@@ -18,6 +81,24 @@
 **Status:** Fixed
 **File:** includes/class-php-config.php
 **Severity:** Medium
+
+## WPConfigTransformer Class Redeclaration Fatal Error (fix_009)
+
+**Problem:** PHP Fatal error: Cannot declare class WPConfigTransformer, because the name is already in use
+- Class WPConfigTransformer being declared without class_exists() check
+- Causing fatal error when plugin is loaded in environments where class already exists
+- Plugin completely fails to load due to class redeclaration conflict
+- Error occurs in WPConfigTransformer.php on line 6
+
+**Solution:** Added class_exists() guard to prevent redeclaration
+- Added `if (!class_exists('WPConfigTransformer'))` check before class declaration
+- Wrapped entire class definition in conditional block
+- Added proper closing bracket at end of file
+- Prevents fatal error when class already exists in environment
+
+**Status:** Fixed
+**File:** includes/WPConfigTransformer.php
+**Severity:** Critical
 **Date:** 2025-01-17
 
 ## Query Logs JavaScript Errors (fix_007)

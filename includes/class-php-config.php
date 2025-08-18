@@ -3,6 +3,70 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Include WP Config Integration for safe wp-config.php editing
+require_once MT_PLUGIN_DIR . 'includes/class-wp-config-integration.php';
+
+// WordPress function fallbacks for standalone usage
+if (!function_exists('get_option')) {
+    function get_option($option, $default = false) {
+        return $default;
+    }
+}
+
+if (!function_exists('update_option')) {
+    function update_option($option, $value, $autoload = null) {
+        return true;
+    }
+}
+
+if (!function_exists('get_site_url')) {
+    function get_site_url($blog_id = null, $path = '', $scheme = null) {
+        return 'http://localhost';
+    }
+}
+
+if (!function_exists('home_url')) {
+    function home_url($path = '', $scheme = null) {
+        return 'http://localhost';
+    }
+}
+
+if (!function_exists('admin_url')) {
+    function admin_url($path = '', $scheme = 'admin') {
+        return 'http://localhost/wp-admin/';
+    }
+}
+
+if (!function_exists('wp_remote_get')) {
+    function wp_remote_get($url, $args = array()) {
+        return array('response' => array('code' => 200), 'body' => '');
+    }
+}
+
+if (!function_exists('is_wp_error')) {
+    function is_wp_error($thing) {
+        return false;
+    }
+}
+
+if (!function_exists('wp_remote_retrieve_response_code')) {
+    function wp_remote_retrieve_response_code($response) {
+        return isset($response['response']['code']) ? $response['response']['code'] : 200;
+    }
+}
+
+if (!function_exists('__')) {
+    function __($text, $domain = 'default') {
+        return $text;
+    }
+}
+
+if (!function_exists('sanitize_text_field')) {
+    function sanitize_text_field($str) {
+        return trim(strip_tags($str));
+    }
+}
+
 class MT_PHP_Config {
     private $presets = array();
 
@@ -757,8 +821,17 @@ class MT_PHP_Config {
 
     /**
      * Apply configuration via wp-config.php using ONLY WordPress constants
+     * Now uses WPConfigTransformer for safe editing
      */
     private function apply_via_wp_config_constants_only($settings) {
+        // Use safe WPConfigTransformer integration for constants-only approach
+        return MT_WP_Config_Integration::apply_php_config_safe($settings);
+    }
+
+    /**
+     * Legacy method for backward compatibility - now redirects to safe implementation
+     */
+    private function apply_via_wp_config_constants_only_legacy($settings) {
         $wp_config_path = mt_get_wp_config_path();
 
         if (!$wp_config_path || !file_exists($wp_config_path)) {
@@ -978,33 +1051,20 @@ class MT_PHP_Config {
     }
 
     private function apply_via_wp_config($settings) {
-        $wp_config_path = mt_get_wp_config_path();
-
-        if (!$wp_config_path) {
-            return false;
-        }
-
-        $config_content = file_get_contents($wp_config_path);
-
-        // Remove existing PHP configuration block
-        $config_content = $this->remove_wp_config_php_block($config_content);
-
-        // Add new PHP configuration block
-        $php_block = $this->generate_wp_config_php_block($settings);
-
-        // Insert before "/* That's all, stop editing!" line
-        $insert_before = "/* That's all, stop editing!";
-        $position = strpos($config_content, $insert_before);
-
-        if ($position !== false) {
-            $before = substr($config_content, 0, $position);
-            $after = substr($config_content, $position);
-            $config_content = $before . $php_block . "\n" . $after;
+        // Use safe WPConfigTransformer integration instead of manual string manipulation
+        $result = MT_WP_Config_Integration::apply_php_config_safe($settings);
+        
+        if ($result) {
+            return array(
+                'success' => true,
+                'message' => 'Configuration applied successfully using WPConfigTransformer'
+            );
         } else {
-            $config_content .= "\n" . $php_block . "\n";
+            return array(
+                'success' => false,
+                'message' => 'Failed to apply configuration using WPConfigTransformer'
+            );
         }
-
-        return file_put_contents($wp_config_path, $config_content) !== false;
     }
 
     /**

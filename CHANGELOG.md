@@ -15,24 +15,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Styles tab showing loaded CSS files (visible when SCRIPT_DEBUG is true)
 - Enhanced Performance Bar with modern tabbed navigation and responsive design
 - Added JavaScript tab switching functionality with proper event handling
+- Added File Size and Load Time columns to Scripts and Styles tabs for performance monitoring
+- Added item count display next to tab titles (e.g., "Styles (26)", "Scripts (15)")
+- Implemented external source classification for fonts.googleapis.com as WordPress Core Component
+- Enhanced Query tab caller stack display with improved formatting showing function name above and file:line below
+- Reverted caller stack format to default simple text display for mt-query-logs compatibility
+- Fixed PHP syntax error in class-query-monitor.php line 328 caused by malformed HTML structure
+- Fixed PHP Fatal error: Cannot declare class WPConfigTransformer due to missing class_exists() check
+- Fixed query count inconsistency between WordPress admin bar and performance monitor tabs by unifying counting logic
+- Fixed Scripts (%d) and Styles (%d) tab labels showing placeholder instead of actual counts
 
 ### Changed
 - Mengubah format tampilan tab "Scripts" dan "Styles" dari list menjadi tabel yang mengikuti format `mt-query-logs`
 - Menambahkan kolom tabel: No, Position, Handle, Hostname, Source, Komponen, Version untuk tab Scripts dan Styles
+- Updated Database Queries layout in mt-perf-details-content to match mt-query-logs table structure
+- Enhanced Scripts and Styles tabs with File Size and Load Time columns for better performance analysis
+- Improved component classification to identify external sources like Google Fonts as WordPress Core Components loaded by Herald theme
 - Implementasi parsing komponen untuk mendeteksi apakah script/style berasal dari Plugin, Theme, atau WordPress Core
 - Peningkatan styling tabel dengan tema dark yang konsisten dengan UI existing
+- Added dynamic item counting for all performance tabs with real-time updates
 
 ### Improved
 - Enhanced styling for Scripts and Styles tabs with hover effects
 - Consistent typography using monospace font for code display
 - Responsive layout with scrollable content for long lists
 - Better UI/UX consistency with WordPress admin theme
+- Improved performance monitoring with file size and load time metrics
+- Enhanced user experience with item count indicators on tab titles
 
 ### Fixed
 - Fixed constant reference from WP_SCRIPT_DEBUG to SCRIPT_DEBUG for WordPress compatibility
 - Fixed Scripts and Styles tabs not appearing even when SCRIPT_DEBUG is true
 - Fixed "Invalid Date" error in Query Logs page timestamp formatting
 - Fixed "source-name Unknown" error in Query Logs URL parsing
+- Fixed performance metrics calculation inconsistency between admin bar and details panel by implementing unified calculation logic
+- Added accurate query count method that prioritizes SAVEQUERIES data for better precision
+- Enhanced performance metrics with database query time tracking for comprehensive performance analysis
+- Improved consistency between wp-admin-bar-mt-performance-monitor and mt-perf-details displays
 - Added safe HTML escaping fallback when window.mtUtils is not available
 - Enhanced error handling in parseUrlSource and formatCaller functions
 - Improved timestamp parsing with multiple format support
@@ -40,6 +59,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed PHP configuration block duplication in wp-config.php - blocks are now properly replaced instead of added repeatedly
 - Removed "Safe WordPress Implementation" string from PHP configuration block comments
 - Enhanced regex patterns to properly detect and remove all variants of existing MT configuration blocks
+- Fixed WordPress constants format in wp-config.php - removed unnecessary double quotes that caused malformed output like `define( 'WP_MEMORY_LIMIT', '\'512M\'' );`
+- WordPress constants now use proper format: `define( 'WP_MEMORY_LIMIT', '512M' );` instead of malformed format with escaped quotes
+- Updated WPConfigTransformer integration to use `raw => false` parameter for proper constant value formatting
+
+## [1.0.6] - 2025-01-18
+
+### [1.0.6] - 2025-01-18
+
+#### Added
+- Enhanced Query tab with improved "Source Location" column displaying function names above file and line numbers
+- Better caller stack formatting with robust stack trace parsing
+- CSS styling for caller information display
+
+#### Changed
+- Renamed "Caller Stack" column to "Source Location" in Query tab for better clarity
+- Improved readability of caller information with structured display format
+- Removed require() and require_once() calls from caller stack display
+- Updated output format to show **function_name()** in bold and *relative_path_file:line* in italic
+- Show relative file paths instead of absolute paths for better readability
+
+#### Improved
+- Stack trace parsing now handles multiple formats and edge cases
+- Enhanced visual presentation of query source information with bold function names and italic file paths
+- Filtered out irrelevant require statements for cleaner caller information
+- Only display callers with actual function context, hiding empty file references
+- Smart path resolution to show wp-content, wp-includes, and wp-admin relative paths
 
 ## [1.0.4] - 2024-01-27
 

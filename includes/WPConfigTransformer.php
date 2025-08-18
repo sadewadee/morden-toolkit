@@ -3,6 +3,7 @@
 /**
  * Transforms a wp-config.php file.
  */
+if (!class_exists('WPConfigTransformer')) {
 class WPConfigTransformer {
 	/**
 	 * Append to end of file
@@ -371,4 +372,5 @@ class WPConfigTransformer {
 
 		return true;
 	}
+}
 }

@@ -173,14 +173,17 @@ class MT_WP_Config_Integration {
      * @param string $original_setting Original PHP setting name
      */
     private static function apply_wordpress_constant($transformer, $constant, $value, $original_setting) {
-        $formatted_value = "'$value'";
+        // Format value properly for WordPress constants
+        $formatted_value = $value;
         
         if ($transformer->exists('constant', $constant)) {
             $transformer->update('constant', $constant, $formatted_value, [
+                'raw' => false,
                 'normalize' => true
             ]);
         } else {
             $transformer->add('constant', $constant, $formatted_value, [
+                'raw' => false,
                 'anchor' => "/* That's all, stop editing!",
                 'placement' => 'before',
                 'separator' => "\n"
@@ -190,14 +193,15 @@ class MT_WP_Config_Integration {
         // Special handling for memory_limit - also set WP_MAX_MEMORY_LIMIT
         if ($constant === 'WP_MEMORY_LIMIT') {
             $admin_memory = self::calculate_admin_memory_limit($value);
-            $admin_formatted = "'$admin_memory'";
             
             if ($transformer->exists('constant', 'WP_MAX_MEMORY_LIMIT')) {
-                $transformer->update('constant', 'WP_MAX_MEMORY_LIMIT', $admin_formatted, [
+                $transformer->update('constant', 'WP_MAX_MEMORY_LIMIT', $admin_memory, [
+                    'raw' => false,
                     'normalize' => true
                 ]);
             } else {
-                $transformer->add('constant', 'WP_MAX_MEMORY_LIMIT', $admin_formatted, [
+                $transformer->add('constant', 'WP_MAX_MEMORY_LIMIT', $admin_memory, [
+                    'raw' => false,
                     'anchor' => "/* That's all, stop editing!",
                     'placement' => 'before',
                     'separator' => "\n"
@@ -224,25 +228,61 @@ class MT_WP_Config_Integration {
         // Sanitize value
         $safe_value = self::sanitize_ini_value($value);
         
-        // Create ini_set statement
-        $ini_set_code = "ini_set('$safe_setting', '$safe_value');";
+        // Get current wp-config.php content
+        $wp_config_path = mt_get_wp_config_path();
+        $content = file_get_contents($wp_config_path);
         
-        // Use a comment-based approach to store ini_set directives
-        $comment_constant = 'MT_PHP_CONFIG_' . strtoupper(str_replace('.', '_', $safe_setting));
+        // Create ini_set statement with proper formatting
+        $ini_set_line = "ini_set('$safe_setting', '$safe_value');";
         
-        if ($transformer->exists('constant', $comment_constant)) {
-            $transformer->update('constant', $comment_constant, $ini_set_code, [
-                'raw' => true,
-                'normalize' => false
-            ]);
+        // Find the MT configuration block or create it
+        $mt_start_marker = '/* BEGIN Morden Toolkit PHP Configuration */';
+        $mt_end_marker = '/* END Morden Toolkit PHP Configuration */';
+        
+        // Check if MT block exists
+        if (strpos($content, $mt_start_marker) !== false) {
+            // Update existing block
+            $pattern = '/\/\* BEGIN Morden Toolkit PHP Configuration \*\/.*?\/\* END Morden Toolkit PHP Configuration \*\//s';
+            
+            // Get existing ini_set statements
+            preg_match($pattern, $content, $matches);
+            $existing_block = isset($matches[0]) ? $matches[0] : '';
+            
+            // Parse existing ini_set statements
+            $existing_statements = [];
+            if (preg_match_all("/ini_set\('([^']+)', '([^']+)'\);/", $existing_block, $ini_matches, PREG_SET_ORDER)) {
+                foreach ($ini_matches as $match) {
+                    $existing_statements[$match[1]] = $match[0];
+                }
+            }
+            
+            // Add or update the current setting
+            $existing_statements[$safe_setting] = $ini_set_line;
+            
+            // Rebuild the block
+            $new_block = $mt_start_marker . "\n";
+            foreach ($existing_statements as $statement) {
+                $new_block .= " $statement\n";
+            }
+            $new_block .= " $mt_end_marker";
+            
+            // Replace the block
+            $content = preg_replace($pattern, $new_block, $content);
         } else {
-            $transformer->add('constant', $comment_constant, $ini_set_code, [
-                'raw' => true,
-                'anchor' => "/* That's all, stop editing!",
-                'placement' => 'before',
-                'separator' => "\n"
-            ]);
+            // Create new block
+            $new_block = "\n$mt_start_marker\n $ini_set_line\n $mt_end_marker\n";
+            
+            // Insert before "/* That's all, stop editing!" or at the end
+            $stop_editing_pos = strpos($content, "/* That's all, stop editing!");
+            if ($stop_editing_pos !== false) {
+                $content = substr_replace($content, $new_block, $stop_editing_pos, 0);
+            } else {
+                $content .= $new_block;
+            }
         }
+        
+        // Write the updated content
+        file_put_contents($wp_config_path, $content);
     }
     
     /**
@@ -287,7 +327,7 @@ class MT_WP_Config_Integration {
      * @param WPConfigTransformer $transformer Transformer instance
      */
     private static function remove_existing_mt_config($transformer) {
-        // List of MT constants to remove
+        // Remove WordPress constants that MT manages
         $mt_constants = [
             'WP_MEMORY_LIMIT',
             'WP_MAX_MEMORY_LIMIT',
@@ -300,21 +340,17 @@ class MT_WP_Config_Integration {
             }
         }
         
-        // Remove MT_PHP_CONFIG_* constants
-        $wp_config_content = file_get_contents($transformer->wp_config_path ?? mt_get_wp_config_path());
-        $lines = explode("\n", $wp_config_content);
-        $cleaned_lines = [];
+        // Remove existing MT PHP Configuration block
+        $wp_config_path = mt_get_wp_config_path();
+        $content = file_get_contents($wp_config_path);
         
-        foreach ($lines as $line) {
-            // Skip lines that contain MT_PHP_CONFIG_ constants
-            if (!preg_match('/define\s*\(\s*[\'"]MT_PHP_CONFIG_[^\'"]++[\'"]/', $line)) {
-                $cleaned_lines[] = $line;
-            }
-        }
+        // Remove the entire MT block if it exists
+        $pattern = '/\s*\/\* BEGIN Morden Toolkit PHP Configuration \*\/.*?\/\* END Morden Toolkit PHP Configuration \*\/\s*/s';
+        $cleaned_content = preg_replace($pattern, "\n", $content);
         
-        $cleaned_content = implode("\n", $cleaned_lines);
-        if ($cleaned_content !== $wp_config_content) {
-            file_put_contents(mt_get_wp_config_path(), $cleaned_content, LOCK_EX);
+        // Write cleaned content if changes were made
+        if ($cleaned_content !== $content) {
+            file_put_contents($wp_config_path, $cleaned_content, LOCK_EX);
         }
     }
     
