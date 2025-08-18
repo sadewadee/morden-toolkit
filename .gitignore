@@ -12,6 +12,7 @@ wp-content/cache/supercache/
 # Dependencies
 /vendor/
 /node_modules/
+/data/
 
 # IDE/Editor files
 .vscode/
@@ -52,6 +53,7 @@ yarn-error.log*
 phpunit.xml
 .phpunit.result.cache
 tests/
+test/
 
 # Environment files
 .env
@@ -112,3 +114,5 @@ docs/
 !README.md
 !CHANGELOG.md
 !LICENSE
+*.md
+test*.php
