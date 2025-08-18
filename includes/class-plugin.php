@@ -3,20 +3,12 @@
  * Main plugin class - Service Container
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
 class MT_Plugin {
-    /**
-     * Plugin instance
-     */
     private static $instance = null;
-
-    /**
-     * Services container
-     */
     private $services = array();
 
     /**
@@ -29,43 +21,37 @@ class MT_Plugin {
         return self::$instance;
     }
 
-    /**
-     * Constructor
-     */
     private function __construct() {
         $this->init_hooks();
         $this->init_services();
     }
 
-    /**
-     * Initialize WordPress hooks
-     */
     private function init_hooks() {
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
-        add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
-        add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
-        add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
-        add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
-        add_action('wp_ajax_mt_get_query_logs', array($this, 'ajax_get_query_logs'));
-        add_action('wp_ajax_mt_clear_query_log', array($this, 'ajax_clear_query_log'));
-        add_action('wp_ajax_mt_cleanup_query_logs', array($this, 'ajax_cleanup_query_logs'));
-        add_action('wp_ajax_mt_get_log_info', array($this, 'ajax_get_log_info'));
-        add_action('wp_ajax_mt_download_query_logs', array($this, 'ajax_download_query_logs'));
-        add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
-        add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
-        add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
-        add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
+        if (function_exists('add_action')) {
+            add_action('admin_menu', array($this, 'add_admin_menu'));
+            add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+            add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
+            add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
+            add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
+            add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
+            add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
+            add_action('wp_ajax_mt_get_query_logs', array($this, 'ajax_get_query_logs'));
+            add_action('wp_ajax_mt_clear_query_log', array($this, 'ajax_clear_query_log'));
+            add_action('wp_ajax_mt_cleanup_query_logs', array($this, 'ajax_cleanup_query_logs'));
+            add_action('wp_ajax_mt_get_log_info', array($this, 'ajax_get_log_info'));
+            add_action('wp_ajax_mt_download_query_logs', array($this, 'ajax_download_query_logs'));
+            add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
+            add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
+            add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
+            add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
+            add_action('wp_ajax_mt_save_custom_preset', array($this, 'ajax_save_custom_preset'));
+            add_action('wp_ajax_mt_reset_custom_preset', array($this, 'ajax_reset_custom_preset'));
 
-        // Schedule daily cleanup of old query logs
-        add_action('init', array($this, 'schedule_log_cleanup'));
-        add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
+            add_action('init', array($this, 'schedule_log_cleanup'));
+            add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
+        }
     }
 
-    /**
-     * Initialize services
-     */
     private function init_services() {
         $this->services['debug'] = new MT_Debug();
         $this->services['query_monitor'] = new MT_Query_Monitor();
@@ -74,131 +60,139 @@ class MT_Plugin {
         $this->services['file_manager'] = new MT_File_Manager();
     }
 
-    /**
-     * Get service instance
-     */
     public function get_service($name) {
         return isset($this->services[$name]) ? $this->services[$name] : null;
     }
 
-    /**
-     * Add admin menu
-     */
     public function add_admin_menu() {
-        add_management_page(
-            __('Morden Toolkit', 'mt'),
-            __('Morden Toolkit', 'mt'),
-            'manage_options',
-            'mt',
-            array($this, 'render_admin_page')
-        );
+        if (function_exists('add_management_page')) {
+            add_management_page(
+                function_exists('__') ? __('Morden Toolkit', 'morden-toolkit') : 'Morden Toolkit',
+                function_exists('__') ? __('Morden Toolkit', 'morden-toolkit') : 'Morden Toolkit',
+                'manage_options',
+                'mt',
+                array($this, 'render_admin_page')
+            );
+        }
 
-        add_submenu_page(
-            'tools.php',
-            __('Debug Logs', 'mt'),
-            __('Debug Logs', 'mt'),
-            'manage_options',
-            'mt-logs',
-            array($this, 'render_logs_page')
-        );
+        if (function_exists('add_submenu_page')) {
+            add_submenu_page(
+                'tools.php',
+                function_exists('__') ? __('Debug Logs', 'morden-toolkit') : 'Debug Logs',
+                function_exists('__') ? __('Debug Logs', 'morden-toolkit') : 'Debug Logs',
+                'manage_options',
+                'mt-logs',
+                array($this, 'render_logs_page')
+            );
 
-        add_submenu_page(
-            'tools.php',
-            __('Query Logs', 'mt'),
-            __('Query Logs', 'mt'),
-            'manage_options',
-            'mt-query-logs',
-            array($this, 'render_query_logs_page')
-        );
+            add_submenu_page(
+                'tools.php',
+                function_exists('__') ? __('Query Logs', 'morden-toolkit') : 'Query Logs',
+                function_exists('__') ? __('Query Logs', 'morden-toolkit') : 'Query Logs',
+                'manage_options',
+                'mt-query-logs',
+                array($this, 'render_query_logs_page')
+            );
+        }
     }
 
-    /**
-     * Enqueue admin scripts and styles
-     */
     public function enqueue_admin_scripts($hook) {
+        // Load CSS/JS on Morden Toolkit pages only
         if (!in_array($hook, array('tools_page_mt', 'tools_page_mt-logs', 'tools_page_mt-query-logs'))) {
             return;
         }
 
-        wp_enqueue_style(
-            'mt-admin',
-            MT_PLUGIN_URL . 'admin/assets/admin.css',
-            array(),
-            MT_VERSION
-        );
-
-        // Enqueue query logs CSS on query logs page
-        if ($hook === 'tools_page_mt-query-logs') {
+        if (function_exists('wp_enqueue_style')) {
             wp_enqueue_style(
-                'mt-query-logs',
-                MT_PLUGIN_URL . 'admin/assets/css/query-logs.css',
+                'mt-admin',
+                MT_PLUGIN_URL . 'admin/assets/admin.css',
+                array(),
+                MT_VERSION
+            );
+
+            if ($hook === 'tools_page_mt-query-logs') {
+                wp_enqueue_style(
+                    'mt-query-logs',
+                    MT_PLUGIN_URL . 'admin/assets/css/query-logs.css',
+                    array(),
+                    MT_VERSION
+                );
+            }
+        }
+
+        if (function_exists('wp_enqueue_script')) {
+            wp_enqueue_script(
+                'mt-admin',
+                MT_PLUGIN_URL . 'admin/assets/admin.js',
+                array('jquery'),
+                MT_VERSION,
+                false
+            );
+        }
+
+        if (function_exists('wp_localize_script')) {
+            wp_localize_script('mt-admin', 'mtToolkit', array(
+                'ajaxurl' => function_exists('admin_url') ? admin_url('admin-ajax.php') : '/wp-admin/admin-ajax.php',
+                'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('mt_action') : '',
+                'strings' => array(
+                    'confirm_clear_logs' => function_exists('__') ? __('Are you sure you want to clear all debug logs?', 'morden-toolkit') : 'Are you sure you want to clear all debug logs?',
+                    'confirm_restore_htaccess' => function_exists('__') ? __('Are you sure you want to restore this backup?', 'morden-toolkit') : 'Are you sure you want to restore this backup?',
+                    'error_occurred' => function_exists('__') ? __('An error occurred. Please try again.', 'morden-toolkit') : 'An error occurred. Please try again.',
+                    'success' => function_exists('__') ? __('Operation completed successfully.', 'morden-toolkit') : 'Operation completed successfully.',
+                )
+            ));
+        }
+    }
+
+    public function enqueue_frontend_scripts() {
+        $enabled = (function_exists('get_option') ? get_option('mt_query_monitor_enabled') : false) && 
+                   (function_exists('is_user_logged_in') ? is_user_logged_in() : false) && 
+                   (function_exists('current_user_can') ? current_user_can('manage_options') : false);
+        
+        if (!$enabled) {
+            return;
+        }
+
+        if (function_exists('wp_enqueue_script')) {
+            wp_enqueue_script(
+                'mt-admin',
+                MT_PLUGIN_URL . 'admin/assets/admin.js',
+                array('jquery'),
+                MT_VERSION,
+                false
+            );
+        }
+
+        if (function_exists('wp_localize_script')) {
+            wp_localize_script('mt-admin', 'mtToolkit', array(
+                'ajaxurl' => function_exists('admin_url') ? admin_url('admin-ajax.php') : '/wp-admin/admin-ajax.php',
+                'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('mt_action') : '',
+                'strings' => array(
+                    'error_occurred' => function_exists('__') ? __('An error occurred', 'morden-toolkit') : 'An error occurred',
+                    'confirm_delete' => function_exists('__') ? __('Are you sure you want to delete this?', 'morden-toolkit') : 'Are you sure you want to delete this?',
+                    'loading' => function_exists('__') ? __('Loading...', 'morden-toolkit') : 'Loading...'
+                )
+            ));
+        }
+
+        if (function_exists('wp_enqueue_style')) {
+            wp_enqueue_style(
+                'mt-performance-bar',
+                MT_PLUGIN_URL . 'public/assets/performance-bar.css',
                 array(),
                 MT_VERSION
             );
         }
 
-        wp_enqueue_script(
-            'mt-admin',
-            MT_PLUGIN_URL . 'admin/assets/admin.js',
-            array('jquery'),
-            MT_VERSION,
-            false  // Load in header, not footer
-        );
-
-        wp_localize_script('mt-admin', 'mtToolkit', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('mt_action'),
-            'strings' => array(
-                'confirm_clear_logs' => __('Are you sure you want to clear all debug logs?', 'mt'),
-                'confirm_restore_htaccess' => __('Are you sure you want to restore this backup?', 'mt'),
-                'error_occurred' => __('An error occurred. Please try again.', 'mt'),
-                'success' => __('Operation completed successfully.', 'mt'),
-            )
-        ));
-    }
-
-    /**
-     * Enqueue frontend scripts for performance bar
-     */
-    public function enqueue_frontend_scripts() {
-        if (!get_option('mt_query_monitor_enabled') || !is_user_logged_in() || !current_user_can('manage_options')) {
-            return;
+        if (function_exists('wp_enqueue_script')) {
+            wp_enqueue_script(
+                'mt-performance-bar',
+                MT_PLUGIN_URL . 'public/assets/performance-bar.js',
+                array('jquery'),
+                MT_VERSION,
+                true
+            );
         }
-
-        // Enqueue admin.js for admin bar performance functionality
-        wp_enqueue_script(
-            'mt-admin',
-            MT_PLUGIN_URL . 'admin/assets/admin.js',
-            array('jquery'),
-            MT_VERSION,
-            false // Load in header to ensure it's available for admin bar
-        );
-
-        // Localize script with necessary data
-        wp_localize_script('mt-admin', 'mtToolkit', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('mt_action'),
-            'strings' => array(
-                'error_occurred' => __('An error occurred', 'mt'),
-                'confirm_delete' => __('Are you sure you want to delete this?', 'mt'),
-                'loading' => __('Loading...', 'mt')
-            )
-        ));
-
-        wp_enqueue_style(
-            'mt-performance-bar',
-            MT_PLUGIN_URL . 'public/assets/performance-bar.css',
-            array(),
-            MT_VERSION
-        );
-
-        wp_enqueue_script(
-            'mt-performance-bar',
-            MT_PLUGIN_URL . 'public/assets/performance-bar.js',
-            array('jquery'),
-            MT_VERSION,
-            true
-        );
     }
 
     /**
@@ -226,7 +220,7 @@ class MT_Plugin {
 
     public function ajax_toggle_debug() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
@@ -236,16 +230,16 @@ class MT_Plugin {
             update_option('mt_debug_enabled', $enabled);
             mt_send_json_success(array(
                 'enabled' => $enabled,
-                'message' => $enabled ? __('Debug mode enabled.', 'mt') : __('Debug mode disabled.', 'mt')
+                'message' => $enabled ? __('Debug mode enabled.', 'morden-toolkit') : __('Debug mode disabled.', 'morden-toolkit')
             ));
         } else {
-            mt_send_json_error(__('Failed to toggle debug mode.', 'mt'));
+            mt_send_json_error(__('Failed to toggle debug mode.', 'morden-toolkit'));
         }
     }
 
     public function ajax_toggle_debug_constant() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $constant = sanitize_text_field($_POST['constant']);
@@ -254,7 +248,7 @@ class MT_Plugin {
         // Validate constant name
         $allowed_constants = array('WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'display_errors');
         if (!in_array($constant, $allowed_constants)) {
-            mt_send_json_error(__('Invalid debug constant.', 'mt'));
+            mt_send_json_error(__('Invalid debug constant.', 'morden-toolkit'));
         }
 
         $result = $this->services['debug']->toggle_debug_constant($constant, $enabled);
@@ -268,32 +262,32 @@ class MT_Plugin {
                 'enabled' => $enabled,
                 'status' => $status,
                 'message' => sprintf(
-                    $enabled ? __('%s enabled.', 'mt') : __('%s disabled.', 'mt'),
+                    $enabled ? __('%s enabled.', 'morden-toolkit') : __('%s disabled.', 'morden-toolkit'),
                     $constant
                 )
             ));
         } else {
-            mt_send_json_error(__('Failed to toggle debug constant.', 'mt'));
+            mt_send_json_error(__('Failed to toggle debug constant.', 'morden-toolkit'));
         }
     }
 
     public function ajax_clear_debug_log() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $result = $this->services['debug']->clear_debug_log();
 
         if ($result) {
-            mt_send_json_success(__('Debug log cleared.', 'mt'));
+            mt_send_json_success(__('Debug log cleared.', 'morden-toolkit'));
         } else {
-            mt_send_json_error(__('Failed to clear debug log.', 'mt'));
+            mt_send_json_error(__('Failed to clear debug log.', 'morden-toolkit'));
         }
     }
 
     public function ajax_get_debug_log() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $logs = $this->services['debug']->get_debug_log_entries();
@@ -302,7 +296,7 @@ class MT_Plugin {
 
     public function ajax_get_query_logs() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $logs = $this->services['debug']->get_query_log_entries();
@@ -311,35 +305,35 @@ class MT_Plugin {
 
     public function ajax_clear_query_log() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $result = $this->services['debug']->clear_query_log();
 
         if ($result) {
-            mt_send_json_success(__('Query logs cleared successfully.', 'mt'));
+            mt_send_json_success(__('Query logs cleared successfully.', 'morden-toolkit'));
         } else {
-            mt_send_json_error(__('Failed to clear query logs.', 'mt'));
+            mt_send_json_error(__('Failed to clear query logs.', 'morden-toolkit'));
         }
     }
 
     public function ajax_cleanup_query_logs() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $cleaned = $this->services['debug']->cleanup_old_query_logs();
 
         if ($cleaned >= 0) {
-            mt_send_json_success(sprintf(__('Cleaned up %d old log files.', 'mt'), $cleaned));
+            mt_send_json_success(sprintf(__('Cleaned up %d old log files.', 'morden-toolkit'), $cleaned));
         } else {
-            mt_send_json_error(__('Failed to cleanup old logs.', 'mt'));
+            mt_send_json_error(__('Failed to cleanup old logs.', 'morden-toolkit'));
         }
     }
 
     public function ajax_get_log_info() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $debug_status = $this->services['debug']->get_debug_status();
@@ -359,8 +353,10 @@ class MT_Plugin {
      * Schedule daily log cleanup
      */
     public function schedule_log_cleanup() {
-        if (!wp_next_scheduled('mt_daily_log_cleanup')) {
-            wp_schedule_event(time(), 'daily', 'mt_daily_log_cleanup');
+        if (function_exists('wp_next_scheduled') && function_exists('wp_schedule_event')) {
+            if (!wp_next_scheduled('mt_daily_log_cleanup')) {
+                wp_schedule_event(time(), 'daily', 'mt_daily_log_cleanup');
+            }
         }
     }
 
@@ -405,13 +401,13 @@ class MT_Plugin {
 
     public function ajax_download_query_logs() {
         if (!mt_can_manage() || !mt_verify_nonce($_GET['nonce'])) {
-            wp_die(__('Permission denied.', 'mt'));
+            wp_die(__('Permission denied.', 'morden-toolkit'));
         }
 
         $query_log_path = mt_get_query_log_path();
 
         if (!file_exists($query_log_path)) {
-            wp_die(__('Query log file not found.', 'mt'));
+            wp_die(__('Query log file not found.', 'morden-toolkit'));
         }
 
         $content = file_get_contents($query_log_path);
@@ -427,7 +423,7 @@ class MT_Plugin {
 
     public function ajax_toggle_query_monitor() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
@@ -435,43 +431,48 @@ class MT_Plugin {
 
         mt_send_json_success(array(
             'enabled' => $enabled,
-            'message' => $enabled ? __('Query Monitor enabled.', 'mt') : __('Query Monitor disabled.', 'mt')
+            'message' => $enabled ? __('Query Monitor enabled.', 'morden-toolkit') : __('Query Monitor disabled.', 'morden-toolkit')
         ));
     }
 
     public function ajax_save_htaccess() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
-        $content = sanitize_textarea_field($_POST['content']);
+        // Use wp_unslash to remove WordPress auto-added slashes, then basic sanitization
+        $content = wp_unslash($_POST['content']);
+        
+        // Basic sanitization without escaping special characters needed for .htaccess
+        $content = wp_kses($content, array());
+        
         $result = $this->services['htaccess']->save_htaccess($content);
 
         if ($result) {
-            mt_send_json_success(__('.htaccess file saved successfully.', 'mt'));
+            mt_send_json_success(__('.htaccess file saved successfully.', 'morden-toolkit'));
         } else {
-            mt_send_json_error(__('Failed to save .htaccess file.', 'mt'));
+            mt_send_json_error(__('Failed to save .htaccess file.', 'morden-toolkit'));
         }
     }
 
     public function ajax_restore_htaccess() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $backup_index = intval($_POST['backup_index']);
         $result = $this->services['htaccess']->restore_htaccess($backup_index);
 
         if ($result) {
-            mt_send_json_success(__('.htaccess file restored successfully.', 'mt'));
+            mt_send_json_success(__('.htaccess file restored successfully.', 'morden-toolkit'));
         } else {
-            mt_send_json_error(__('Failed to restore .htaccess file.', 'mt'));
+            mt_send_json_error(__('Failed to restore .htaccess file.', 'morden-toolkit'));
         }
     }
 
     public function ajax_apply_php_preset() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
-            mt_send_json_error(__('Permission denied.', 'mt'));
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
         $preset = sanitize_text_field($_POST['preset']);
@@ -479,9 +480,48 @@ class MT_Plugin {
 
         if ($result) {
             update_option('mt_php_preset', $preset);
-            mt_send_json_success(__('PHP configuration applied successfully.', 'mt'));
+            mt_send_json_success(__('PHP configuration applied successfully.', 'morden-toolkit'));
         } else {
-            mt_send_json_error(__('Failed to apply PHP configuration.', 'mt'));
+            mt_send_json_error(__('Failed to apply PHP configuration.', 'morden-toolkit'));
         }
+    }
+
+    public function ajax_save_custom_preset() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        $settings = $_POST['settings'];
+        if (!is_array($settings)) {
+            mt_send_json_error(__('Invalid settings data.', 'morden-toolkit'));
+        }
+
+        // Validate and sanitize settings
+        $validated_settings = $this->services['php_config']->validate_custom_settings($settings);
+        if (!$validated_settings) {
+            mt_send_json_error(__('Invalid configuration values.', 'morden-toolkit'));
+        }
+
+        // Save custom preset settings
+        update_option('mt_custom_preset_settings', $validated_settings);
+
+        // Update the custom preset in php_config service
+        $this->services['php_config']->update_custom_preset($validated_settings);
+
+        mt_send_json_success(__('Custom preset saved successfully.', 'morden-toolkit'));
+    }
+
+    public function ajax_reset_custom_preset() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        // Reset to default custom preset values
+        delete_option('mt_custom_preset_settings');
+
+        // Reset the custom preset in php_config service
+        $this->services['php_config']->reset_custom_preset();
+
+        mt_send_json_success(__('Custom preset reset to default values.', 'morden-toolkit'));
     }
 }

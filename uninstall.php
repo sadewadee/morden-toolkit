@@ -6,14 +6,10 @@
  * It cleans up all plugin data and settings.
  */
 
-// Prevent direct access
 if (!defined('WP_UNINSTALL_PLUGIN')) {
     exit;
 }
 
-/**
- * Clean up plugin options
- */
 function mt_cleanup_options() {
     $options_to_delete = array(
         'morden_debug_enabled',
@@ -21,7 +17,7 @@ function mt_cleanup_options() {
         'morden_htaccess_backups',
         'mt_php_preset',
         'morden_wp_config_backups',
-        'morden_user_ini_backups',
+        'morden_php_ini_backups',
         'mt_version'
     );
 
@@ -30,13 +26,8 @@ function mt_cleanup_options() {
     }
 }
 
-/**
- * Clean up debug settings from wp-config.php
- */
 function mt_cleanup_wp_config() {
     $wp_config_path = ABSPATH . 'wp-config.php';
-
-    // Try parent directory if not found in root
     if (!file_exists($wp_config_path)) {
         $wp_config_path = dirname(ABSPATH) . '/wp-config.php';
     }
@@ -47,7 +38,7 @@ function mt_cleanup_wp_config() {
 
     $config_content = file_get_contents($wp_config_path);
 
-    // Remove Morden Toolkit PHP config block
+
     $pattern = '/\/\/ BEGIN Morden Toolkit PHP Config.*?\/\/ END Morden Toolkit PHP Config\s*/s';
     $config_content = preg_replace($pattern, '', $config_content);
 
@@ -94,16 +85,16 @@ function mt_cleanup_htaccess() {
 }
 
 /**
- * Clean up .user.ini file
+ * Clean up php.ini file
  */
-function mt_cleanup_user_ini() {
-    $user_ini_path = ABSPATH . '.user.ini';
+function mt_cleanup_php_ini() {
+    $php_ini_path = ABSPATH . 'php.ini';
 
-    if (!file_exists($user_ini_path)) {
+    if (!file_exists($php_ini_path)) {
         return;
     }
 
-    $content = file_get_contents($user_ini_path);
+    $content = file_get_contents($php_ini_path);
 
     // If the file only contains Morden Toolkit config, delete it
     if (strpos($content, '; Morden Toolkit PHP Config') !== false) {
@@ -128,9 +119,9 @@ function mt_cleanup_user_ini() {
         }
 
         if (empty($non_morden_lines)) {
-            unlink($user_ini_path);
+            unlink($php_ini_path);
         } else {
-            file_put_contents($user_ini_path, implode("\n", $non_morden_lines));
+            file_put_contents($php_ini_path, implode("\n", $non_morden_lines));
         }
     }
 }
@@ -174,7 +165,7 @@ try {
     mt_cleanup_options();
     mt_cleanup_wp_config();
     mt_cleanup_htaccess();
-    mt_cleanup_user_ini();
+    mt_cleanup_php_ini();
     mt_cleanup_temp_files();
     mt_cleanup_transients();
     mt_log_uninstall();

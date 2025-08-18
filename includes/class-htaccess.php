@@ -250,19 +250,19 @@ class MT_Htaccess {
     public function get_common_snippets() {
         return array(
             'wordpress_rewrite' => array(
-                'title' => __('WordPress Rewrite Rules', 'mt'),
+                'title' => __('WordPress Rewrite Rules', 'morden-toolkit'),
                 'content' => "# BEGIN WordPress\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule ^index\\.php$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.php [L]\n</IfModule>\n# END WordPress"
             ),
             'cache_control' => array(
-                'title' => __('Browser Caching', 'mt'),
+                'title' => __('Browser Caching', 'morden-toolkit'),
                 'content' => "# Browser Caching\n<IfModule mod_expires.c>\nExpiresActive On\nExpiresByType text/css \"access plus 1 year\"\nExpiresByType application/javascript \"access plus 1 year\"\nExpiresByType image/png \"access plus 1 year\"\nExpiresByType image/jpg \"access plus 1 year\"\nExpiresByType image/jpeg \"access plus 1 year\"\nExpiresByType image/gif \"access plus 1 year\"\n</IfModule>"
             ),
             'gzip_compression' => array(
-                'title' => __('GZIP Compression', 'mt'),
+                'title' => __('GZIP Compression', 'morden-toolkit'),
                 'content' => "# GZIP Compression\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\n</IfModule>"
             ),
             'security_headers' => array(
-                'title' => __('Security Headers', 'mt'),
+                'title' => __('Security Headers', 'morden-toolkit'),
                 'content' => "# Security Headers\n<IfModule mod_headers.c>\nHeader always set X-Content-Type-Options nosniff\nHeader always set X-Frame-Options SAMEORIGIN\nHeader always set X-XSS-Protection \"1; mode=block\"\nHeader always set Referrer-Policy \"strict-origin-when-cross-origin\"\n</IfModule>"
             )
         );

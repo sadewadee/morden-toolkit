@@ -1,40 +1,40 @@
 # Morden Toolkit
 
-Developer tools lightweight untuk WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
+Lightweight developer tools for WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
 
 ## Overview
 
-Morden Toolkit adalah plugin WordPress yang menyediakan tools essential untuk developer dengan UI yang sederhana dan pendekatan safety-first. Plugin ini dirancang untuk memberikan akses mudah ke debugging, monitoring performa, editing file konfigurasi, dan management setting PHP dengan sistem backup otomatis.
+Morden Toolkit is a WordPress plugin that provides essential developer tools with a simple UI and safety-first approach. This plugin is designed to provide easy access to debugging, performance monitoring, configuration file editing, and PHP settings management with automatic backup systems.
 
 ## Features
 
 ### 🔧 Debug Management
-- **One-click debug mode toggle** - Enable/disable WP_DEBUG, WP_DEBUG_LOG, dll
+- **One-click debug mode toggle** - Enable/disable WP_DEBUG, WP_DEBUG_LOG, etc.
 - **Smart debug log viewer** - Filter by level, time, search logs
-- **Safe configuration** - Auto-backup wp-config.php sebelum modifikasi
-- **Clear debug logs** - Bersihkan log dengan satu klik
+- **Safe configuration** - Auto-backup wp-config.php before modifications
+- **Clear debug logs** - Clean logs with one click
 
 ### 📊 Query Monitor & Performance
-- **Admin bar integration** - Performance metrics terintegrasi dengan WordPress admin bar
-- **Unified display** - Execution time, memory usage, dan query count dalam satu indicator
-- **Query Monitor style** - Visual design konsisten dengan developer tools populer
-- **Click-to-expand details** - Panel detail muncul dari bawah layar saat diklik
+- **Admin bar integration** - Performance metrics integrated with WordPress admin bar
+- **Unified display** - Execution time, memory usage, and query count in one indicator
+- **Query Monitor style** - Visual design consistent with popular developer tools
+- **Click-to-expand details** - Detail panel appears from bottom of screen when clicked
 - **Real-time monitoring** - Database queries, execution time, memory usage
 - **Detailed metrics** - PHP version, WordPress version, peak memory
-- **Mobile responsive** - Optimal display di semua device sizes
+- **Mobile responsive** - Optimal display on all device sizes
 
 ### 📝 File Editor
 - **Safe .htaccess editing** - Built-in syntax validation
-- **Auto-backup system** - Max 3 backups dengan timestamp
-- **One-click restore** - Rollback ke backup sebelumnya
+- **Auto-backup system** - Max 3 backups with timestamp
+- **One-click restore** - Rollback to previous backup
 - **Common snippets** - WordPress rewrite, caching, compression, security headers
-- **Site accessibility test** - Auto-restore jika site broken
+- **Site accessibility test** - Auto-restore if site breaks
 
 ### ⚙️ PHP Configuration
 - **Preset-based config** - Basic, Medium, High performance presets
 - **Multiple methods** - .htaccess, wp-config.php, .user.ini support
-- **Auto-detection** - Smart method selection berdasarkan server environment
-- **Current config display** - Lihat setting PHP yang aktif
+- **Auto-detection** - Smart method selection based on server environment
+- **Current config display** - View active PHP settings
 - **Visual comparison** - Compare current vs preset values
 
 ## Installation
@@ -47,7 +47,7 @@ Morden Toolkit adalah plugin WordPress yang menyediakan tools essential untuk de
 
 ### Via FTP
 1. Extract plugin files
-2. Upload `morden-toolkit` folder ke `/wp-content/plugins/`
+2. Upload `morden-toolkit` folder to `/wp-content/plugins/`
 3. Activate via WordPress admin
 
 ### Via WP-CLI
@@ -62,43 +62,47 @@ wp plugin install morden-toolkit.zip --activate
 2. Click **Debug Management** tab
 3. Toggle debug mode ON/OFF
 4. View current debug settings status
-5. Clear logs atau view detailed logs
+5. Clear logs or view detailed logs
 
 ### Query Monitor
-1. Enable **Performance Bar** di Query Monitor tab
-2. Performance bar akan muncul di bottom page untuk logged-in users
-3. Click info icon untuk detailed metrics
+1. Enable **Performance Bar** in Query Monitor tab
+2. Performance bar will appear at bottom of page for logged-in users
+3. Click info icon for detailed metrics
 4. Monitor database queries, execution time, memory usage
 
 ### File Editor
 1. Access **.htaccess Editor** tab
-2. Edit file content dengan syntax highlighting
-3. File di-backup otomatis sebelum save
-4. Restore dari backup jika needed
-5. Insert common snippets dengan one-click
+2. Edit file content with syntax highlighting
+3. File is automatically backed up before save
+4. Restore from backup if needed
+5. Insert common snippets with one-click
 
 ### PHP Config
-1. Pilih **PHP Config** tab
-2. Select preset: Basic, Medium, atau High Performance
+1. Select **PHP Config** tab
+2. Choose preset: Basic, Medium, or High Performance
 3. Preview setting changes
 4. Apply configuration
-5. System auto-detect method terbaik (.htaccess, wp-config, .user.ini)
+5. System auto-detects best method (.htaccess, wp-config, .user.ini)
 
 ## Security Features
 
 - **Capability checking** - Requires `manage_options`
 - **Nonce verification** - All AJAX requests protected
 - **Content validation** - Block malicious code patterns
-- **Auto-backup** - Safe file operations dengan rollback
-- **Site monitoring** - Test accessibility setelah .htaccess changes
-- **Clean uninstall** - Remove all modifications pada plugin deletion
+- **Advanced fail-safe mechanism** - Multi-layer protection for wp-config.php modifications
+- **Atomic operations** - Safe file operations with rollback and emergency recovery
+- **Comprehensive validation** - PHP syntax, site accessibility, and WordPress constants validation
+- **Multiple backup points** - Enhanced backup system with pre-restore emergency backups
+- **Post-rollback validation** - Ensures site accessibility after recovery operations
+- **Site monitoring** - Test accessibility after .htaccess changes
+- **Clean uninstall** - Remove all modifications on plugin deletion
 
 ## System Requirements
 
 - **WordPress:** 5.0 or higher
 - **PHP:** 7.4 or higher
 - **MySQL:** 5.6+ or MariaDB 10.1+
-- **Server:** Apache with mod_rewrite atau Nginx
+- **Server:** Apache with mod_rewrite or Nginx
 
 ## File Structure
 
@@ -167,12 +171,12 @@ vendor/bin/phpunit
 ### [1.0.0] - 2024-08-16
 #### Added
 - Initial release
-- Debug management dengan wp-config.php integration
-- Query monitor dengan performance bar
-- Safe .htaccess editor dengan auto-backup
-- PHP configuration presets dengan multi-method support
-- Comprehensive admin interface dengan tabbed navigation
-- Security features dan permission checking
+- Debug management with wp-config.php integration
+- Query monitor with performance bar
+- Safe .htaccess editor with auto-backup
+- PHP configuration presets with multi-method support
+- Comprehensive admin interface with tabbed navigation
+- Security features and permission checking
 - Complete test suite
 - Translation support
 
@@ -188,8 +192,8 @@ GPL v2 or later - see [LICENSE](LICENSE) file
 
 ## Credits
 
-Developed by [Morden Pro](https://morden.pro) dengan focus pada simplicity, safety, dan developer experience.
+Developed by [Morden Pro](https://morden.pro) with focus on simplicity, safety, and developer experience.
 
 ---
 
-**Plugin ini dirancang untuk developer yang butuh tools essential WordPress dalam satu package yang lightweight dan aman.**
+**This plugin is designed for developers who need essential WordPress tools in one lightweight and safe package.**

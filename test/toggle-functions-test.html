@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toggle Functions Test - Morden Toolkit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-toggle {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 3px;
+        }
+        .execution-counter {
+            color: #666;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .mt-toggle-wrapper {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .mt-toggle {
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .mt-toggle.active {
+            background: #4CAF50;
+        }
+        .mt-toggle-slider {
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            transition: transform 0.3s;
+        }
+        .mt-toggle.active .mt-toggle-slider {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Toggle Functions Test - Double Execution Check</h1>
+    <p>Test ini memverifikasi bahwa toggle functions tidak lagi mengalami double execution.</p>
+
+    <div class="test-section">
+        <h2>Debug Mode Toggle Test</h2>
+        <div class="test-toggle">
+            <div class="mt-toggle-wrapper">
+                <input type="checkbox" id="debug-mode-toggle">
+                <div class="mt-toggle">
+                    <div class="mt-toggle-slider"></div>
+                </div>
+            </div>
+            <label for="debug-mode-toggle">Debug Mode</label>
+            <span class="execution-counter" id="debug-counter">Executions: 0</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Query Monitor Toggle Test</h2>
+        <div class="test-toggle">
+            <div class="mt-toggle-wrapper">
+                <input type="checkbox" id="query-monitor-toggle">
+                <div class="mt-toggle">
+                    <div class="mt-toggle-slider"></div>
+                </div>
+            </div>
+            <label for="query-monitor-toggle">Query Monitor</label>
+            <span class="execution-counter" id="query-counter">Executions: 0</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Generic Toggle Test (should work normally)</h2>
+        <div class="test-toggle">
+            <div class="mt-toggle-wrapper">
+                <input type="checkbox" id="generic-toggle">
+                <div class="mt-toggle">
+                    <div class="mt-toggle-slider"></div>
+                </div>
+            </div>
+            <label for="generic-toggle">Generic Toggle</label>
+            <span class="execution-counter" id="generic-counter">Executions: 0</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results">
+            <p>Click pada toggle di atas untuk menguji. Setiap toggle seharusnya hanya dieksekusi 1x per click.</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        (function($) {
+            'use strict';
+
+            let debugExecutions = 0;
+            let queryExecutions = 0;
+            let genericExecutions = 0;
+
+            // Simulate the fixed toggle initialization
+            function initializeToggles() {
+                // Exclude toggles that have specific handlers to prevent double execution
+                const excludeSelectors = '#debug-mode-toggle, #query-monitor-toggle';
+                
+                $('.mt-toggle-wrapper input[type="checkbox"]').not(excludeSelectors).on('change', function() {
+                    const $toggle = $(this).siblings('.mt-toggle');
+                    if ($(this).is(':checked')) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
+                });
+
+                $('.mt-toggle').not(excludeSelectors + ' + .mt-toggle').on('click', function() {
+                    const $checkbox = $(this).siblings('input[type="checkbox"]');
+                    if (!$checkbox.is(excludeSelectors)) {
+                        $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+                    }
+                });
+            }
+
+            function initializeDebugActions() {
+                $('#debug-mode-toggle').off('change').on('change', function() {
+                    debugExecutions++;
+                    $('#debug-counter').text('Executions: ' + debugExecutions);
+                    
+                    const $toggle = $(this).siblings('.mt-toggle');
+                    if ($(this).is(':checked')) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
+                    
+                    updateTestResults();
+                });
+            }
+
+            function initializeQueryMonitor() {
+                $('#query-monitor-toggle').off('change').on('change', function() {
+                    queryExecutions++;
+                    $('#query-counter').text('Executions: ' + queryExecutions);
+                    
+                    const $toggle = $(this).siblings('.mt-toggle');
+                    if ($(this).is(':checked')) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
+                    
+                    updateTestResults();
+                });
+            }
+
+            // Generic toggle handler for testing
+            $('#generic-toggle').on('change', function() {
+                genericExecutions++;
+                $('#generic-counter').text('Executions: ' + genericExecutions);
+                updateTestResults();
+            });
+
+            function updateTestResults() {
+                let results = '<h3>Test Status:</h3>';
+                
+                // Check for double execution (more than expected)
+                const debugClicks = Math.ceil(debugExecutions / 2); // Expected clicks
+                const queryClicks = Math.ceil(queryExecutions / 2);
+                const genericClicks = Math.ceil(genericExecutions / 2);
+                
+                if (debugExecutions > debugClicks) {
+                    results += '<p class="error">❌ Debug Toggle: Double execution detected! (' + debugExecutions + ' executions)</p>';
+                } else if (debugExecutions > 0) {
+                    results += '<p class="success">✅ Debug Toggle: Working correctly (' + debugExecutions + ' executions)</p>';
+                }
+                
+                if (queryExecutions > queryClicks) {
+                    results += '<p class="error">❌ Query Monitor Toggle: Double execution detected! (' + queryExecutions + ' executions)</p>';
+                } else if (queryExecutions > 0) {
+                    results += '<p class="success">✅ Query Monitor Toggle: Working correctly (' + queryExecutions + ' executions)</p>';
+                }
+                
+                if (genericExecutions > genericClicks) {
+                    results += '<p class="error">❌ Generic Toggle: Double execution detected! (' + genericExecutions + ' executions)</p>';
+                } else if (genericExecutions > 0) {
+                    results += '<p class="success">✅ Generic Toggle: Working correctly (' + genericExecutions + ' executions)</p>';
+                }
+                
+                $('#test-results').html(results);
+            }
+
+            // Initialize everything
+            $(document).ready(function() {
+                initializeToggles();
+                initializeDebugActions();
+                initializeQueryMonitor();
+            });
+
+        })(jQuery);
+    </script>
+</body>
+</html>

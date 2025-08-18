@@ -60,27 +60,6 @@
     }
 
     /**
-     * Toggle debug settings availability
-     */
-    function toggleDebugSettings(enabled) {
-        const $toggleGroup = $('.mt-toggle-group');
-        const $wrappers = $toggleGroup.find('.mt-toggle-wrapper');
-        const $inputs = $wrappers.find('input[type="checkbox"]');
-        const $toggles = $wrappers.find('.mt-toggle');
-
-        if (enabled) {
-            $toggleGroup.removeAttr('data-disabled');
-            $wrappers.removeClass('disabled');
-            $inputs.prop('disabled', false);
-        } else {
-            $toggleGroup.attr('data-disabled', 'true');
-            $wrappers.addClass('disabled');
-            $inputs.prop('disabled', true).prop('checked', false);
-            $toggles.removeClass('active');
-        }
-    }
-
-    /**
      * Initialize debug actions
      */
     function initializeDebugActions() {
@@ -103,11 +82,25 @@
                 if (response.success) {
                     showNotice(response.data.message, 'success');
                     updateDebugStatus(enabled);
+                    // Update visual toggle state
+                    const $toggle = $('#debug-mode-toggle').siblings('.mt-toggle');
+                    if (enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
                 } else {
                     showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
                     // Revert toggle state and settings
                     $('#debug-mode-toggle').prop('checked', !enabled);
                     toggleDebugSettings(!enabled);
+                    // Revert visual toggle state
+                    const $toggle = $('#debug-mode-toggle').siblings('.mt-toggle');
+                    if (!enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
                 }
             }).fail(function() {
                 hideLoading();
@@ -115,6 +108,25 @@
                 // Revert toggle state and settings
                 $('#debug-mode-toggle').prop('checked', !enabled);
                 toggleDebugSettings(!enabled);
+                // Revert visual toggle state
+                const $toggle = $('#debug-mode-toggle').siblings('.mt-toggle');
+                if (!enabled) {
+                    $toggle.addClass('active');
+                } else {
+                    $toggle.removeClass('active');
+                }
+            }).fail(function() {
+                hideLoading();
+                showNotice(mtToolkit.strings.error_occurred, 'error');
+                // Revert toggle state
+                $('#query-monitor-toggle').prop('checked', !enabled);
+                // Revert visual toggle state
+                const $toggle = $('#query-monitor-toggle').siblings('.mt-toggle');
+                if (!enabled) {
+                    $toggle.addClass('active');
+                } else {
+                    $toggle.removeClass('active');
+                }
             });
         });
 
@@ -162,10 +174,13 @@
     }
 
     /**
-     * Initialize toggle switches
+     * Initialize toggle switches (excluding those with specific handlers)
      */
     function initializeToggles() {
-        $('.mt-toggle-wrapper input[type="checkbox"]').on('change', function() {
+        // Exclude toggles that have specific handlers to prevent double execution
+        const excludeSelectors = '#debug-mode-toggle, #wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle, #query-monitor-toggle';
+        
+        $('.mt-toggle-wrapper input[type="checkbox"]').not(excludeSelectors).on('change', function() {
             const $toggle = $(this).siblings('.mt-toggle');
             if ($(this).is(':checked')) {
                 $toggle.addClass('active');
@@ -174,9 +189,11 @@
             }
         });
 
-        $('.mt-toggle').on('click', function() {
+        $('.mt-toggle').not(excludeSelectors + ' + .mt-toggle').on('click', function() {
             const $checkbox = $(this).siblings('input[type="checkbox"]');
-            $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+            if (!$checkbox.is(excludeSelectors)) {
+                $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+            }
         });
     }
 
@@ -198,9 +215,23 @@
 
                 if (response.success) {
                     showNotice(response.data.message, 'success');
+                    // Update visual toggle state
+                    const $toggle = $('#query-monitor-toggle').siblings('.mt-toggle');
+                    if (enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
                 } else {
                     showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
                     $('#query-monitor-toggle').prop('checked', !enabled);
+                    // Revert visual toggle state
+                    const $toggle = $('#query-monitor-toggle').siblings('.mt-toggle');
+                    if (!enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
                 }
             });
         });
@@ -338,6 +369,87 @@
         $('input[name="php_preset"]').on('change', function() {
             $('.mt-preset-option').removeClass('selected');
             $(this).closest('.mt-preset-option').addClass('selected');
+
+            // Show/hide custom preset form
+            $('.mt-custom-preset-form').hide();
+            if ($(this).val() === 'custom') {
+                $(this).closest('.mt-preset-option').find('.mt-custom-preset-form').show();
+            }
+        });
+
+        // Save custom preset settings
+        $('#save-custom-preset').on('click', function() {
+            const customSettings = {};
+            let isValid = true;
+
+            $('.mt-custom-input').each(function() {
+                const setting = $(this).data('setting');
+                const value = $(this).val().trim();
+                const unit = $(this).siblings('.mt-input-unit').text();
+
+                if (!value) {
+                    showNotice('All fields are required.', 'error');
+                    isValid = false;
+                    return false;
+                }
+
+                // Validate numeric values
+                if (!validateSettingValue(setting, value)) {
+                    showNotice(`Invalid value for ${setting}: ${value}`, 'error');
+                    isValid = false;
+                    return false;
+                }
+
+                // Only add unit if value doesn't already have it
+                let finalValue = value;
+                if (unit && !value.endsWith(unit)) {
+                    finalValue = value + unit;
+                }
+                customSettings[setting] = finalValue;
+            });
+
+            if (!isValid) return;
+
+            showLoading();
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_save_custom_preset',
+                settings: customSettings,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    showNotice('Custom preset saved successfully.', 'success');
+                } else {
+                    showNotice(response.data || 'Failed to save custom preset.', 'error');
+                }
+            });
+        });
+
+        // Reset custom preset to default
+        $('#reset-custom-preset').on('click', function() {
+            if (!confirm('Are you sure you want to reset custom preset to default values?')) {
+                return;
+            }
+
+            showLoading();
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_reset_custom_preset',
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    showNotice('Custom preset reset to default values.', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotice(response.data || 'Failed to reset custom preset.', 'error');
+                }
+            });
         });
 
         // Apply configuration
@@ -368,6 +480,35 @@
                 }
             });
         });
+    }
+
+    /**
+     * Validate setting value
+     */
+    function validateSettingValue(setting, value) {
+        const numValue = parseInt(value);
+
+        if (isNaN(numValue) || numValue <= 0) {
+            return false;
+        }
+
+        // Setting-specific validation
+        switch (setting) {
+            case 'memory_limit':
+                return numValue >= 64 && numValue <= 8192; // 64M to 8GB
+            case 'upload_max_filesize':
+                return numValue >= 1 && numValue <= 1024; // 1M to 1GB
+            case 'post_max_size':
+                return numValue >= 1 && numValue <= 2048; // 1M to 2GB
+            case 'max_execution_time':
+                return numValue >= 30 && numValue <= 3600; // 30s to 1 hour
+            case 'max_input_vars':
+                return numValue >= 1000 && numValue <= 50000; // 1K to 50K
+            case 'max_input_time':
+                return numValue >= 30 && numValue <= 3600; // 30s to 1 hour
+            default:
+                return true;
+        }
     }
 
     /**

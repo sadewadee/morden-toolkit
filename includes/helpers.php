@@ -3,57 +3,43 @@
  * Helper functions for MT
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Check if current user has required capability
- */
 function mt_can_manage() {
-    return current_user_can('manage_options');
+    return function_exists('current_user_can') ? current_user_can('manage_options') : false;
 }
 
-/**
- * Verify nonce for security
- */
 function mt_verify_nonce($nonce, $action = 'mt_action') {
-    return wp_verify_nonce($nonce, $action);
+    return function_exists('wp_verify_nonce') ? wp_verify_nonce($nonce, $action) : false;
 }
 
-/**
- * Send JSON response
- */
 function mt_send_json($data) {
-    wp_send_json($data);
+    if (function_exists('wp_send_json')) {
+        wp_send_json($data);
+    }
 }
 
-/**
- * Send JSON success response
- */
 function mt_send_json_success($data = null) {
-    wp_send_json_success($data);
+    if (function_exists('wp_send_json_success')) {
+        wp_send_json_success($data);
+    }
 }
 
-/**
- * Send JSON error response
- */
 function mt_send_json_error($data = null) {
-    wp_send_json_error($data);
+    if (function_exists('wp_send_json_error')) {
+        wp_send_json_error($data);
+    }
 }
 
-/**
- * Get wp-config.php file path
- */
 function mt_get_wp_config_path() {
-    // Try current WordPress root first
     $config_path = ABSPATH . 'wp-config.php';
     if (file_exists($config_path)) {
         return $config_path;
     }
 
-    // Try parent directory (common in some installations)
+
     $parent_config = dirname(ABSPATH) . '/wp-config.php';
     if (file_exists($parent_config)) {
         return $parent_config;
@@ -62,14 +48,10 @@ function mt_get_wp_config_path() {
     return false;
 }
 
-/**
- * Get .htaccess file path
- */
 function mt_get_htaccess_path() {
     return ABSPATH . '.htaccess';
-}/**
- * Format file size
- */
+}
+
 function mt_format_bytes($size) {
     $units = array('B', 'KB', 'MB', 'GB');
     for ($i = 0; $size > 1024 && $i < count($units) - 1; $i++) {
@@ -78,9 +60,6 @@ function mt_format_bytes($size) {
     return round($size, 2) . ' ' . $units[$i];
 }
 
-/**
- * Format execution time
- */
 function mt_format_time($time) {
     if ($time < 1) {
         return round($time * 1000) . 'ms';
@@ -88,16 +67,11 @@ function mt_format_time($time) {
     return round($time, 3) . 's';
 }
 
-/**
- * Get debug log file path
- */
 function mt_get_debug_log_path() {
     return WP_CONTENT_DIR . '/debug.log';
 }
 
-/**
- * Get query log file path
- */
+
 function mt_get_query_log_path() {
     return WP_CONTENT_DIR . '/query.log';
 }
@@ -128,7 +102,11 @@ function mt_is_file_writable($file_path) {
         // Try to create parent directory if it doesn't exist
         $dir = dirname($file_path);
         if (!is_dir($dir)) {
-            wp_mkdir_p($dir);
+            if (function_exists('wp_mkdir_p')) {
+                wp_mkdir_p($dir);
+            } else {
+                mkdir($dir, 0755, true);
+            }
         }
 
         // Try to create file
@@ -147,18 +125,21 @@ function mt_is_file_writable($file_path) {
  * Sanitize file content before saving
  */
 function mt_sanitize_file_content($content) {
-    // Remove any potential malicious code patterns
-    $patterns = array(
-        '/(<\?php|<\?)/i',  // PHP tags
-        '/(eval|exec|system|shell_exec|passthru)/i', // Dangerous functions
-        '/(<script|javascript:)/i', // JavaScript
+    // For .htaccess files, we need to be more careful about what we consider malicious
+    // Only block actual PHP execution, not legitimate .htaccess directives
+    $dangerous_patterns = array(
+        '/(<\?php|<\?=)/i',  // PHP opening tags
+        '/(eval|exec|system|shell_exec|passthru)\s*\(/i', // Dangerous PHP functions with parentheses
+        '/<script[^>]*>/i', // Script tags
+        '/javascript:\s*[^\s]/i', // JavaScript protocol
     );
 
-    foreach ($patterns as $pattern) {
+    foreach ($dangerous_patterns as $pattern) {
         if (preg_match($pattern, $content)) {
             return false; // Reject content with suspicious patterns
         }
     }
 
+    // Don't modify the content - just validate it
     return $content;
 }

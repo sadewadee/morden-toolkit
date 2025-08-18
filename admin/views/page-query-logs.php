@@ -3,30 +3,29 @@
  * Query Logs Page Template
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Get debug service
+
 $plugin = MT_Plugin::get_instance();
 $debug_service = $plugin->get_service('debug');
 $debug_status = $debug_service->get_debug_status();
 ?>
 
 <div class="wrap">
-    <h1><?php _e('Query Logs', 'mt'); ?></h1>
+    <h1><?php _e('Query Logs', 'morden-toolkit'); ?></h1>
     <p class="description">
-        <?php _e('View database query logs. SAVEQUERIES must be enabled to record queries.', 'mt'); ?>
+        <?php _e('View database query logs. SAVEQUERIES must be enabled to record queries.', 'morden-toolkit'); ?>
     </p>
 
     <?php if (!$debug_status['savequeries']): ?>
     <div class="notice notice-warning">
         <p>
-            <strong><?php _e('SAVEQUERIES is not enabled!', 'mt'); ?></strong>
-            <?php _e('Database queries are not being recorded. ', 'mt'); ?>
+            <strong><?php _e('SAVEQUERIES is not enabled!', 'morden-toolkit'); ?></strong>
+            <?php _e('Database queries are not being recorded. ', 'morden-toolkit'); ?>
             <a href="<?php echo admin_url('tools.php?page=mt'); ?>" class="button button-primary">
-                <?php _e('Enable SAVEQUERIES', 'mt'); ?>
+                <?php _e('Enable SAVEQUERIES', 'morden-toolkit'); ?>
             </a>
         </p>
     </div>
@@ -36,19 +35,19 @@ $debug_status = $debug_service->get_debug_status();
         <div class="mt-logs-actions">
             <button type="button" id="refresh-query-logs" class="button">
                 <span class="dashicons dashicons-update"></span>
-                <?php _e('Refresh', 'mt'); ?>
+                <?php _e('Refresh', 'morden-toolkit'); ?>
             </button>
             <button type="button" id="clear-query-logs" class="button">
                 <span class="dashicons dashicons-trash"></span>
-                <?php _e('Clear', 'mt'); ?>
+                <?php _e('Clear', 'morden-toolkit'); ?>
             </button>
-            <button type="button" id="cleanup-query-logs" class="button" title="<?php _e('Remove old backup log files', 'mt'); ?>">
+            <button type="button" id="cleanup-query-logs" class="button" title="<?php _e('Remove old backup log files', 'morden-toolkit'); ?>">
                 <span class="dashicons dashicons-admin-tools"></span>
-                <?php _e('Cleanup', 'mt'); ?>
+                <?php _e('Cleanup', 'morden-toolkit'); ?>
             </button>
             <button type="button" id="download-query-logs" class="button">
                 <span class="dashicons dashicons-download"></span>
-                <?php _e('Download', 'mt'); ?>
+                <?php _e('Download', 'morden-toolkit'); ?>
             </button>
         </div>
 
@@ -56,24 +55,24 @@ $debug_status = $debug_service->get_debug_status();
             <?php if ($debug_status['query_log_file_exists']): ?>
             <span class="mt-log-size">
                 <span class="dashicons dashicons-media-text"></span>
-                <?php _e('Current:', 'mt'); ?> <?php echo esc_html($debug_status['query_log_file_size']); ?>
+                <?php _e('Current:', 'morden-toolkit'); ?> <?php echo esc_html($debug_status['query_log_file_size']); ?>
             </span>
             <?php if (isset($debug_status['query_log_total_size'])): ?>
             <span class="mt-log-total-size">
                 <span class="dashicons dashicons-database"></span>
-                <?php _e('Total (with backups):', 'mt'); ?> <?php echo esc_html($debug_status['query_log_total_size']); ?>
+                <?php _e('Total (with backups):', 'morden-toolkit'); ?> <?php echo esc_html($debug_status['query_log_total_size']); ?>
             </span>
             <?php endif; ?>
             <?php if (isset($debug_status['query_log_max_size'])): ?>
             <span class="mt-log-max-size">
                 <span class="dashicons dashicons-info"></span>
-                <?php _e('Rotation at:', 'mt'); ?> <?php echo esc_html($debug_status['query_log_max_size']); ?>
+                <?php _e('Rotation at:', 'morden-toolkit'); ?> <?php echo esc_html($debug_status['query_log_max_size']); ?>
             </span>
             <?php endif; ?>
             <?php else: ?>
             <span class="mt-no-logs">
                 <span class="dashicons dashicons-info"></span>
-                <?php _e('No query log file found', 'mt'); ?>
+                <?php _e('No query log file found', 'morden-toolkit'); ?>
             </span>
             <?php endif; ?>
         </div>
@@ -81,43 +80,43 @@ $debug_status = $debug_service->get_debug_status();
 
     <div class="mt-logs-filters">
         <div class="mt-filter-group">
-            <label for="query-time-filter"><?php _e('Time:', 'mt'); ?></label>
+            <label for="query-time-filter"><?php _e('Time:', 'morden-toolkit'); ?></label>
             <select id="query-time-filter">
-                <option value=""><?php _e('All Time', 'mt'); ?></option>
-                <option value="1h"><?php _e('Last Hour', 'mt'); ?></option>
-                <option value="24h" selected><?php _e('Last 24 Hours', 'mt'); ?></option>
-                <option value="7d"><?php _e('Last 7 Days', 'mt'); ?></option>
+                <option value=""><?php _e('All Time', 'morden-toolkit'); ?></option>
+                <option value="1h"><?php _e('Last Hour', 'morden-toolkit'); ?></option>
+                <option value="24h" selected><?php _e('Last 24 Hours', 'morden-toolkit'); ?></option>
+                <option value="7d"><?php _e('Last 7 Days', 'morden-toolkit'); ?></option>
             </select>
         </div>
 
         <div class="mt-filter-group">
-            <label for="query-type-filter"><?php _e('Query Type:', 'mt'); ?></label>
+            <label for="query-type-filter"><?php _e('Query Type:', 'morden-toolkit'); ?></label>
             <select id="query-type-filter">
-                <option value=""><?php _e('All Types', 'mt'); ?></option>
-                <option value="SELECT"><?php _e('SELECT', 'mt'); ?></option>
-                <option value="INSERT"><?php _e('INSERT', 'mt'); ?></option>
-                <option value="UPDATE"><?php _e('UPDATE', 'mt'); ?></option>
-                <option value="DELETE"><?php _e('DELETE', 'mt'); ?></option>
+                <option value=""><?php _e('All Types', 'morden-toolkit'); ?></option>
+                <option value="SELECT"><?php _e('SELECT', 'morden-toolkit'); ?></option>
+                <option value="INSERT"><?php _e('INSERT', 'morden-toolkit'); ?></option>
+                <option value="UPDATE"><?php _e('UPDATE', 'morden-toolkit'); ?></option>
+                <option value="DELETE"><?php _e('DELETE', 'morden-toolkit'); ?></option>
             </select>
         </div>
 
         <div class="mt-filter-group">
-            <label for="query-slow-filter"><?php _e('Performance:', 'mt'); ?></label>
+            <label for="query-slow-filter"><?php _e('Performance:', 'morden-toolkit'); ?></label>
             <select id="query-slow-filter">
-                <option value=""><?php _e('All Queries', 'mt'); ?></option>
-                <option value="slow"><?php _e('Slow Queries Only', 'mt'); ?></option>
-                <option value="fast"><?php _e('Fast Queries Only', 'mt'); ?></option>
+                <option value=""><?php _e('All Queries', 'morden-toolkit'); ?></option>
+                <option value="slow"><?php _e('Slow Queries Only', 'morden-toolkit'); ?></option>
+                <option value="fast"><?php _e('Fast Queries Only', 'morden-toolkit'); ?></option>
             </select>
         </div>
 
         <div class="mt-filter-group">
-            <label for="query-search"><?php _e('Search:', 'mt'); ?></label>
-            <input type="text" id="query-search" placeholder="<?php _e('Search in SQL or caller stack...', 'mt'); ?>">
+            <label for="query-search"><?php _e('Search:', 'morden-toolkit'); ?></label>
+            <input type="text" id="query-search" placeholder="<?php _e('Search in SQL or caller stack...', 'morden-toolkit'); ?>">
         </div>
 
         <div class="mt-filter-group">
             <button type="button" id="clear-query-filters" class="button">
-                <?php _e('Clear Filters', 'mt'); ?>
+                <?php _e('Clear Filters', 'morden-toolkit'); ?>
             </button>
         </div>
     </div>
@@ -127,22 +126,22 @@ $debug_status = $debug_service->get_debug_status();
             <?php if (!$debug_status['query_log_file_exists'] || !$debug_status['savequeries']): ?>
             <div class="mt-no-logs-message">
                 <div class="dashicons dashicons-info"></div>
-                <h3><?php _e('No Query Logs Found', 'mt'); ?></h3>
+                <h3><?php _e('No Query Logs Found', 'morden-toolkit'); ?></h3>
                 <?php if (!$debug_status['savequeries']): ?>
-                <p><?php _e('SAVEQUERIES is not enabled. Database queries are not being recorded.', 'mt'); ?></p>
+                <p><?php _e('SAVEQUERIES is not enabled. Database queries are not being recorded.', 'morden-toolkit'); ?></p>
                 <p>
                     <a href="<?php echo admin_url('tools.php?page=mt'); ?>" class="button button-primary">
-                        <?php _e('Enable SAVEQUERIES', 'mt'); ?>
+                        <?php _e('Enable SAVEQUERIES', 'morden-toolkit'); ?>
                     </a>
                 </p>
                 <?php else: ?>
-                <p><?php _e('No database queries have been logged yet. Try visiting some pages first.', 'mt'); ?></p>
+                <p><?php _e('No database queries have been logged yet. Try visiting some pages first.', 'morden-toolkit'); ?></p>
                 <?php endif; ?>
             </div>
             <?php else: ?>
             <div class="mt-logs-loading">
                 <div class="mt-spinner"></div>
-                <p><?php _e('Loading query logs...', 'mt'); ?></p>
+                <p><?php _e('Loading query logs...', 'morden-toolkit'); ?></p>
             </div>
             <div id="mt-query-logs-content" style="display: none;"></div>
             <?php endif; ?>
@@ -153,64 +152,89 @@ $debug_status = $debug_service->get_debug_status();
 <script>
 // Helper functions for formatting
 function parseUrlSource(url) {
-    if (!url) return { name: 'Unknown', path: '' };
+    if (!url || typeof url !== 'string') return { name: 'Unknown', path: '' };
 
     // Extract source from URL
     let sourceName = 'WordPress Core';
     let sourcePath = url;
 
-    if (url.includes('/plugins/')) {
-        const pluginMatch = url.match(/\/plugins\/([^\/]+)/);
-        if (pluginMatch) {
-            sourceName = pluginMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            sourcePath = url.replace(/.*\/plugins\//, 'plugins/');
+    try {
+        if (url.includes('/plugins/')) {
+            const pluginMatch = url.match(/\/plugins\/([^\/]+)/);
+            if (pluginMatch && pluginMatch[1]) {
+                sourceName = pluginMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                sourcePath = url.replace(/.*\/plugins\//, 'plugins/');
+            }
+        } else if (url.includes('/themes/')) {
+            const themeMatch = url.match(/\/themes\/([^\/]+)/);
+            if (themeMatch && themeMatch[1]) {
+                sourceName = themeMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                sourcePath = url.replace(/.*\/themes\//, 'themes/');
+            }
+        } else if (url.includes('/wp-includes/') || url.includes('/wp-admin/')) {
+            sourceName = 'WordPress Core';
+            const coreMatch = url.match(/.*\/(wp-[^\/]+\/.*)/);
+            if (coreMatch && coreMatch[1]) {
+                sourcePath = coreMatch[1];
+            }
         }
-    } else if (url.includes('/themes/')) {
-        const themeMatch = url.match(/\/themes\/([^\/]+)/);
-        if (themeMatch) {
-            sourceName = themeMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            sourcePath = url.replace(/.*\/themes\//, 'themes/');
-        }
-    } else if (url.includes('/wp-includes/') || url.includes('/wp-admin/')) {
-        sourceName = 'WordPress Core';
-        sourcePath = url.replace(/.*\/(wp-[^\/]+\/.*)/, '$1');
+    } catch (e) {
+        console.warn('Error parsing URL source:', e);
+        sourceName = 'Unknown';
+        sourcePath = url;
     }
 
     return { name: sourceName, path: sourcePath };
 }
 
 function formatCaller(caller) {
-    if (!caller) return '';
+    if (!caller || typeof caller !== 'string') return '';
 
-    // If already formatted with stack trace, enhance with markup
-    if (caller.includes('()') && caller.includes('\n')) {
-        return caller
-            .split('\n')
-            .map(line => {
-                line = line.trim();
-                if (!line) return line;
-
-                // Escape HTML first
-                const escapedLine = window.mtUtils.escapeHtml(line);
-
-                // Function/method calls (lines that end with ())
-                if (line.endsWith('()')) {
-                    return `<span class="function-name">${escapedLine}</span>`;
-                }
-                // File paths (lines that contain : and file extensions)
-                else if (line.includes(':') && (line.includes('.php') || line.includes('wp-'))) {
-                    return `<span class="file-path">${escapedLine}</span>`;
-                }
-                return escapedLine;
-            })
-            .join('\n');
+    // Safe HTML escape function
+    function safeEscapeHtml(text) {
+        if (window.mtUtils && window.mtUtils.escapeHtml) {
+            return window.mtUtils.escapeHtml(text);
+        }
+        // Fallback HTML escape
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
-    // Legacy format: replace commas with line breaks and clean up
-    return window.mtUtils.escapeHtml(caller
-        .replace(/,\s*/g, '\n')
-        .replace(/\s+/g, ' ')
-        .trim());
+    try {
+        // If already formatted with stack trace, enhance with markup
+        if (caller.includes('()') && caller.includes('\n')) {
+            return caller
+                .split('\n')
+                .map(line => {
+                    line = line.trim();
+                    if (!line) return line;
+
+                    // Escape HTML first
+                    const escapedLine = safeEscapeHtml(line);
+
+                    // Function/method calls (lines that end with ())
+                    if (line.endsWith('()')) {
+                        return `<span class="function-name">${escapedLine}</span>`;
+                    }
+                    // File paths (lines that contain : and file extensions)
+                    else if (line.includes(':') && (line.includes('.php') || line.includes('wp-'))) {
+                        return `<span class="file-path">${escapedLine}</span>`;
+                    }
+                    return escapedLine;
+                })
+                .join('\n');
+        }
+
+        // Legacy format: replace commas with line breaks and clean up
+        return safeEscapeHtml(caller
+            .replace(/,\s*/g, '\n')
+            .replace(/\s+/g, ' ')
+            .trim());
+    } catch (e) {
+        console.warn('Error formatting caller:', e);
+        return safeEscapeHtml(caller);
+    }
 }
 
 /**
@@ -229,24 +253,24 @@ function updateLogInfo() {
                 infoElement.innerHTML = `
                     <span class="mt-log-size">
                         <span class="dashicons dashicons-media-text"></span>
-                        <?php _e('Current:', 'mt'); ?> ${logInfo.query_log_file_size}
+                        <?php _e('Current:', 'morden-toolkit'); ?> ${logInfo.query_log_file_size}
                     </span>
                     ${logInfo.query_log_total_size ? `
                     <span class="mt-log-total-size">
                         <span class="dashicons dashicons-database"></span>
-                        <?php _e('Total (with backups):', 'mt'); ?> ${logInfo.query_log_total_size}
+                        <?php _e('Total (with backups):', 'morden-toolkit'); ?> ${logInfo.query_log_total_size}
                     </span>` : ''}
                     ${logInfo.query_log_max_size ? `
                     <span class="mt-log-max-size">
                         <span class="dashicons dashicons-info"></span>
-                        <?php _e('Rotation at:', 'mt'); ?> ${logInfo.query_log_max_size}
+                        <?php _e('Rotation at:', 'morden-toolkit'); ?> ${logInfo.query_log_max_size}
                     </span>` : ''}
                 `;
             } else if (infoElement) {
                 infoElement.innerHTML = `
                     <span class="mt-no-logs">
                         <span class="dashicons dashicons-info"></span>
-                        <?php _e('No query log file found', 'mt'); ?>
+                        <?php _e('No query log file found', 'morden-toolkit'); ?>
                     </span>
                 `;
             }
@@ -270,7 +294,7 @@ function initializeQueryLogsPage() {
 
     // Clear query logs
     document.getElementById('clear-query-logs').addEventListener('click', function() {
-        if (!confirm(<?php echo json_encode(__('Are you sure you want to clear all query logs?', 'mt')); ?>)) {
+        if (!confirm(<?php echo json_encode(__('Are you sure you want to clear all query logs?', 'morden-toolkit')); ?>)) {
             return;
         }
 
@@ -289,21 +313,21 @@ function initializeQueryLogsPage() {
                 // Clear the logs display immediately
                 const logsContent = document.getElementById('mt-query-logs-content');
                 if (logsContent) {
-                    logsContent.innerHTML = '<div class="mt-no-logs-message"><p><?php _e('No query log entries found.', 'mt'); ?></p></div>';
+                    logsContent.innerHTML = '<div class="mt-no-logs-message"><p><?php _e('No query log entries found.', 'morden-toolkit'); ?></p></div>';
                 }
 
                 // Update log info immediately, then reload for complete refresh
                 updateLogInfo();
                 setTimeout(() => location.reload(), 1500);
             } else {
-                window.mtShowNotice(response.data || <?php echo json_encode(__('Error occurred', 'mt')); ?>, 'error');
+                window.mtShowNotice(response.data || <?php echo json_encode(__('Error occurred', 'morden-toolkit')); ?>, 'error');
             }
         });
     });
 
     // Cleanup old query logs
     document.getElementById('cleanup-query-logs').addEventListener('click', function() {
-        if (!confirm(<?php echo json_encode(__('Are you sure you want to cleanup old backup log files?', 'mt')); ?>)) {
+        if (!confirm(<?php echo json_encode(__('Are you sure you want to cleanup old backup log files?', 'morden-toolkit')); ?>)) {
             return;
         }
 
@@ -323,7 +347,7 @@ function initializeQueryLogsPage() {
                 updateLogInfo();
                 setTimeout(() => location.reload(), 1500);
             } else {
-                window.mtShowNotice(response.data || <?php echo json_encode(__('Error occurred', 'mt')); ?>, 'error');
+                window.mtShowNotice(response.data || <?php echo json_encode(__('Error occurred', 'morden-toolkit')); ?>, 'error');
             }
         });
     });
@@ -372,7 +396,7 @@ function loadQueryLogs() {
             displayQueryLogs(response.data);
             logsContent.style.display = 'block';
         } else {
-            logsContent.innerHTML = '<div class="notice notice-error"><p>' + <?php echo json_encode(__('Error occurred', 'mt')); ?> + '</p></div>';
+            logsContent.innerHTML = '<div class="notice notice-error"><p>' + <?php echo json_encode(__('Error occurred', 'morden-toolkit')); ?> + '</p></div>';
             logsContent.style.display = 'block';
         }
     });
@@ -382,14 +406,34 @@ function displayQueryLogs(logEntries) {
     const logsContent = document.getElementById('mt-query-logs-content');
 
     if (!logEntries || logEntries.length === 0) {
-        logsContent.innerHTML = '<div class="mt-no-logs-message"><p>' + <?php echo json_encode(__('No query log entries found.', 'mt')); ?> + '</p></div>';
+        logsContent.innerHTML = '<div class="mt-no-logs-message"><p>' + <?php echo json_encode(__('No query log entries found.', 'morden-toolkit')); ?> + '</p></div>';
         return;
     }
 
     let html = '<div class="mt-logs-list">';
 
     logEntries.forEach(function(entry, index) {
-        const timeFormatted = new Date(entry.timestamp).toLocaleString();
+        // Safe timestamp formatting
+        let timeFormatted = 'Invalid Date';
+        try {
+            if (entry.timestamp) {
+                const date = new Date(entry.timestamp);
+                if (!isNaN(date.getTime())) {
+                    timeFormatted = date.toLocaleString();
+                } else {
+                    // Try parsing as different format
+                    const parsedDate = new Date(entry.timestamp.replace(/\[|\]/g, ''));
+                    if (!isNaN(parsedDate.getTime())) {
+                        timeFormatted = parsedDate.toLocaleString();
+                    } else {
+                        timeFormatted = entry.timestamp; // Show raw timestamp if parsing fails
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Error formatting timestamp:', e, entry.timestamp);
+            timeFormatted = entry.timestamp || 'Unknown';
+        }
         const entryId = 'query-entry-' + index;
 
         html += '<div class="mt-query-log-entry" data-entry="' + index + '">';

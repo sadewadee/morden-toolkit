@@ -39,6 +39,9 @@
             });
         }
 
+        // Initialize tab functionality
+        initializeTabs();
+
         // Add class to body for styling adjustments
         document.body.classList.add('mt-perf-active');
     }
@@ -189,11 +192,56 @@
         // Currently metrics are rendered server-side
     }
 
+    /**
+     * Initialize tab functionality
+     */
+    function initializeTabs() {
+        const tabs = document.querySelectorAll('.mt-perf-tab');
+        const tabContents = document.querySelectorAll('.mt-perf-tab-content');
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchTab(this.getAttribute('data-tab'));
+            });
+        });
+    }
+
+    /**
+     * Switch to specific tab
+     */
+    function switchTab(tabName) {
+        // Remove active class from all tabs
+        const tabs = document.querySelectorAll('.mt-perf-tab');
+        const tabContents = document.querySelectorAll('.mt-perf-tab-content');
+
+        tabs.forEach(function(tab) {
+            tab.classList.remove('active');
+        });
+
+        tabContents.forEach(function(content) {
+            content.classList.remove('active');
+        });
+
+        // Add active class to selected tab and content
+        const selectedTab = document.querySelector('.mt-perf-tab[data-tab="' + tabName + '"]');
+        const selectedContent = document.getElementById('mt-perf-tab-' + tabName);
+
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
+
+        if (selectedContent) {
+            selectedContent.classList.add('active');
+        }
+    }
+
     // Make functions available globally if needed
     window.MordenPerformanceBar = {
         toggleDetails: toggleDetails,
         openDetails: openDetails,
         closeDetails: closeDetails,
+        switchTab: switchTab,
         formatNumber: formatNumber,
         formatBytes: formatBytes,
         formatTime: formatTime

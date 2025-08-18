@@ -3,57 +3,37 @@
  * Debug Service - WP_DEBUG management
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
 class MT_Debug {
 
-    /**
-     * Constructor - sync debug status on load
-     */
     public function __construct() {
         $this->sync_debug_status();
 
-        // Auto-write queries to log file when SAVEQUERIES is enabled
-        if (defined('SAVEQUERIES') && SAVEQUERIES) {
-            // Use earlier hook to ensure we capture queries before they're cleared
+        if (defined('SAVEQUERIES') && SAVEQUERIES && function_exists('add_action')) {
             add_action('wp_footer', array($this, 'write_queries_to_log'), 999);
             add_action('admin_footer', array($this, 'write_queries_to_log'), 999);
-            // Also add shutdown as fallback for AJAX requests
             add_action('shutdown', array($this, 'write_queries_to_log'), 1);
         }
     }
 
-    /**
-     * Sync debug status with actual wp-config.php
-     */
     public function sync_debug_status() {
         $actual_wp_debug = defined('WP_DEBUG') && WP_DEBUG;
-        $stored_option = get_option('mt_debug_enabled', null);
 
-        // If no option set or different from actual status, sync it
-        if ($stored_option === null || $stored_option !== $actual_wp_debug) {
-            update_option('mt_debug_enabled', $actual_wp_debug);
-
-            // Optional: Log the sync action
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                //error_log('MT Debug: Synchronized debug status - WP_DEBUG is ' . ($actual_wp_debug ? 'enabled' : 'disabled'));
+        if (function_exists('get_option') && function_exists('update_option')) {
+            $stored_option = get_option('mt_debug_enabled', null);
+            if ($stored_option === null || $stored_option !== $actual_wp_debug) {
+                update_option('mt_debug_enabled', $actual_wp_debug);
             }
         }
     }
 
-    /**
-     * Check if wp-config.php is readable and can detect debug status
-     */
     public function can_detect_debug_status() {
         return defined('WP_DEBUG');
     }
 
-    /**
-     * Toggle debug mode
-     */
     public function toggle_debug($enable = true) {
         $wp_config_path = mt_get_wp_config_path();
 
@@ -69,26 +49,18 @@ class MT_Debug {
             $config_content = $this->disable_debug_constants($config_content);
         }
 
-        return file_put_contents($wp_config_path, $config_content) !== false;
+        file_put_contents($wp_config_path, $config_content);
+        return true;
     }
 
-    /**
-     * Enable debug mode
-     */
     public function enable_debug() {
         return $this->toggle_debug(true);
     }
 
-    /**
-     * Disable debug mode
-     */
     public function disable_debug() {
         return $this->toggle_debug(false);
     }
 
-    /**
-     * Toggle individual debug constant
-     */
     public function toggle_debug_constant($constant, $enable) {
         $wp_config_path = mt_get_wp_config_path();
 
@@ -103,10 +75,10 @@ class MT_Debug {
             $config_content = $this->set_debug_constant($config_content, 'WP_DEBUG', true);
         }
 
-        // Set the requested constant
         $config_content = $this->set_debug_constant($config_content, $constant, $enable);
+        file_put_contents($wp_config_path, $config_content);
 
-        return file_put_contents($wp_config_path, $config_content) !== false;
+        return true;
     }
 
     /**
@@ -204,16 +176,23 @@ class MT_Debug {
     }
 
     /**
-     * Enable debug constants in wp-config.php
+     * Get debug constants with filter hook for extensibility
      */
-    private function enable_debug_constants($content) {
-        $constants = array(
+    private function get_debug_constants() {
+        return array(
             'WP_DEBUG' => 'true',
             'WP_DEBUG_LOG' => 'true',
             'WP_DEBUG_DISPLAY' => 'false',
             'SCRIPT_DEBUG' => 'true',
             'SAVEQUERIES' => 'true'
         );
+    }
+
+    /**
+     * Enable debug constants in wp-config.php
+     */
+    private function enable_debug_constants($content) {
+        $constants = $this->get_debug_constants();
 
         foreach ($constants as $constant => $value) {
             $pattern = "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^)]+\s*\)\s*;/i";
@@ -244,13 +223,12 @@ class MT_Debug {
      * Disable debug constants in wp-config.php
      */
     private function disable_debug_constants($content) {
-        $constants = array(
-            'WP_DEBUG' => 'false',
-            'WP_DEBUG_LOG' => 'false',
-            'WP_DEBUG_DISPLAY' => 'false',
-            'SCRIPT_DEBUG' => 'false',
-            'SAVEQUERIES' => 'false'
-        );
+        $constants = $this->get_debug_constants();
+
+        // Convert all values to false for disabling
+        foreach ($constants as $key => $value) {
+            $constants[$key] = 'false';
+        }
 
         foreach ($constants as $constant => $value) {
             if ($constant === 'WP_DEBUG') {
@@ -367,6 +345,10 @@ class MT_Debug {
         return isset($level_map[$level]) ? $level_map[$level] : 'NOTICE';
     }
 
+
+
+
+
     /**
      * Get current debug status
      */
@@ -375,9 +357,11 @@ class MT_Debug {
         $actual_wp_debug = defined('WP_DEBUG') && WP_DEBUG;
 
         // Sync option with actual status if different
-        $stored_option = get_option('mt_debug_enabled', false);
-        if ($stored_option !== $actual_wp_debug) {
-            update_option('mt_debug_enabled', $actual_wp_debug);
+        if (function_exists('get_option') && function_exists('update_option')) {
+            $stored_option = get_option('mt_debug_enabled', false);
+            if ($stored_option !== $actual_wp_debug) {
+                update_option('mt_debug_enabled', $actual_wp_debug);
+            }
         }
 
         // Check display_errors ini setting
@@ -1076,7 +1060,7 @@ class MT_Debug {
             'memory' => memory_get_usage(),
             'peak_memory' => memory_get_peak_usage(),
             'php_version' => PHP_VERSION,
-            'wp_version' => get_bloginfo('version')
+            'wp_version' => function_exists('get_bloginfo') ? get_bloginfo('version') : 'unknown'
         );
 
         if (defined('SAVEQUERIES') && SAVEQUERIES && !empty($wpdb->queries)) {
