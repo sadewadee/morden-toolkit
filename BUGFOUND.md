@@ -1,5 +1,48 @@
 # Bug Report & Fixes - Morden Toolkit
 
+## Debug Mode Toggle Button Not Clickable (fix_014)
+
+**Problem:** Debug mode toggle button (id="debug-mode-toggle") not responding to clicks
+- Main debug mode toggle button cannot be clicked to enable/disable debug mode
+- Only checkbox change events were handled, missing click events for the toggle button
+- Users unable to enable debug mode by clicking the visual toggle switch
+- Toggle button excluded from general toggle initialization but missing specific click handler
+- Other debug constants have click handlers but debug-mode-toggle was missing one
+
+**Solution:** Added click event handler for debug-mode-toggle button
+- Added click event handler for debug-mode-toggle button (.mt-toggle sibling of debug-mode-toggle checkbox)
+- Implemented proper checkbox state toggle and change event trigger
+- Added handler in initializeDebugActions() function after the change event handler
+- Ensures consistent behavior with other debug constant toggles
+- Modified initializeDebugActions() function in admin.js
+
+**Status:** Fixed
+**File:** admin/assets/admin.js
+**Severity:** High
+**Date:** 2025-01-18
+
+## Debug Settings Toggle Buttons Not Clickable (fix_013)
+
+**Problem:** Toggle buttons in debug settings not responding to clicks
+- Toggle buttons with id ending in '-toggle' inside mt-debug-settings cannot be clicked
+- Only checkbox change events were handled, missing click events for toggle buttons
+- Users unable to enable/disable debug constants (WP_DEBUG_LOG, WP_DEBUG_DISPLAY, SCRIPT_DEBUG, SAVEQUERIES, display_errors) by clicking the visual toggle
+- Toggle buttons excluded from general toggle initialization but missing specific click handlers
+- Visual toggle state not updating immediately when checkbox state changes
+
+**Solution:** Added proper click event handlers for debug constant toggle buttons
+- Added click event handlers for debug constant toggle buttons (.mt-toggle siblings of debug constant checkboxes)
+- Implemented proper validation to prevent action when master debug is disabled
+- Added check for disabled wrapper state to prevent clicks on disabled toggles
+- Enhanced visual feedback with immediate toggle state updates
+- Added proper error handling and state reversion for failed operations
+- Modified initializeDebugActions() function in admin.js
+
+**Status:** Fixed
+**File:** admin/assets/admin.js
+**Severity:** Medium
+**Date:** 2024-12-19
+
 ## Performance Metrics Calculation Inconsistency (fix_012)
 
 **Problem:** Performance metrics showing different values between admin bar and details panel

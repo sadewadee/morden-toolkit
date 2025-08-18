@@ -107,15 +107,15 @@ $setting_units = array(
                 <h2><?php _e('Debug Mode Control', 'morden-toolkit'); ?></h2>
 
                 <div class="mt-form-section">
-                    <label class="mt-toggle-label">
-                        <span><?php _e('Enable Debug Mode', 'morden-toolkit'); ?></span>
                         <div class="mt-toggle-wrapper">
                             <input type="checkbox" id="debug-mode-toggle" <?php checked($debug_enabled); ?>>
                             <div class="mt-toggle <?php echo $debug_enabled ? 'active' : ''; ?>">
                                 <div class="mt-toggle-slider"></div>
                             </div>
-                        </div>
-                    </label>
+                        <label class="mt-toggle-label">
+                            <span><?php _e('Enable Debug Mode', 'morden-toolkit'); ?></span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="mt-debug-settings">

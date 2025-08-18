@@ -5,6 +5,21 @@ All notable changes to Morden Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.15] - 2025-01-18
+
+### Fixed
+- Fixed debug mode toggle button (id="debug-mode-toggle") not clickable - main debug mode toggle can now be clicked to enable/disable debug mode
+- Added proper click event handler for debug-mode-toggle button to ensure consistent behavior with other debug constant toggles
+- Enhanced user experience by allowing visual toggle interaction for the master debug mode switch
+
+## [1.2.14] - 2024-12-19
+
+### Fixed
+- Fixed debug settings toggle buttons not clickable - toggle buttons with id ending in '-toggle' inside mt-debug-settings can now be clicked to enable/disable debug constants
+- Added proper click event handlers for debug constant toggle buttons (WP_DEBUG_LOG, WP_DEBUG_DISPLAY, SCRIPT_DEBUG, SAVEQUERIES, display_errors)
+- Improved visual feedback for toggle state changes with immediate UI updates
+- Added proper error handling and state reversion for failed toggle operations
+
 ## [1.2.13] - 2025-08-18
 
 ### Fixed

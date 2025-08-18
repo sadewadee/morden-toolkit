@@ -169,14 +169,18 @@
 /* Toggle Switches */
 .mt-toggle-label {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     font-weight: 500;
     color: #1d2327;
+    flex-direction: column;
 }
 
 .mt-toggle-wrapper {
     position: relative;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row-reverse;
 }
 
 .mt-toggle-wrapper input[type="checkbox"] {

@@ -130,6 +130,12 @@
             });
         });
 
+        // Add click handler for debug-mode-toggle button
+        $('#debug-mode-toggle').siblings('.mt-toggle').on('click', function() {
+            const $checkbox = $(this).siblings('input[type="checkbox"]');
+            $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+        });
+
         // Individual debug constants
         $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle').on('change', function() {
             // Prevent action if master debug is disabled
@@ -147,6 +153,14 @@
             }
 
             const enabled = $(this).is(':checked');
+            const $toggle = $(this).siblings('.mt-toggle');
+
+            // Update visual toggle state immediately
+            if (enabled) {
+                $toggle.addClass('active');
+            } else {
+                $toggle.removeClass('active');
+            }
 
             showLoading();
 
@@ -164,12 +178,42 @@
                     showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
                     // Revert toggle state
                     $(this).prop('checked', !enabled);
+                    // Revert visual toggle state
+                    if (!enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
                 }
             }).fail(function() {
                 hideLoading();
                 showNotice(mtToolkit.strings.error_occurred, 'error');
                 $(this).prop('checked', !enabled);
+                // Revert visual toggle state
+                if (!enabled) {
+                    $toggle.addClass('active');
+                } else {
+                    $toggle.removeClass('active');
+                }
             });
+        });
+
+        // Add click handlers for debug constant toggle buttons
+        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle').siblings('.mt-toggle').on('click', function() {
+            const $checkbox = $(this).siblings('input[type="checkbox"]');
+            
+            // Prevent action if master debug is disabled
+            if (!$('#debug-mode-toggle').is(':checked')) {
+                showNotice('Please enable Debug Mode first', 'error');
+                return;
+            }
+            
+            // Check if the wrapper is disabled
+            if ($(this).closest('.mt-toggle-wrapper').hasClass('disabled')) {
+                return;
+            }
+            
+            $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
         });
     }
 
