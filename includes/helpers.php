@@ -65,6 +65,30 @@ function mt_format_time($time) {
 }
 
 function mt_get_debug_log_path() {
+    // Check if WP_DEBUG_LOG is set to a custom path
+    if (defined('WP_DEBUG_LOG') && is_string(WP_DEBUG_LOG) && WP_DEBUG_LOG !== 'true' && WP_DEBUG_LOG !== '1') {
+        // If it's a relative path, make it absolute
+        if (strpos(WP_DEBUG_LOG, '/') === 0) {
+            return WP_DEBUG_LOG;
+        } else {
+            return ABSPATH . WP_DEBUG_LOG;
+        }
+    }
+
+    // Check for logs in our morden-toolkit directory first
+    $morden_log_dir = WP_CONTENT_DIR . '/morden-toolkit';
+    if (is_dir($morden_log_dir)) {
+        $log_files = glob($morden_log_dir . '/wp-errors-*.log');
+        if (!empty($log_files)) {
+            // Return the most recent log file
+            usort($log_files, function($a, $b) {
+                return filemtime($b) - filemtime($a);
+            });
+            return $log_files[0];
+        }
+    }
+
+    // Fallback to our intended path (even if file doesn't exist yet)
     return WP_CONTENT_DIR . '/morden-toolkit/debug.log';
 }
 
@@ -92,13 +116,13 @@ function mt_ensure_log_directory() {
         } else {
             mkdir($log_dir, 0755, true);
         }
-        
+
 
         $htaccess_file = $log_dir . '/.htaccess';
         if (!file_exists($htaccess_file)) {
             file_put_contents($htaccess_file, "Order deny,allow\nDeny from all\n");
         }
-        
+
 
         $index_file = $log_dir . '/index.php';
         if (!file_exists($index_file)) {
@@ -157,4 +181,57 @@ function mt_sanitize_file_content($content) {
 
 
     return $content;
+}
+
+/**
+ * Clean up old debug log files in morden-toolkit directory
+ * Keep only the most recent 3 debug log files
+ */
+function mt_cleanup_old_debug_logs() {
+    $morden_log_dir = WP_CONTENT_DIR . '/morden-toolkit';
+
+    if (!is_dir($morden_log_dir)) {
+        return 0;
+    }
+
+    $log_files = glob($morden_log_dir . '/wp-errors-*.log');
+
+    if (count($log_files) <= 3) {
+        return 0; // Keep at least 3 files
+    }
+
+    // Sort by modification time, newest first
+    usort($log_files, function($a, $b) {
+        return filemtime($b) - filemtime($a);
+    });
+
+    // Remove files beyond the first 3
+    $removed = 0;
+    for ($i = 3; $i < count($log_files); $i++) {
+        if (unlink($log_files[$i])) {
+            $removed++;
+        }
+    }
+
+    return $removed;
+}
+
+/**
+ * Get all debug log files in morden-toolkit directory
+ */
+function mt_get_all_debug_log_files() {
+    $morden_log_dir = WP_CONTENT_DIR . '/morden-toolkit';
+
+    if (!is_dir($morden_log_dir)) {
+        return [];
+    }
+
+    $log_files = glob($morden_log_dir . '/wp-errors-*.log');
+
+    // Sort by modification time, newest first
+    usort($log_files, function($a, $b) {
+        return filemtime($b) - filemtime($a);
+    });
+
+    return $log_files;
 }

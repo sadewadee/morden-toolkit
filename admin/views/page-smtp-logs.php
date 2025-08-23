@@ -7,7 +7,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$plugin = MT_Plugin::get_instance();
+// Get plugin instance from new architecture
+if (class_exists('ModernToolkit\Core\MT_Plugin')) {
+    $plugin = ModernToolkit\Core\MT_Plugin::getInstance();
+} elseif (function_exists('mt_get_plugin_instance')) {
+    $plugin = mt_get_plugin_instance();
+} else {
+    wp_die('Morden Toolkit plugin not properly initialized');
+}
 $smtp_service = $plugin->get_service('smtp_logger');
 $smtp_status = $smtp_service->get_smtp_status();
 ?>
@@ -198,7 +205,7 @@ jQuery(document).ready(function($) {
     // Load SMTP logs
     function loadSMTPLogs(page = 1, filters = {}) {
         if (isLoading) return;
-        
+
         isLoading = true;
         $('.mt-logs-loading').show();
         $('#mt-logs-content').hide();
@@ -238,12 +245,12 @@ jQuery(document).ready(function($) {
         }
 
         let html = '<div class="mt-logs-list">';
-        
+
         logs.forEach(function(log) {
             let statusClass = 'mt-log-entry-' + log.status;
             let statusIcon = log.status === 'sent' ? 'yes-alt' : (log.status === 'failed' ? 'dismiss' : 'clock');
             let statusColor = log.status === 'sent' ? '#46b450' : (log.status === 'failed' ? '#dc3232' : '#ffb900');
-            
+
             // Prepare raw SMTP session data
             let rawSmtpData = {
                 to_email: log.to_email,
@@ -261,16 +268,16 @@ jQuery(document).ready(function($) {
                 email_source: log.email_source || 'Unknown',
                 mailer: log.mailer || 'Unknown'
             };
-            
+
             html += '<div class="mt-log-entry ' + statusClass + '" data-log-id="' + log.id + '">';
             html += '<div class="log-header" style="cursor: pointer;">';
-            
+
             // Left side: log-to (top) and log-subject (bottom)
             html += '<div class="log-main-info">';
             html += '<div class="log-to">' + log.to_email + '</div>';
             html += '<div class="log-subject">' + (log.subject || 'No subject') + '</div>';
             html += '</div>';
-            
+
             // Right side: log-status (top) and log-time (bottom)
             html += '<div class="log-status-info">';
             html += '<div class="log-status">';
@@ -279,9 +286,9 @@ jQuery(document).ready(function($) {
             html += '</div>';
             html += '<div class="log-time">' + log.created_at + '</div>';
             html += '</div>';
-            
+
             html += '</div>';
-            
+
             // Hidden details section
             html += '<div class="log-details" style="display: none;">';
             html += '<div class="log-details-header"><strong>SMTP Session Details</strong></div>';
@@ -295,51 +302,51 @@ jQuery(document).ready(function($) {
             html += '<div class="log-detail-item"><strong>Server IP:</strong> ' + rawSmtpData.server_ip + '</div>';
             html += '<div class="log-detail-item"><strong>Email Source:</strong> ' + rawSmtpData.email_source + '</div>';
             html += '<div class="log-detail-item"><strong>Mailer:</strong> ' + rawSmtpData.mailer + '</div>';
-            
+
             if (log.status === 'failed' && rawSmtpData.error_message !== 'No error') {
                 html += '<div class="log-detail-item log-error"><strong>Error:</strong> ' + rawSmtpData.error_message + '</div>';
             }
-            
+
             html += '<div class="log-detail-item"><strong>Headers:</strong><pre class="mt-smtp-log-content">' + rawSmtpData.headers + '</pre></div>';
             html += '<div class="log-detail-item"><strong>Message:</strong><pre class="mt-smtp-log-content">' + rawSmtpData.message + '</pre></div>';
-            
+
             if (rawSmtpData.attachments !== 'No attachments') {
                 html += '<div class="log-detail-item"><strong>Attachments:</strong> ' + rawSmtpData.attachments + '</div>';
             }
-            
+
             html += '</div>';
             html += '</div>';
         });
-        
+
         html += '</div>';
-        
+
         // Add pagination if needed
         if (pagination && pagination.total_pages > 1) {
             html += '<div class="mt-logs-pagination">';
-            
+
             if (pagination.current_page > 1) {
                 html += '<button class="button" data-page="' + (pagination.current_page - 1) + '">Previous</button>';
             }
-            
+
             html += '<span class="pagination-info">Page ' + pagination.current_page + ' of ' + pagination.total_pages + '</span>';
-            
+
             if (pagination.current_page < pagination.total_pages) {
                 html += '<button class="button" data-page="' + (pagination.current_page + 1) + '">Next</button>';
             }
-            
+
             html += '</div>';
         }
-        
+
         $('#mt-logs-content').html(html);
-        
+
         // Add click handler for log headers to toggle details
         $('.log-header').on('click', function() {
             const logEntry = $(this).closest('.mt-log-entry');
             const logDetails = logEntry.find('.log-details');
-            
+
             // Toggle details visibility
             logDetails.slideToggle(300);
-            
+
             // Add/remove expanded class for styling
             logEntry.toggleClass('expanded');
         });
@@ -388,13 +395,13 @@ jQuery(document).ready(function($) {
             action: 'mt_download_smtp_logs',
             nonce: '<?php echo wp_create_nonce('mt_smtp_logs_nonce'); ?>'
         });
-        
+
         Object.keys(filters).forEach(key => {
             if (filters[key]) {
                 params.append('filters[' + key + ']', filters[key]);
             }
         });
-        
+
         window.location.href = ajaxurl + '?' + params.toString();
     });
 

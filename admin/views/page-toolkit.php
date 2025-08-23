@@ -8,7 +8,14 @@ if (!defined('ABSPATH')) {
 }
 
 
-$plugin = MT_Plugin::get_instance();
+// Get plugin instance from new architecture
+if (class_exists('ModernToolkit\Core\MT_Plugin')) {
+    $plugin = ModernToolkit\Core\MT_Plugin::getInstance();
+} elseif (function_exists('mt_get_plugin_instance')) {
+    $plugin = mt_get_plugin_instance();
+} else {
+    wp_die('Morden Toolkit plugin not properly initialized');
+}
 $debug_service = $plugin->get_service('debug');
 $query_monitor_service = $plugin->get_service('query_monitor');
 $htaccess_service = $plugin->get_service('htaccess');
@@ -27,11 +34,11 @@ $query_monitor_enabled = get_option('mt_query_monitor_enabled', false);
 $display_errors_on = ini_get('display_errors') == '1' || ini_get('display_errors') === 'On';
 $htaccess_info = $htaccess_service->get_htaccess_info();
 $htaccess_backups = $htaccess_service->get_backups();
-$php_presets = $php_config_service->get_presets();
+$php_presets = $php_config_service->getPresets();
 $current_php_preset = get_option('mt_php_preset', 'medium');
-$php_config_method = $php_config_service->get_config_method_info();
-$current_php_config = $php_config_service->get_current_config();
-$server_memory_info = $php_config_service->get_server_memory_info();
+$php_config_method = $php_config_service->getConfigMethodInfo();
+$current_php_config = $php_config_service->getCurrentConfig();
+$server_memory_info = $php_config_service->getServerMemoryInfo();
 
 // Load custom preset settings
 $custom_settings = get_option('mt_custom_preset_settings', array());

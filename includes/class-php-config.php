@@ -74,30 +74,8 @@ class PhpConfig {
     }
 
     private function load_presets() {
-        try {
-            $presets_file = MT_PLUGIN_DIR . 'data/presets/php-config.json';
-
-            if (file_exists($presets_file)) {
-                $presets_content = file_get_contents($presets_file);
-                if ($presets_content === false) {
-                    throw new Exception('Failed to read presets file');
-                }
-
-                $decoded = json_decode($presets_content, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new Exception('Invalid JSON in presets file: ' . json_last_error_msg());
-                }
-
-                $this->presets = $decoded;
-            }
-
-            if (empty($this->presets)) {
-                $this->presets = $this->get_default_presets();
-            }
-        } catch (Exception $e) {
-
-            $this->presets = $this->get_default_presets();
-        }
+        // Use hardcoded presets only - no external file dependency
+        $this->presets = $this->get_default_presets();
     }
 
     private function get_default_presets() {
@@ -106,7 +84,7 @@ class PhpConfig {
                 'name' => 'Basic',
                 'description' => 'Suitable for small sites with light traffic',
                 'settings' => array(
-                    'memory_limit' => '128M',
+                    'memory_limit' => '256M',
                     'upload_max_filesize' => '8M',
                     'post_max_size' => '16M',
                     'max_execution_time' => '60',
@@ -118,7 +96,7 @@ class PhpConfig {
                 'name' => 'Medium',
                 'description' => 'Good for most WordPress sites',
                 'settings' => array(
-                    'memory_limit' => '256M',
+                    'memory_limit' => '512M',
                     'upload_max_filesize' => '16M',
                     'post_max_size' => '32M',
                     'max_execution_time' => '120',
@@ -130,7 +108,7 @@ class PhpConfig {
                 'name' => 'High Performance',
                 'description' => 'For high-traffic sites and complex applications',
                 'settings' => array(
-                    'memory_limit' => '512M',
+                    'memory_limit' => '1024M',
                     'upload_max_filesize' => '32M',
                     'post_max_size' => '64M',
                     'max_execution_time' => '300',
@@ -1047,7 +1025,7 @@ class PhpConfig {
     private function apply_via_wp_config($settings) {
         // Use safe WPConfigTransformer integration instead of manual string manipulation
         $result = WpConfigIntegration::apply_php_config_safe($settings);
-        
+
         if ($result) {
             return array(
                 'success' => true,

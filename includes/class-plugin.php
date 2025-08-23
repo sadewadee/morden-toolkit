@@ -18,37 +18,50 @@ class Plugin {
     }
 
     private function __construct() {
+        // Safety check: Don't initialize if new architecture is active
+        if (get_option('mt_using_new_architecture', false)) {
+            error_log('MT: Legacy Plugin prevented from initializing - new architecture is active');
+            return;
+        }
+
         $this->init_hooks();
         $this->init_services();
     }
 
     private function init_hooks() {
         if (function_exists('add_action')) {
+            // Check if new architecture is active to avoid duplicate handler registrations
+            $using_new_architecture = get_option('mt_using_new_architecture', false);
+
             add_action('admin_menu', array($this, 'add_admin_menu'));
             add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
             add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
-            add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
-            add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
-            add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
-            add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
-            add_action('wp_ajax_mt_get_query_logs', array($this, 'ajax_get_query_logs'));
-            add_action('wp_ajax_mt_clear_query_log', array($this, 'ajax_clear_query_log'));
-            add_action('wp_ajax_mt_cleanup_query_logs', array($this, 'ajax_cleanup_query_logs'));
-            add_action('wp_ajax_mt_get_log_info', array($this, 'ajax_get_log_info'));
-            add_action('wp_ajax_mt_download_query_logs', array($this, 'ajax_download_query_logs'));
-            add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
-            add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
-            add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
-            add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
-            add_action('wp_ajax_mt_save_custom_preset', array($this, 'ajax_save_custom_preset'));
-            add_action('wp_ajax_mt_reset_custom_preset', array($this, 'ajax_reset_custom_preset'));
-            
-            // SMTP Logs AJAX endpoints
-            add_action('wp_ajax_mt_get_smtp_logs', array($this, 'ajax_get_smtp_logs'));
-            add_action('wp_ajax_mt_clear_smtp_logs', array($this, 'ajax_clear_smtp_logs'));
-            add_action('wp_ajax_mt_download_smtp_logs', array($this, 'ajax_download_smtp_logs'));
-            add_action('wp_ajax_mt_send_test_email', array($this, 'ajax_send_test_email'));
-            add_action('wp_ajax_mt_toggle_smtp_logging_setting', array($this, 'ajax_toggle_smtp_logging_setting'));
+
+            // Only register AJAX handlers if new architecture is not active
+            if (!$using_new_architecture) {
+                add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
+                add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
+                add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
+                add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
+                add_action('wp_ajax_mt_get_query_logs', array($this, 'ajax_get_query_logs'));
+                add_action('wp_ajax_mt_clear_query_log', array($this, 'ajax_clear_query_log'));
+                add_action('wp_ajax_mt_cleanup_query_logs', array($this, 'ajax_cleanup_query_logs'));
+                add_action('wp_ajax_mt_get_log_info', array($this, 'ajax_get_log_info'));
+                add_action('wp_ajax_mt_download_query_logs', array($this, 'ajax_download_query_logs'));
+                add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
+                add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
+                add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
+                add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
+                add_action('wp_ajax_mt_save_custom_preset', array($this, 'ajax_save_custom_preset'));
+                add_action('wp_ajax_mt_reset_custom_preset', array($this, 'ajax_reset_custom_preset'));
+
+                // SMTP Logs AJAX endpoints
+                add_action('wp_ajax_mt_get_smtp_logs', array($this, 'ajax_get_smtp_logs'));
+                add_action('wp_ajax_mt_clear_smtp_logs', array($this, 'ajax_clear_smtp_logs'));
+                add_action('wp_ajax_mt_download_smtp_logs', array($this, 'ajax_download_smtp_logs'));
+                add_action('wp_ajax_mt_send_test_email', array($this, 'ajax_send_test_email'));
+                add_action('wp_ajax_mt_toggle_smtp_logging_setting', array($this, 'ajax_toggle_smtp_logging_setting'));
+            }
 
             add_action('init', array($this, 'schedule_log_cleanup'));
             add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
@@ -161,10 +174,10 @@ class Plugin {
     }
 
     public function enqueue_frontend_scripts() {
-        $enabled = (function_exists('get_option') ? get_option('mt_query_monitor_enabled') : false) && 
-                   (function_exists('is_user_logged_in') ? is_user_logged_in() : false) && 
+        $enabled = (function_exists('get_option') ? get_option('mt_query_monitor_enabled') : false) &&
+                   (function_exists('is_user_logged_in') ? is_user_logged_in() : false) &&
                    (function_exists('current_user_can') ? current_user_can('manage_options') : false);
-        
+
         if (!$enabled) {
             return;
         }
@@ -263,7 +276,7 @@ class Plugin {
         $result = $this->services['debug']->toggle_debug_constant($constant, $enabled);
 
         if ($result) {
-    
+
             $status = $this->services['debug']->get_debug_status();
 
             mt_send_json_success(array(
@@ -374,6 +387,14 @@ class Plugin {
 
         $this->services['debug']->cleanup_old_query_logs();
 
+        // Clean up old debug log files with random names
+        if (function_exists('mt_cleanup_old_debug_logs')) {
+            $removed = mt_cleanup_old_debug_logs();
+            if ($removed > 0) {
+                error_log("MT: Cleaned up {$removed} old debug log files");
+            }
+        }
+
 
         $debug_log_path = mt_get_debug_log_path();
         if (file_exists($debug_log_path)) {
@@ -381,7 +402,7 @@ class Plugin {
             $max_debug_size = mt_get_debug_log_max_size();
 
             if ($debug_log_size > $max_debug_size) {
-    
+
                 $this->truncate_debug_log($debug_log_path, 10000);
             }
         }
@@ -442,10 +463,10 @@ class Plugin {
 
         // Use wp_unslash to remove WordPress auto-added slashes, then basic sanitization
         $content = wp_unslash($_POST['content']);
-        
+
         // Basic sanitization without escaping special characters needed for .htaccess
         $content = wp_kses($content, array());
-        
+
         $result = $this->services['htaccess']->save_htaccess($content);
 
         if ($result) {
@@ -476,7 +497,7 @@ class Plugin {
         }
 
         $preset = sanitize_text_field($_POST['preset']);
-        $result = $this->services['php_config']->apply_preset($preset);
+        $result = $this->services['php_config']->applyPreset($preset);
 
         if ($result) {
             update_option('mt_php_preset', $preset);
@@ -497,7 +518,7 @@ class Plugin {
         }
 
         // Validate and sanitize settings
-        $validated_settings = $this->services['php_config']->validate_custom_settings($settings);
+        $validated_settings = $this->services['php_config']->validateCustomSettings($settings);
         if (!$validated_settings) {
             mt_send_json_error(__('Invalid configuration values.', 'morden-toolkit'));
         }
@@ -506,7 +527,7 @@ class Plugin {
         update_option('mt_custom_preset_settings', $validated_settings);
 
         // Update the custom preset in php_config service
-        $this->services['php_config']->update_custom_preset($validated_settings);
+        $this->services['php_config']->updateCustomPreset($validated_settings);
 
         mt_send_json_success(__('Custom preset saved successfully.', 'morden-toolkit'));
     }
@@ -518,7 +539,7 @@ class Plugin {
 
         // Reset to default custom preset values
         delete_option('mt_custom_preset_settings');
-        
+
         mt_send_json_success(__('Custom preset reset successfully.', 'morden-toolkit'));
     }
 
@@ -535,20 +556,20 @@ class Plugin {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
         $per_page = 20;
         $offset = ($page - 1) * $per_page;
-        
+
         $filters = isset($_POST['filters']) ? $_POST['filters'] : array();
-        
+
         $logs = $smtp_service->get_logs($per_page, $offset, $filters);
         $total_logs = $smtp_service->get_logs_count($filters);
         $total_pages = ceil($total_logs / $per_page);
-        
+
         $pagination = array(
             'current_page' => $page,
             'total_pages' => $total_pages,
             'total_logs' => $total_logs,
             'per_page' => $per_page
         );
-        
+
         mt_send_json_success(array(
             'logs' => $logs,
             'pagination' => $pagination
@@ -566,7 +587,7 @@ class Plugin {
         }
 
         $result = $smtp_service->clear_logs();
-        
+
         if ($result !== false) {
             mt_send_json_success(__('SMTP logs cleared successfully.', 'morden-toolkit'));
         } else {
@@ -586,20 +607,20 @@ class Plugin {
 
         $filters = isset($_GET['filters']) ? $_GET['filters'] : array();
         $csv_data = $smtp_service->export_logs_csv($filters);
-        
+
         $filename = 'mail-logs-' . date('Y-m-d-H-i-s') . '.csv';
-        
+
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
-        
+
         $output = fopen('php://output', 'w');
-        
+
         foreach ($csv_data as $row) {
             fputcsv($output, $row);
         }
-        
+
         fclose($output);
         exit;
     }
@@ -611,7 +632,7 @@ class Plugin {
 
         $admin_email = get_option('admin_email');
         $site_name = get_option('blogname');
-        
+
         $subject = sprintf(__('[%s] SMTP Test Email', 'morden-toolkit'), $site_name);
         $message = sprintf(
             __('This is a test email sent from Morden Toolkit SMTP logging feature.\n\nSite: %s\nTime: %s\nUser: %s', 'morden-toolkit'),
@@ -619,9 +640,9 @@ class Plugin {
             current_time('mysql'),
             wp_get_current_user()->display_name
         );
-        
+
         $result = wp_mail($admin_email, $subject, $message);
-        
+
         if ($result) {
             mt_send_json_success(__('Test email sent successfully.', 'morden-toolkit'));
         } else {

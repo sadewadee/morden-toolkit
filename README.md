@@ -182,17 +182,28 @@ vendor/bin/phpunit
 
 ## License
 
-GPL v2 or later - see [LICENSE](LICENSE) file
+**GPL v3 or later** - see [LICENSE](LICENSE) file
+
+### Third-Party Components
+
+This plugin includes third-party components with their respective licenses:
+
+- **WPConfigTransformer** - MIT License (wp-cli/wp-config-transformer)
+  - Used for safe wp-config.php modifications
+  - Original: https://github.com/wp-cli/wp-config-transformer
+  - See [LICENSES.md](LICENSES.md) for complete license details
+
+**License Compatibility:** MIT licensed components are compatible with GPL v3 distribution.
 
 ## Support
 
 - **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/morden-pro/morden-toolkit/issues)
+- **Issues:** [GitHub Issues](https://github.com/sadewadee/morden-toolkit/issues)
 - **Support Forum:** [WordPress.org Support](https://wordpress.org/support/plugin/morden-toolkit/)
 
 ## Credits
 
-Developed by [Morden Pro](https://morden.pro) with focus on simplicity, safety, and developer experience.
+Developed by [Morden Team](https://mordenhost.com) with focus on simplicity, safety, and developer experience.
 
 ---
 

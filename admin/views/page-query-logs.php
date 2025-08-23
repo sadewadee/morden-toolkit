@@ -8,7 +8,14 @@ if (!defined('ABSPATH')) {
 }
 
 
-$plugin = MT_Plugin::get_instance();
+// Get plugin instance from new architecture
+if (class_exists('ModernToolkit\Core\MT_Plugin')) {
+    $plugin = ModernToolkit\Core\MT_Plugin::getInstance();
+} elseif (function_exists('mt_get_plugin_instance')) {
+    $plugin = mt_get_plugin_instance();
+} else {
+    wp_die('Morden Toolkit plugin not properly initialized');
+}
 $debug_service = $plugin->get_service('debug');
 $debug_status = $debug_service->get_debug_status();
 ?>
