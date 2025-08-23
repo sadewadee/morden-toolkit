@@ -1,97 +1,12 @@
 <?php
-/**
- * Query Monitor Service - Performance metrics display
- */
+
+namespace ModernToolkit;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// WordPress function fallbacks for standalone testing
-if (!function_exists('is_user_logged_in')) {
-    function is_user_logged_in() { return true; }
-}
-if (!function_exists('add_action')) {
-    function add_action($hook, $callback, $priority = 10) { return true; }
-}
-if (!function_exists('current_user_can')) {
-    function current_user_can($capability) { return true; }
-}
-if (!function_exists('esc_html')) {
-    function esc_html($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
-}
-if (!function_exists('esc_attr')) {
-    function esc_attr($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
-}
-if (!function_exists('esc_url')) {
-    function esc_url($url) { return htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); }
-}
-if (!function_exists('_e')) {
-    function _e($text, $domain = 'default') { echo $text; }
-}
-if (!function_exists('__')) {
-    function __($text, $domain = 'default') { return $text; }
-}
-if (!function_exists('printf')) {
-    function printf($format, ...$args) { echo sprintf($format, ...$args); }
-}
-if (!function_exists('get_transient')) {
-    function get_transient($transient) { return false; }
-}
-if (!function_exists('set_transient')) {
-    function set_transient($transient, $value, $expiration = 0) { return true; }
-}
-if (!function_exists('get_current_user_id')) {
-    function get_current_user_id() { return 1; }
-}
-if (!function_exists('get_bloginfo')) {
-    function get_bloginfo($show = '') { return 'Test Site'; }
-}
-if (!function_exists('get_option')) {
-    function get_option($option, $default = false) { return $default; }
-}
-if (!function_exists('mt_format_bytes')) {
-    function mt_format_bytes($bytes) {
-        if ($bytes >= 1073741824) {
-            return number_format($bytes / 1073741824, 2) . 'GB';
-        } elseif ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2) . 'MB';
-        } elseif ($bytes >= 1024) {
-            return number_format($bytes / 1024, 2) . 'KB';
-        } else {
-            return $bytes . 'B';
-        }
-    }
-}
-
-// Mock global variables for testing
-if (!isset($wpdb)) {
-    $wpdb = new stdClass();
-    $wpdb->num_queries = 0;
-    $wpdb->queries = array();
-}
-if (!isset($wp_scripts)) {
-    $wp_scripts = new stdClass();
-    $wp_scripts->done = array();
-    $wp_scripts->registered = array();
-    $wp_scripts->groups = array();
-}
-if (!isset($wp_styles)) {
-    $wp_styles = new stdClass();
-    $wp_styles->done = array();
-    $wp_styles->registered = array();
-}
-if (!defined('ABSPATH')) {
-    define('ABSPATH', '/var/www/html/');
-}
-if (!defined('SAVEQUERIES')) {
-    define('SAVEQUERIES', false);
-}
-if (!defined('SCRIPT_DEBUG')) {
-    define('SCRIPT_DEBUG', false);
-}
-
-class MT_Query_Monitor {
+class QueryMonitor {
 
     private $metrics = array();
 
@@ -183,7 +98,7 @@ class MT_Query_Monitor {
         $query_time = isset($metrics['query_time']) ? $metrics['query_time'] : 0;
 
         $time_formatted = number_format($execution_time, 3) . 's';
-        $memory_formatted = $this->mt_format_bytes($peak_memory);
+        $memory_formatted = mt_format_bytes($peak_memory);
         $db_time_formatted = number_format($query_time * 1000, 1) . 'ms';
 
         // Format like Query Monitor: time, memory, database time, queries
@@ -242,7 +157,7 @@ class MT_Query_Monitor {
         $query_time = isset($metrics['query_time']) ? $metrics['query_time'] : 0;
 
         $time_formatted = number_format($execution_time, 3) . 's';
-        $memory_formatted = $this->mt_format_bytes($peak_memory);
+        $memory_formatted = mt_format_bytes($peak_memory);
         $db_time_formatted = number_format($query_time * 1000, 1) . 'ms';
 
         // Get counts for tab titles - use same logic as admin bar
@@ -360,7 +275,7 @@ class MT_Query_Monitor {
                                     echo 'Memory Used:';
                                 }
                                 ?></td>
-                                <td><?php echo function_exists('esc_html') ? esc_html(function_exists('mt_format_bytes') ? mt_format_bytes($metrics['memory_usage'] ?? 0) : $this->mt_format_bytes($metrics['memory_usage'] ?? 0)) : htmlspecialchars($this->mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>
+                                <td><?php echo function_exists('esc_html') ? esc_html(mt_format_bytes($metrics['memory_usage'] ?? 0)) : htmlspecialchars(mt_format_bytes($metrics['memory_usage'] ?? 0)); ?></td>
                             </tr>
                             <tr>
                                 <td><?php
@@ -501,17 +416,13 @@ class MT_Query_Monitor {
         <?php
     }
 
-    /**
-     * Get performance status class based on metrics
-     */
     private function get_performance_status_class($execution_time, $query_count, $memory) {
-        // Define thresholds
-        $time_warning = 2.0; // seconds
+        $time_warning = 2.0;
         $time_poor = 5.0;
         $query_warning = 50;
         $query_poor = 100;
-        $memory_warning = 64 * 1024 * 1024; // 64MB
-        $memory_poor = 128 * 1024 * 1024; // 128MB
+        $memory_warning = 64 * 1024 * 1024;
+        $memory_poor = 128 * 1024 * 1024;
 
         $issues = 0;
 
@@ -526,9 +437,6 @@ class MT_Query_Monitor {
         return 'good';
     }
 
-    /**
-     * Get detailed query information
-     */
     public function get_query_details() {
         global $wpdb;
 
@@ -549,9 +457,6 @@ class MT_Query_Monitor {
         return $queries;
     }
 
-    /**
-     * Render queries tab content
-     */
     private function render_queries_tab() {
         global $wpdb;
 
@@ -608,26 +513,20 @@ class MT_Query_Monitor {
         echo '</table>';
     }
 
-    /**
-     * Get remote file size with safe measurement
-     */
     private function get_remote_file_size($url) {
-        // Use cached result if available
         $cache_key = 'mt_file_size_' . md5($url);
         $cached_size = get_transient($cache_key);
         if ($cached_size !== false) {
             return $cached_size;
         }
-
-        // Try to get actual file size with safe timeout
         if (function_exists('curl_init')) {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_NOBODY, true);
             curl_setopt($ch, CURLOPT_HEADER, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // 3 second timeout
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 2 second connect timeout
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -640,8 +539,7 @@ class MT_Query_Monitor {
             if ($http_code === 200 && $headers) {
                 if (preg_match('/Content-Length:\s*(\d+)/i', $headers, $matches)) {
                     $size_bytes = intval($matches[1]);
-                    $formatted_size = function_exists('mt_format_bytes') ? mt_format_bytes($size_bytes) : $this->mt_format_bytes($size_bytes);
-                    // Cache for 1 hour
+                    $formatted_size = mt_format_bytes($size_bytes);
                     if (function_exists('set_transient')) {
                         set_transient($cache_key, $formatted_size, 3600);
                     }
@@ -650,7 +548,7 @@ class MT_Query_Monitor {
             }
         }
 
-        // Fallback to domain-based estimates
+
         $domain = parse_url($url, PHP_URL_HOST);
         $fallback_size = 'Unknown';
 
@@ -662,25 +560,18 @@ class MT_Query_Monitor {
             $fallback_size = '~50KB';
         }
 
-        // Cache fallback for 30 minutes
         if (function_exists('set_transient')) {
             set_transient($cache_key, $fallback_size, 1800);
         }
         return $fallback_size;
     }
 
-    /**
-     * Get estimated load time with real measurement
-     */
     private function get_estimated_load_time($url, $file_size = null) {
-        // Use cached result if available
         $cache_key = 'mt_load_time_' . md5($url);
         $cached_time = get_transient($cache_key);
         if ($cached_time !== false) {
             return $cached_time;
         }
-
-        // For local files, estimate based on file size
         if ($file_size && !filter_var($url, FILTER_VALIDATE_URL)) {
             if ($file_size < 10000) return $this->format_load_time_with_color(5, 'good');
             if ($file_size < 50000) return $this->format_load_time_with_color(25, 'good');
@@ -689,7 +580,7 @@ class MT_Query_Monitor {
             return $this->format_load_time_with_color(300, 'danger');
         }
 
-        // For external files, try real measurement
+
         if (strpos($url, 'http') === 0 && function_exists('curl_init')) {
             $start_time = microtime(true);
 
@@ -697,8 +588,8 @@ class MT_Query_Monitor {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_NOBODY, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // 3 second connect timeout
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -713,7 +604,6 @@ class MT_Query_Monitor {
 
             if ($http_code === 200) {
                 $formatted_time = $this->format_load_time_with_color($load_time_ms, $this->get_load_time_status($load_time_ms));
-                // Cache for 30 minutes
                 if (function_exists('set_transient')) {
                     set_transient($cache_key, $formatted_time, 1800);
                 }
@@ -721,40 +611,30 @@ class MT_Query_Monitor {
             }
         }
 
-        // Fallback estimates
         if (strpos($url, 'http') === 0) {
-            return $this->format_load_time_with_color(120, 'warning'); // Default external estimate
+            return $this->format_load_time_with_color(120, 'warning');
         }
 
         return 'N/A';
     }
 
-    /**
-     * Get load time status based on milliseconds
-     */
     private function get_load_time_status($ms) {
         if ($ms <= 100) return 'good';
         if ($ms <= 300) return 'warning';
         return 'danger';
     }
 
-    /**
-     * Format load time with color coding
-     */
     private function format_load_time_with_color($ms, $status) {
         $class = 'load-time-' . $status;
         return '<span class="' . $class . '">' . $ms . 'ms</span>';
     }
 
-    /**
-     * Get file size status and format with color
-     */
     private function format_file_size_with_color($size_str) {
         if (empty($size_str) || $size_str === 'N/A' || $size_str === 'Unknown') {
             return $size_str;
         }
 
-        // Extract numeric value for comparison
+
         $size_bytes = 0;
         if (preg_match('/(\d+(?:\.\d+)?)\s*(KB|MB|GB|B)/i', $size_str, $matches)) {
             $value = floatval($matches[1]);
@@ -776,9 +656,9 @@ class MT_Query_Monitor {
         }
 
         $status = 'good';
-        if ($size_bytes > 500000) { // > 500KB
+        if ($size_bytes > 500000) {
             $status = 'danger';
-        } elseif ($size_bytes > 100000) { // > 100KB
+        } elseif ($size_bytes > 100000) {
             $status = 'warning';
         }
 
@@ -786,24 +666,8 @@ class MT_Query_Monitor {
         return '<span class="' . $class . '">' . $size_str . '</span>';
     }
 
-    /**
-     * Format bytes to human readable format
-     */
-    private function mt_format_bytes($bytes) {
-        if ($bytes >= 1073741824) {
-            return number_format($bytes / 1073741824, 2) . 'GB';
-        } elseif ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2) . 'MB';
-        } elseif ($bytes >= 1024) {
-            return number_format($bytes / 1024, 2) . 'KB';
-        } else {
-            return $bytes . 'B';
-        }
-    }
 
-    /**
-     * Render scripts tab content
-     */
+
     private function render_scripts_tab() {
         global $wp_scripts;
 
@@ -836,13 +700,13 @@ class MT_Query_Monitor {
             $src = $script->src;
             $version = $script->ver ? $script->ver : 'N/A';
 
-            // Determine position
+
             $position = 'footer';
             if (isset($wp_scripts->groups[$handle]) && $wp_scripts->groups[$handle] === 0) {
                 $position = 'header';
             }
 
-            // Parse hostname and source info
+
             $hostname = 'Local';
             $source_path = $src;
             $component_type = 'WordPress Core';
@@ -851,13 +715,13 @@ class MT_Query_Monitor {
             $load_time = 'N/A';
 
             if ($src) {
-                // Handle full URLs
+
                 if (strpos($src, 'http') === 0) {
                     $parsed_url = parse_url($src);
                     if (isset($parsed_url['host'])) {
                         $hostname = $parsed_url['host'];
 
-                        // Check for external sources like Google Fonts
+
                         if (strpos($hostname, 'fonts.googleapis.com') !== false ||
                             strpos($hostname, 'fonts.gstatic.com') !== false) {
                             $component_type = 'WordPress Core Component (Herald Fonts)';
@@ -865,20 +729,20 @@ class MT_Query_Monitor {
                     }
                     $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($src) : htmlspecialchars($src)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
 
-                    // Try to get file size for external files (simulated)
+
                     $file_size = $this->get_remote_file_size($src);
                     $load_time = $this->get_estimated_load_time($src);
                 } else {
-                    // Handle relative URLs - get site URL
+
                     $site_url = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
                     $hostname = $site_url;
                     $full_url = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $site_url . $src;
                     $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($full_url) : htmlspecialchars($full_url)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
 
-                    // Try to get local file size
+
                     $local_path = ABSPATH . ltrim($src, '/');
                     if (file_exists($local_path)) {
-                        $file_size = function_exists('mt_format_bytes') ? mt_format_bytes(filesize($local_path)) : $this->mt_format_bytes(filesize($local_path));
+                        $file_size = mt_format_bytes(filesize($local_path));
                         $load_time = $this->get_estimated_load_time($src, filesize($local_path));
                     }
                 }
@@ -919,9 +783,6 @@ class MT_Query_Monitor {
         echo '</table>';
     }
 
-    /**
-     * Render styles tab content
-     */
     private function render_styles_tab() {
         global $wp_styles;
 
@@ -955,10 +816,10 @@ class MT_Query_Monitor {
             $version = $style->ver ? $style->ver : 'N/A';
             $media = $style->args;
 
-            // Determine position (CSS is typically in header)
+
             $position = 'header';
 
-            // Parse hostname and source info
+
             $hostname = 'Local';
             $source_path = $src;
             $component_type = 'WordPress Core';
@@ -967,13 +828,13 @@ class MT_Query_Monitor {
             $load_time = 'N/A';
 
             if ($src) {
-                // Handle full URLs
+
                 if (strpos($src, 'http') === 0) {
                     $parsed_url = parse_url($src);
                     if (isset($parsed_url['host'])) {
                         $hostname = $parsed_url['host'];
 
-                        // Check for external sources like Google Fonts
+
                         if (strpos($hostname, 'fonts.googleapis.com') !== false ||
                             strpos($hostname, 'fonts.gstatic.com') !== false) {
                             $component_type = 'WordPress Core Component (Herald Fonts)';
@@ -981,20 +842,20 @@ class MT_Query_Monitor {
                     }
                     $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($src) : htmlspecialchars($src)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
 
-                    // Try to get file size for external files (simulated)
+
                     $file_size = $this->get_remote_file_size($src);
                     $load_time = $this->get_estimated_load_time($src);
                 } else {
-                    // Handle relative URLs - get site URL
+
                     $site_url = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
                     $hostname = $site_url;
                     $full_url = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $site_url . $src;
                     $clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($full_url) : htmlspecialchars($full_url)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
 
-                    // Try to get local file size
+
                     $local_path = ABSPATH . ltrim($src, '/');
                     if (file_exists($local_path)) {
-                        $file_size = function_exists('mt_format_bytes') ? mt_format_bytes(filesize($local_path)) : $this->mt_format_bytes(filesize($local_path));
+                        $file_size = mt_format_bytes(filesize($local_path));
                         $load_time = $this->get_estimated_load_time($src, filesize($local_path));
                     }
                 }
@@ -1035,9 +896,6 @@ class MT_Query_Monitor {
         echo '</table>';
     }
 
-    /**
-     * Get query type from SQL
-     */
     private function get_query_type($sql) {
         $sql = trim(strtoupper($sql));
 

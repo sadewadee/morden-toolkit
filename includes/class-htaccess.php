@@ -1,23 +1,15 @@
 <?php
-/**
- * Htaccess Service - Safe .htaccess file editing with auto-backup
- */
 
-// Prevent direct access
+namespace ModernToolkit;
+
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class MT_Htaccess {
+class Htaccess {
 
-    /**
-     * Maximum number of backups to keep
-     */
     const MAX_BACKUPS = 3;
 
-    /**
-     * Get .htaccess file content
-     */
     public function get_htaccess_content() {
         $htaccess_path = mt_get_htaccess_path();
 
@@ -28,38 +20,28 @@ class MT_Htaccess {
         return file_get_contents($htaccess_path);
     }
 
-    /**
-     * Save .htaccess file with automatic backup
-     */
     public function save_htaccess($content) {
         $htaccess_path = mt_get_htaccess_path();
 
-        // Validate content before saving
         if (!$this->validate_htaccess_content($content)) {
             return false;
         }
 
-        // Create backup before saving
         if (file_exists($htaccess_path)) {
             $this->create_backup();
         }
-
-        // Sanitize content
         $content = mt_sanitize_file_content($content);
         if ($content === false) {
             return false;
         }
 
-        // Save file
         $result = file_put_contents($htaccess_path, $content);
 
         if ($result === false) {
             return false;
         }
 
-        // Test if the site is still accessible after the change
         if (!$this->test_htaccess_validity()) {
-            // Restore from backup if site is broken
             $this->restore_latest_backup();
             return false;
         }
@@ -67,9 +49,6 @@ class MT_Htaccess {
         return true;
     }
 
-    /**
-     * Create backup of current .htaccess file
-     */
     private function create_backup() {
         $htaccess_path = mt_get_htaccess_path();
 
@@ -80,7 +59,6 @@ class MT_Htaccess {
         $content = file_get_contents($htaccess_path);
         $backups = get_option('morden_htaccess_backups', array());
 
-        // Add new backup
         $backup = array(
             'timestamp' => current_time('timestamp'),
             'content' => $content,
@@ -88,8 +66,6 @@ class MT_Htaccess {
         );
 
         array_unshift($backups, $backup);
-
-        // Keep only the latest MAX_BACKUPS
         if (count($backups) > self::MAX_BACKUPS) {
             $backups = array_slice($backups, 0, self::MAX_BACKUPS);
         }
@@ -98,16 +74,10 @@ class MT_Htaccess {
         return true;
     }
 
-    /**
-     * Get all backups
-     */
     public function get_backups() {
         return get_option('morden_htaccess_backups', array());
     }
 
-    /**
-     * Restore .htaccess from backup
-     */
     public function restore_htaccess($backup_index) {
         $backups = $this->get_backups();
 
@@ -118,7 +88,6 @@ class MT_Htaccess {
         $backup = $backups[$backup_index];
         $htaccess_path = mt_get_htaccess_path();
 
-        // Create backup of current state before restoring
         if (file_exists($htaccess_path)) {
             $this->create_backup();
         }
@@ -126,9 +95,6 @@ class MT_Htaccess {
         return file_put_contents($htaccess_path, $backup['content']) !== false;
     }
 
-    /**
-     * Restore from latest backup (used for error recovery)
-     */
     private function restore_latest_backup() {
         $backups = $this->get_backups();
 
@@ -142,11 +108,7 @@ class MT_Htaccess {
         return file_put_contents($htaccess_path, $latest_backup['content']) !== false;
     }
 
-    /**
-     * Validate .htaccess content for basic syntax errors
-     */
     private function validate_htaccess_content($content) {
-        // Check for common dangerous patterns
         $dangerous_patterns = array(
             '/php_value\s+auto_prepend_file/i',
             '/php_value\s+auto_append_file/i',
@@ -163,21 +125,16 @@ class MT_Htaccess {
             }
         }
 
-        // Check for basic Apache directive syntax
         $lines = explode("\n", $content);
         foreach ($lines as $line_num => $line) {
             $line = trim($line);
 
-            // Skip empty lines and comments
             if (empty($line) || $line[0] === '#') {
                 continue;
             }
-
-            // Check for unclosed directives
             if (preg_match('/^<(\w+)/i', $line, $matches)) {
                 $directive = $matches[1];
                 if (!preg_match('/<\/' . preg_quote($directive, '/') . '>/i', $content)) {
-                    // Allow self-closing directives
                     if (!preg_match('/\/>\s*$/', $line)) {
                         return false;
                     }
@@ -188,13 +145,9 @@ class MT_Htaccess {
         return true;
     }
 
-    /**
-     * Test if .htaccess is valid by making a simple HTTP request
-     */
     private function test_htaccess_validity() {
         $site_url = home_url('/');
 
-        // Simple HEAD request to check if site is accessible
         $response = wp_remote_head($site_url, array(
             'timeout' => 10,
             'sslverify' => false
@@ -206,13 +159,9 @@ class MT_Htaccess {
 
         $response_code = wp_remote_retrieve_response_code($response);
 
-        // Consider 2xx and 3xx responses as valid
         return $response_code >= 200 && $response_code < 400;
     }
 
-    /**
-     * Get .htaccess file info
-     */
     public function get_htaccess_info() {
         $htaccess_path = mt_get_htaccess_path();
 
@@ -230,23 +179,16 @@ class MT_Htaccess {
             $info['size'] = filesize($htaccess_path);
             $info['modified'] = filemtime($htaccess_path);
         } else {
-            // Check if we can create the file
             $info['writable'] = is_writable(ABSPATH);
         }
 
         return $info;
     }
 
-    /**
-     * Clear all backups
-     */
     public function clear_backups() {
         return delete_option('morden_htaccess_backups');
     }
 
-    /**
-     * Get common .htaccess snippets
-     */
     public function get_common_snippets() {
         return array(
             'wordpress_rewrite' => array(

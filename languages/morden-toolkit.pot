@@ -280,7 +280,7 @@ msgid "Query Monitor"
 msgstr ""
 
 #: admin/views/page-toolkit.php:56
-msgid "File Editor"
+msgid ".htaccess Editor"
 msgstr ""
 
 #: admin/views/page-toolkit.php:60

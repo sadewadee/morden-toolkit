@@ -1013,3 +1013,231 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* SMTP Logs - Using Base Classes for Consistency */
+
+/* Updated SMTP Log Entry Styles */
+.mt-log-entry {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f1;
+    transition: all 0.2s ease;
+}
+
+.mt-log-entry:hover {
+    background-color: #f6f7f7;
+}
+
+.mt-log-entry:last-child {
+    border-bottom: none;
+}
+
+.mt-log-entry.expanded {
+    background-color: #f9f9f9;
+}
+
+/* Log Header Layout */
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.log-header:hover {
+    background-color: rgba(0, 115, 170, 0.05);
+    border-radius: 4px;
+    margin: -4px;
+    padding: 12px 4px;
+}
+
+/* Left side: log-to (top) and log-subject (bottom) */
+.log-main-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.log-to {
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.log-subject {
+    color: #646970;
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* Right side: log-status (top) and log-time (bottom) */
+.log-status-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 120px;
+}
+
+.log-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.log-status .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.log-time {
+    font-size: 11px;
+    color: #8c8f94;
+    text-align: right;
+}
+
+/* Log Details Section */
+.log-details {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.log-details-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    color: #495057;
+    font-size: 14px;
+}
+
+.log-detail-item {
+    margin-bottom: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.log-detail-item strong {
+    min-width: 80px;
+    color: #495057;
+}
+
+.log-detail-item pre {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 8px;
+    margin: 4px 0;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.log-detail-item.log-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 8px;
+    border-radius: 3px;
+    margin: 8px 0;
+}
+
+
+
+/* Removed duplicate SMTP-specific classes - using general log classes instead */
+
+/* SMTP Status Warning */
+.mt-smtp-status-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #856404;
+}
+
+.mt-smtp-status-warning .dashicons {
+    color: #f39c12;
+    margin-right: 8px;
+}
+
+/* Test Email Modal */
+.mt-test-email-modal {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.mt-test-email-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 4px;
+    width: 500px;
+    max-width: 90%;
+}
+
+.mt-test-email-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.mt-test-email-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #646970;
+}
+
+.mt-test-email-form .form-table {
+    margin-bottom: 20px;
+}
+
+.mt-test-email-form .form-table th {
+    width: 100px;
+    text-align: left;
+    padding: 10px 0;
+}
+
+.mt-test-email-form .form-table td {
+    padding: 10px 0;
+}
+
+.mt-test-email-form input[type="email"],
+.mt-test-email-form input[type="text"],
+.mt-test-email-form textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+}
+
+.mt-test-email-form textarea {
+    height: 100px;
+    resize: vertical;
+}

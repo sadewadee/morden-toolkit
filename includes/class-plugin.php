@@ -1,19 +1,15 @@
 <?php
-/**
- * Main plugin class - Service Container
- */
+
+namespace ModernToolkit;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class MT_Plugin {
+class Plugin {
     private static $instance = null;
     private $services = array();
 
-    /**
-     * Get plugin instance
-     */
     public static function get_instance() {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -46,6 +42,13 @@ class MT_Plugin {
             add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
             add_action('wp_ajax_mt_save_custom_preset', array($this, 'ajax_save_custom_preset'));
             add_action('wp_ajax_mt_reset_custom_preset', array($this, 'ajax_reset_custom_preset'));
+            
+            // SMTP Logs AJAX endpoints
+            add_action('wp_ajax_mt_get_smtp_logs', array($this, 'ajax_get_smtp_logs'));
+            add_action('wp_ajax_mt_clear_smtp_logs', array($this, 'ajax_clear_smtp_logs'));
+            add_action('wp_ajax_mt_download_smtp_logs', array($this, 'ajax_download_smtp_logs'));
+            add_action('wp_ajax_mt_send_test_email', array($this, 'ajax_send_test_email'));
+            add_action('wp_ajax_mt_toggle_smtp_logging_setting', array($this, 'ajax_toggle_smtp_logging_setting'));
 
             add_action('init', array($this, 'schedule_log_cleanup'));
             add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
@@ -53,11 +56,12 @@ class MT_Plugin {
     }
 
     private function init_services() {
-        $this->services['debug'] = new MT_Debug();
-        $this->services['query_monitor'] = new MT_Query_Monitor();
-        $this->services['htaccess'] = new MT_Htaccess();
-        $this->services['php_config'] = new MT_PHP_Config();
-        $this->services['file_manager'] = new MT_File_Manager();
+        $this->services['debug'] = new Debug();
+        $this->services['query_monitor'] = new QueryMonitor();
+        $this->services['htaccess'] = new Htaccess();
+        $this->services['php_config'] = new PhpConfig();
+        $this->services['file_manager'] = new FileManager();
+        $this->services['smtp_logger'] = new SmtpLogger();
     }
 
     public function get_service($name) {
@@ -93,12 +97,24 @@ class MT_Plugin {
                 'mt-query-logs',
                 array($this, 'render_query_logs_page')
             );
+
+            // Only show SMTP Logs menu if SMTP logging is enabled
+            if (get_option('mt_smtp_logging_enabled', false)) {
+                add_submenu_page(
+                    'tools.php',
+                    function_exists('__') ? __('SMTP Logs', 'morden-toolkit') : 'SMTP Logs',
+                    function_exists('__') ? __('SMTP Logs', 'morden-toolkit') : 'SMTP Logs',
+                    'manage_options',
+                    'mt-smtp-logs',
+                    array($this, 'render_smtp_logs_page')
+                );
+            }
         }
     }
 
     public function enqueue_admin_scripts($hook) {
         // Load CSS/JS on Morden Toolkit pages only
-        if (!in_array($hook, array('tools_page_mt', 'tools_page_mt-logs', 'tools_page_mt-query-logs'))) {
+        if (!in_array($hook, array('tools_page_mt', 'tools_page_mt-logs', 'tools_page_mt-query-logs', 'tools_page_mt-smtp-logs'))) {
             return;
         }
 
@@ -195,28 +211,21 @@ class MT_Plugin {
         }
     }
 
-    /**
-     * Render main admin page
-     */
     public function render_admin_page() {
         include MT_PLUGIN_DIR . 'admin/views/page-toolkit.php';
     }
 
-    /**
-     * Render logs page
-     */
     public function render_logs_page() {
         include MT_PLUGIN_DIR . 'admin/views/page-logs.php';
     }
 
-    /**
-     * Render query logs page
-     */
     public function render_query_logs_page() {
         include MT_PLUGIN_DIR . 'admin/views/page-query-logs.php';
     }
 
-    // AJAX Handlers
+    public function render_smtp_logs_page() {
+        include MT_PLUGIN_DIR . 'admin/views/page-smtp-logs.php';
+    }
 
     public function ajax_toggle_debug() {
         if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
@@ -245,7 +254,7 @@ class MT_Plugin {
         $constant = sanitize_text_field($_POST['constant']);
         $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
 
-        // Validate constant name
+
         $allowed_constants = array('WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'display_errors');
         if (!in_array($constant, $allowed_constants)) {
             mt_send_json_error(__('Invalid debug constant.', 'morden-toolkit'));
@@ -254,7 +263,7 @@ class MT_Plugin {
         $result = $this->services['debug']->toggle_debug_constant($constant, $enabled);
 
         if ($result) {
-            // Get current status to return
+    
             $status = $this->services['debug']->get_debug_status();
 
             mt_send_json_success(array(
@@ -349,9 +358,6 @@ class MT_Plugin {
         mt_send_json_success($log_info);
     }
 
-    /**
-     * Schedule daily log cleanup
-     */
     public function schedule_log_cleanup() {
         if (function_exists('wp_next_scheduled') && function_exists('wp_schedule_event')) {
             if (!wp_next_scheduled('mt_daily_log_cleanup')) {
@@ -360,33 +366,27 @@ class MT_Plugin {
         }
     }
 
-    /**
-     * Daily log cleanup task
-     */
     public function daily_log_cleanup() {
         if (!mt_can_manage()) {
             return;
         }
 
-        // Cleanup old query logs
+
         $this->services['debug']->cleanup_old_query_logs();
 
-        // Also cleanup large debug logs if they exceed 50MB
+
         $debug_log_path = mt_get_debug_log_path();
         if (file_exists($debug_log_path)) {
             $debug_log_size = filesize($debug_log_path);
             $max_debug_size = mt_get_debug_log_max_size();
 
             if ($debug_log_size > $max_debug_size) {
-                // Keep only latest 10000 lines
+    
                 $this->truncate_debug_log($debug_log_path, 10000);
             }
         }
     }
 
-    /**
-     * Truncate debug log to keep only latest entries
-     */
     private function truncate_debug_log($log_path, $max_lines = 10000) {
         $lines = file($log_path, FILE_IGNORE_NEW_LINES);
 
@@ -518,10 +518,130 @@ class MT_Plugin {
 
         // Reset to default custom preset values
         delete_option('mt_custom_preset_settings');
-
-        // Reset the custom preset in php_config service
-        $this->services['php_config']->reset_custom_preset();
-
-        mt_send_json_success(__('Custom preset reset to default values.', 'morden-toolkit'));
+        
+        mt_send_json_success(__('Custom preset reset successfully.', 'morden-toolkit'));
     }
+
+    public function ajax_get_smtp_logs() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'], 'mt_smtp_logs_nonce')) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        $smtp_service = $this->get_service('smtp_logger');
+        if (!$smtp_service) {
+            mt_send_json_error(__('SMTP service not available.', 'morden-toolkit'));
+        }
+
+        $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        $per_page = 20;
+        $offset = ($page - 1) * $per_page;
+        
+        $filters = isset($_POST['filters']) ? $_POST['filters'] : array();
+        
+        $logs = $smtp_service->get_logs($per_page, $offset, $filters);
+        $total_logs = $smtp_service->get_logs_count($filters);
+        $total_pages = ceil($total_logs / $per_page);
+        
+        $pagination = array(
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'total_logs' => $total_logs,
+            'per_page' => $per_page
+        );
+        
+        mt_send_json_success(array(
+            'logs' => $logs,
+            'pagination' => $pagination
+        ));
+    }
+
+    public function ajax_clear_smtp_logs() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'], 'mt_smtp_logs_nonce')) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        $smtp_service = $this->get_service('smtp_logger');
+        if (!$smtp_service) {
+            mt_send_json_error(__('SMTP service not available.', 'morden-toolkit'));
+        }
+
+        $result = $smtp_service->clear_logs();
+        
+        if ($result !== false) {
+            mt_send_json_success(__('SMTP logs cleared successfully.', 'morden-toolkit'));
+        } else {
+            mt_send_json_error(__('Failed to clear SMTP logs.', 'morden-toolkit'));
+        }
+    }
+
+    public function ajax_download_smtp_logs() {
+        if (!mt_can_manage() || !mt_verify_nonce($_GET['nonce'], 'mt_smtp_logs_nonce')) {
+            wp_die(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        $smtp_service = $this->get_service('smtp_logger');
+        if (!$smtp_service) {
+            wp_die(__('SMTP service not available.', 'morden-toolkit'));
+        }
+
+        $filters = isset($_GET['filters']) ? $_GET['filters'] : array();
+        $csv_data = $smtp_service->export_logs_csv($filters);
+        
+        $filename = 'mail-logs-' . date('Y-m-d-H-i-s') . '.csv';
+        
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+        
+        $output = fopen('php://output', 'w');
+        
+        foreach ($csv_data as $row) {
+            fputcsv($output, $row);
+        }
+        
+        fclose($output);
+        exit;
+    }
+
+    public function ajax_send_test_email() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'], 'mt_smtp_logs_nonce')) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        $admin_email = get_option('admin_email');
+        $site_name = get_option('blogname');
+        
+        $subject = sprintf(__('[%s] SMTP Test Email', 'morden-toolkit'), $site_name);
+        $message = sprintf(
+            __('This is a test email sent from Morden Toolkit SMTP logging feature.\n\nSite: %s\nTime: %s\nUser: %s', 'morden-toolkit'),
+            home_url(),
+            current_time('mysql'),
+            wp_get_current_user()->display_name
+        );
+        
+        $result = wp_mail($admin_email, $subject, $message);
+        
+        if ($result) {
+            mt_send_json_success(__('Test email sent successfully.', 'morden-toolkit'));
+        } else {
+            mt_send_json_error(__('Failed to send test email.', 'morden-toolkit'));
+        }
+    }
+
+    public function ajax_toggle_smtp_logging_setting() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'], 'mt_action')) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
+        update_option('mt_smtp_logging_enabled', $enabled);
+
+        mt_send_json_success(array(
+            'enabled' => $enabled,
+            'message' => $enabled ? __('SMTP logging enabled.', 'morden-toolkit') : __('SMTP logging disabled.', 'morden-toolkit')
+        ));
+    }
+
+
 }

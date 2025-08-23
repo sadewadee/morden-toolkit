@@ -136,8 +136,14 @@
             $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
         });
 
+        // Add click handlers for individual toggle buttons
+        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle, #smtp-logging-toggle').siblings('.mt-toggle').on('click', function() {
+            const $checkbox = $(this).siblings('input[type="checkbox"]');
+            $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+        });
+
         // Individual debug constants
-        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle').on('change', function() {
+        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle, #smtp-logging-toggle').on('change', function() {
             // Prevent action if master debug is disabled
             if (!$('#debug-mode-toggle').is(':checked')) {
                 $(this).prop('checked', false);
@@ -145,15 +151,9 @@
                 return;
             }
 
-            let constantName = $(this).attr('id').replace('-toggle', '').toUpperCase().replace(/\-/g, '_');
-
-            // Special handling for display_errors (it's an ini setting, not a constant)
-            if ($(this).attr('id') === 'display-errors-toggle') {
-                constantName = 'display_errors';
-            }
-
             const enabled = $(this).is(':checked');
             const $toggle = $(this).siblings('.mt-toggle');
+            let ajaxAction, ajaxData;
 
             // Update visual toggle state immediately
             if (enabled) {
@@ -162,14 +162,34 @@
                 $toggle.removeClass('active');
             }
 
+            // Special handling for SMTP logging
+            if ($(this).attr('id') === 'smtp-logging-toggle') {
+                ajaxAction = 'mt_toggle_smtp_logging_setting';
+                ajaxData = {
+                    action: ajaxAction,
+                    enabled: enabled,
+                    nonce: mtToolkit.nonce
+                };
+            } else {
+                let constantName = $(this).attr('id').replace('-toggle', '').toUpperCase().replace(/\-/g, '_');
+
+                // Special handling for display_errors (it's an ini setting, not a constant)
+                if ($(this).attr('id') === 'display-errors-toggle') {
+                    constantName = 'display_errors';
+                }
+
+                ajaxAction = 'mt_toggle_debug_constant';
+                ajaxData = {
+                    action: ajaxAction,
+                    constant: constantName,
+                    enabled: enabled,
+                    nonce: mtToolkit.nonce
+                };
+            }
+
             showLoading();
 
-            $.post(mtToolkit.ajaxurl, {
-                action: 'mt_toggle_debug_constant',
-                constant: constantName,
-                enabled: enabled,
-                nonce: mtToolkit.nonce
-            }, function(response) {
+            $.post(mtToolkit.ajaxurl, ajaxData, function(response) {
                 hideLoading();
 
                 if (response.success) {

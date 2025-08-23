@@ -3,7 +3,7 @@
  * Plugin Name: Morden Toolkit
  * Plugin URI: https://github.com/sadewadee/morden-toolkit
  * Description: Lightweight developer tools for WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
- * Version: 1.2.15
+ * Version: 1.3.3
  * Author: Morden Team
  * Author URI: https://mordenhost.com
  * License: GPL v2 or later
@@ -19,11 +19,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MT_VERSION', '1.2.15');
+define('MT_VERSION', '1.4.0');
 define('MT_PLUGIN_FILE', __FILE__);
 define('MT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MT_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('MT_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('MT_SMTP_LOGGING_ENABLED', get_option('mt_smtp_logging_enabled', false));
 
 function mt_load_textdomain() {
     load_plugin_textdomain(
@@ -34,16 +35,12 @@ function mt_load_textdomain() {
 }
 add_action('plugins_loaded', 'mt_load_textdomain');
 
+require_once MT_PLUGIN_DIR . 'includes/autoloader.php';
 require_once MT_PLUGIN_DIR . 'includes/helpers.php';
-require_once MT_PLUGIN_DIR . 'includes/class-plugin.php';
-require_once MT_PLUGIN_DIR . 'includes/class-debug.php';
-require_once MT_PLUGIN_DIR . 'includes/class-query-monitor.php';
-require_once MT_PLUGIN_DIR . 'includes/class-htaccess.php';
-require_once MT_PLUGIN_DIR . 'includes/class-php-config.php';
-require_once MT_PLUGIN_DIR . 'includes/class-file-manager.php';
+require_once MT_PLUGIN_DIR . 'includes/WPConfigTransformer.php';
 
 function mt_init() {
-    MT_Plugin::get_instance();
+    ModernToolkit\Plugin::get_instance();
 }
 add_action('plugins_loaded', 'mt_init');
 
@@ -77,11 +74,16 @@ register_activation_hook(__FILE__, function() {
     } elseif (!get_option('mt_php_preset')) {
         add_option('mt_php_preset', 'medium');
     }
+
+    // Initialize SMTP logging option
+    if (!get_option('mt_smtp_logging_enabled')) {
+        add_option('mt_smtp_logging_enabled', false);
+    }
 });
 
 register_deactivation_hook(__FILE__, function() {
     if (get_option('mt_debug_enabled')) {
-        $debug_service = new MT_Debug();
+        $debug_service = new ModernToolkit\Debug();
         $debug_service->disable_debug();
         update_option('mt_debug_enabled', false);
     }

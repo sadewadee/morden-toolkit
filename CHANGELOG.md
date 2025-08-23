@@ -5,6 +5,149 @@ All notable changes to Morden Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.7] - 2025-01-20
+### Added
+- **Independent SMTP Logging Toggle**: Implemented MT_SMTP_LOGGING_ENABLED global constant for independent SMTP logging functionality
+  - Separated SMTP logging functionality from debug mode toggle
+  - Added dedicated SMTP logging option initialization in plugin activation hook
+  - Enhanced SMTP logging system with independent control mechanism
+
+### Fixed
+- **Duplicate AJAX Handler Execution**: Resolved duplicate execution of ajax_toggle_smtp_logging_setting function
+  - Removed redundant ajax_toggle_smtp_logging handler from class-plugin.php
+  - Maintained ajax_toggle_smtp_logging_setting as the primary SMTP logging toggle handler
+  - Eliminated duplicate AJAX processing for SMTP logging toggle operations
+- **SMTP Status Accuracy**: Fixed get_smtp_status() method in SmtpLogger class for accurate status reporting
+  - Added smtp_logging_enabled field to status response for proper toggle state detection
+  - Added log_file_exists field to indicate log file availability
+  - Added last_24h_count field for recent activity monitoring
+  - Enhanced diagnostic information with execution time, memory usage, and system details
+- **Log File Naming Standardization**: Standardized log file naming from smtp.log to mail.log
+  - Updated mt_get_smtp_log_path() helper function to return mail.log path
+  - Updated CSV export filename from smtp-logs- to mail-logs- for consistency
+  - Applied consistent naming convention across all log file references
+- **Admin Page Status Display**: Fixed SMTP logs admin page to use correct status checking
+  - Updated page-smtp-logs.php to use smtp_logging_enabled from get_smtp_status()
+  - Fixed statistics display to use last_24h_count instead of recent_logs
+  - Resolved status mismatch between toggle state and warning message display
+
+### Improved
+- **Enhanced Log Quality**: Upgraded SMTP log entries with comprehensive diagnostic information
+  - Added WordPress version, PHP version, memory usage, and peak memory tracking
+  - Added execution time measurement for performance monitoring
+  - Added user agent, request URI, admin/AJAX/cron context detection
+  - Added current action and site URL for better debugging context
+  - Enhanced troubleshooting capabilities with detailed system information
+
+## [1.3.6] - 2025-01-20
+### Added
+- **Namespace Implementation**: Implemented ModernToolkit namespace for all plugin classes
+  - Migrated all classes from global namespace to ModernToolkit namespace
+  - Enhanced code organization and prevented naming conflicts
+  - Improved autoloading with namespace-aware class mapping
+  - Added comprehensive class_alias() definitions for backward compatibility
+
+### Fixed
+- **Class Not Found Errors**: Resolved PHP Fatal errors after namespace refactoring
+  - Fixed "Class 'MT_Plugin' not found" and similar errors in admin view files
+  - Added backward compatibility aliases for all legacy class names:
+    - MT_Plugin → ModernToolkit\Plugin
+    - MT_Debug → ModernToolkit\Debug
+    - MT_Query_Monitor → ModernToolkit\QueryMonitor
+    - MT_Htaccess → ModernToolkit\Htaccess
+    - MT_PHP_Config → ModernToolkit\PhpConfig
+    - MT_File_Manager → ModernToolkit\FileManager
+    - MT_SMTP_Logger → ModernToolkit\SmtpLogger
+    - MT_WP_Config_Integration → ModernToolkit\WpConfigIntegration
+  - Updated direct class instantiation in class-php-config.php to use proper namespace
+  - Ensured all view files maintain compatibility with legacy class references
+
+### Improved
+- **Code Quality**: Enhanced code structure and maintainability
+  - Implemented clean, modular, and reusable code architecture
+  - Minimized unnecessary comments for better code readability
+  - Applied WordPress plugin development best practices
+  - Centralized log file management to /wp-content/morden-toolkit/ directory
+  - Optimized autoloading and dependency injection for better performance
+  - Enhanced error handling and backward compatibility
+
+### Changed
+- **Log File Location**: Migrated all log files to centralized directory
+  - Moved log files from plugin directory to /wp-content/morden-toolkit/
+  - Updated all log file references throughout the codebase
+  - Enhanced security with proper .htaccess protection for log directory
+  - Maintained backward compatibility for existing log file access
+
+## [1.3.5] - 2025-01-18
+### Improved
+- **Debug Class Refactoring**: Migrated class-debug.php from manual regex patterns to WPConfigTransformer
+  - Refactored toggle_debug() method to use MT_WP_Config_Integration::apply_debug_constants() and apply_ini_set()
+  - Refactored enable_debug_constants() and disable_debug_constants() to use WPConfigTransformer
+  - Refactored set_debug_constant() method to use MT_WP_Config_Integration::apply_debug_constants()
+  - Refactored set_ini_setting() method to use MT_WP_Config_Integration::apply_ini_set()
+  - Removed dangerous manual regex patterns that could corrupt wp-config.php content
+  - Added public static apply_ini_set() method to MT_WP_Config_Integration class
+  - Enhanced safety and reliability of wp-config.php modifications
+  - Maintained backward compatibility and all existing functionality
+  - Improved error handling and validation for debug constant modifications
+
+## [1.3.4] - 2025-01-18
+### Changed
+- **SMTP Logging Migration**: Migrated SMTP logging system from database to file-based logging
+  - Removed all database dependencies from MT_SMTP_Logger class
+  - Implemented file-based logging system using /wp-content/morden-toolkit/mail.log
+  - Added comprehensive log information: IP server asal, sumber email (WordPress core/plugin/theme), mailer yang digunakan
+  - Implemented automatic file trimming at 10MB without log rotation
+  - Updated page-smtp-logs.php to read from file log instead of database
+  - Enhanced log display with proper CSS isolation for email content in .log-detail-item pre elements
+  - Updated all AJAX endpoints to work with file system instead of database
+  - Added .htaccess protection for log files in /wp-content/morden-toolkit/ directory
+  - Maintained all existing functionality while improving performance and reducing database overhead
+
+## [1.3.3] - 2024-12-19
+### Fixed
+- **Styling Consistency**: Unified styling across Query, Debug, and SMTP pages
+  - Removed duplicate CSS classes (mt-smtp-logs-container, mt-smtp-logs-header, mt-smtp-logs-filters)
+  - All log pages now use consistent base classes (mt-logs-container, mt-logs-header, mt-logs-filters)
+  - Eliminated unnecessary CSS classes to maintain clean and consistent styling
+
+## [1.3.2] - 2025-01-18
+
+### Improved
+- **SMTP Logs Layout Enhancement**: Redesigned SMTP log entry layout for better user experience
+  - Restructured log-header to display log-to (recipient) at top and log-subject below
+  - Moved log-status to top-right corner with log-time displayed below it
+  - Added clickable log-header functionality to expand/collapse detailed SMTP session information
+  - Implemented comprehensive log-details view showing raw SMTP data including headers, message content, and metadata
+  - Enhanced CSS styling with hover effects and smooth transitions
+  - Added visual indicators for expanded log entries
+
+## [1.3.1] - 2025-01-18
+
+### Fixed
+- **SMTP Logs Permission Denied Error**: Fixed critical nonce verification mismatch causing "Permission denied" errors
+  - Corrected nonce action inconsistency between SMTP logs page and AJAX handlers
+  - Updated all SMTP AJAX endpoints to use 'mt_smtp_logs_nonce' action for verification
+  - Fixed ajax_get_smtp_logs, ajax_clear_smtp_logs, ajax_download_smtp_logs, ajax_send_test_email, ajax_toggle_smtp_logging nonce verification
+  - Maintained separate nonce action for Debug Management SMTP toggle (mt_action)
+  - Resolved issue preventing users from viewing, clearing, downloading SMTP logs or sending test emails
+
+## [1.3.0] - 2025-01-18
+
+### Added
+- **SMTP Logging System**: Complete email logging functionality for WordPress
+  - MT_SMTP_Logger class for handling email logging with wp_mail hooks
+  - Database table wp_mt_email_logs for storing email logs with comprehensive structure
+  - Admin page for SMTP logs with filtering, pagination, and search capabilities
+  - AJAX endpoints for SMTP logs management (get, clear, download, test email)
+  - JavaScript functionality for SMTP logs viewer with real-time updates
+  - CSS styling consistent with existing query logs interface
+  - Integration with main plugin architecture and admin menu
+  - Email status tracking (success, failed, pending)
+  - Test email functionality for SMTP configuration validation
+  - Log export and download capabilities
+  - Automatic log cleanup and management
+
 ## [1.2.15] - 2025-01-18
 
 ### Fixed

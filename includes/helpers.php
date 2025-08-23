@@ -1,7 +1,4 @@
 <?php
-/**
- * Helper functions for MT
- */
 
 if (!defined('ABSPATH')) {
     exit;
@@ -68,38 +65,60 @@ function mt_format_time($time) {
 }
 
 function mt_get_debug_log_path() {
-    return WP_CONTENT_DIR . '/debug.log';
+    return WP_CONTENT_DIR . '/morden-toolkit/debug.log';
 }
-
 
 function mt_get_query_log_path() {
-    return WP_CONTENT_DIR . '/query.log';
+    return WP_CONTENT_DIR . '/morden-toolkit/query.log';
 }
 
-/**
- * Get query log maximum size before rotation
- *
- * @return int Maximum size in bytes (default: 10MB)
- */
+function mt_get_smtp_log_path() {
+    return WP_CONTENT_DIR . '/morden-toolkit/mail.log';
+}
+
+function mt_get_error_log_path() {
+    return WP_CONTENT_DIR . '/morden-toolkit/error.log';
+}
+
+function mt_get_log_directory() {
+    return WP_CONTENT_DIR . '/morden-toolkit';
+}
+
+function mt_ensure_log_directory() {
+    $log_dir = mt_get_log_directory();
+    if (!is_dir($log_dir)) {
+        if (function_exists('wp_mkdir_p')) {
+            wp_mkdir_p($log_dir);
+        } else {
+            mkdir($log_dir, 0755, true);
+        }
+        
+
+        $htaccess_file = $log_dir . '/.htaccess';
+        if (!file_exists($htaccess_file)) {
+            file_put_contents($htaccess_file, "Order deny,allow\nDeny from all\n");
+        }
+        
+
+        $index_file = $log_dir . '/index.php';
+        if (!file_exists($index_file)) {
+            file_put_contents($index_file, "<?php\n// Silence is golden.\n");
+        }
+    }
+    return $log_dir;
+}
+
 function mt_get_query_log_max_size() {
     return apply_filters('mt_query_log_max_size', 10 * 1024 * 1024);
 }
 
-/**
- * Get debug log maximum size before truncation
- *
- * @return int Maximum size in bytes (default: 50MB)
- */
 function mt_get_debug_log_max_size() {
     return apply_filters('mt_debug_log_max_size', 50 * 1024 * 1024);
 }
 
-/**
- * Check if file is writable with proper error handling
- */
 function mt_is_file_writable($file_path) {
     if (!file_exists($file_path)) {
-        // Try to create parent directory if it doesn't exist
+
         $dir = dirname($file_path);
         if (!is_dir($dir)) {
             if (function_exists('wp_mkdir_p')) {
@@ -109,7 +128,7 @@ function mt_is_file_writable($file_path) {
             }
         }
 
-        // Try to create file
+
         $handle = fopen($file_path, 'a');
         if ($handle) {
             fclose($handle);
@@ -121,25 +140,21 @@ function mt_is_file_writable($file_path) {
     return is_writable($file_path);
 }
 
-/**
- * Sanitize file content before saving
- */
 function mt_sanitize_file_content($content) {
-    // For .htaccess files, we need to be more careful about what we consider malicious
-    // Only block actual PHP execution, not legitimate .htaccess directives
+
     $dangerous_patterns = array(
-        '/(<\?php|<\?=)/i',  // PHP opening tags
-        '/(eval|exec|system|shell_exec|passthru)\s*\(/i', // Dangerous PHP functions with parentheses
-        '/<script[^>]*>/i', // Script tags
-        '/javascript:\s*[^\s]/i', // JavaScript protocol
+        '/(<\?php|<\?=)/i',
+        '/(eval|exec|system|shell_exec|passthru)\s*\(/i',
+        '/<script[^>]*>/i',
+        '/javascript:\s*[^\s]/i'
     );
 
     foreach ($dangerous_patterns as $pattern) {
         if (preg_match($pattern, $content)) {
-            return false; // Reject content with suspicious patterns
+            return false;
         }
     }
 
-    // Don't modify the content - just validate it
+
     return $content;
 }

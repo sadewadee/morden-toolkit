@@ -90,7 +90,7 @@ $setting_units = array(
         </button>
         <button class="mt-tab-btn" data-tab="file-editor">
             <span class="dashicons dashicons-edit"></span>
-            <?php _e('File Editor', 'morden-toolkit'); ?>
+            <?php _e('.htaccess Editor', 'morden-toolkit'); ?>
         </button>
         <button class="mt-tab-btn" data-tab="php-config">
             <span class="dashicons dashicons-admin-settings"></span>
@@ -170,6 +170,16 @@ $setting_units = array(
                             <label for="display-errors-toggle" class="mt-toggle-label">
                                 <span>display_errors</span>
                                 <small class="description"><?php _e('Display PHP errors on screen', 'morden-toolkit'); ?></small>
+                            </label>
+                        </div>
+                        <div class="mt-toggle-wrapper <?php echo !$debug_enabled ? 'disabled' : ''; ?>">
+                            <input type="checkbox" id="smtp-logging-toggle" <?php checked(get_option('mt_smtp_logging_enabled', false)); ?> <?php disabled(!$debug_enabled); ?>>
+                            <div class="mt-toggle <?php echo (get_option('mt_smtp_logging_enabled', false) && $debug_enabled) ? 'active' : ''; ?>">
+                                <div class="mt-toggle-slider"></div>
+                            </div>
+                            <label for="smtp-logging-toggle" class="mt-toggle-label">
+                                <span>SMTP Logging</span>
+                                <small class="description"><?php _e('Log email sending activities', 'morden-toolkit'); ?></small>
                             </label>
                         </div>
                     </div>
@@ -266,7 +276,7 @@ $setting_units = array(
             </div>
         </div>
 
-        <!-- File Editor Tab -->
+        <!-- .htaccess Editor Tab -->
         <div id="tab-file-editor" class="mt-tab-content">
             <div class="mt-card">
                 <h2><?php _e('.htaccess Editor', 'morden-toolkit'); ?></h2>

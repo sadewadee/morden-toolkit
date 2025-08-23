@@ -121,8 +121,8 @@ $debug_status = $debug_service->get_debug_status();
         </div>
     </div>
 
-    <div class="mt-query-logs-container">
-        <div id="mt-query-logs-viewer" class="mt-logs-viewer">
+    <div class="mt-logs-container">
+        <div id="mt-logs-viewer" class="mt-logs-viewer">
             <?php if (!$debug_status['query_log_file_exists'] || !$debug_status['savequeries']): ?>
             <div class="mt-no-logs-message">
                 <div class="dashicons dashicons-info"></div>
@@ -143,7 +143,7 @@ $debug_status = $debug_service->get_debug_status();
                 <div class="mt-spinner"></div>
                 <p><?php _e('Loading query logs...', 'morden-toolkit'); ?></p>
             </div>
-            <div id="mt-query-logs-content" style="display: none;"></div>
+            <div id="mt-logs-content" style="display: none;"></div>
             <?php endif; ?>
         </div>
     </div>
@@ -280,7 +280,7 @@ function updateLogInfo() {
 
 // Auto-load query logs when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('mt-query-logs-content')) {
+    if (document.getElementById('mt-logs-content')) {
         loadQueryLogs();
         initializeQueryLogsPage();
     }
@@ -311,7 +311,7 @@ function initializeQueryLogsPage() {
                 window.mtShowNotice(response.data, 'success');
 
                 // Clear the logs display immediately
-                const logsContent = document.getElementById('mt-query-logs-content');
+                const logsContent = document.getElementById('mt-logs-content');
                 if (logsContent) {
                     logsContent.innerHTML = '<div class="mt-no-logs-message"><p><?php _e('No query log entries found.', 'morden-toolkit'); ?></p></div>';
                 }
@@ -378,7 +378,7 @@ function initializeQueryLogsPage() {
 }
 
 function loadQueryLogs() {
-    const logsContent = document.getElementById('mt-query-logs-content');
+    const logsContent = document.getElementById('mt-logs-content');
     const logsLoading = document.querySelector('.mt-logs-loading');
 
     if (!logsContent) return;
@@ -403,7 +403,7 @@ function loadQueryLogs() {
 }
 
 function displayQueryLogs(logEntries) {
-    const logsContent = document.getElementById('mt-query-logs-content');
+    const logsContent = document.getElementById('mt-logs-content');
 
     if (!logEntries || logEntries.length === 0) {
         logsContent.innerHTML = '<div class="mt-no-logs-message"><p>' + <?php echo json_encode(__('No query log entries found.', 'morden-toolkit')); ?> + '</p></div>';
@@ -436,7 +436,7 @@ function displayQueryLogs(logEntries) {
         }
         const entryId = 'query-entry-' + index;
 
-        html += '<div class="mt-query-log-entry" data-entry="' + index + '">';
+        html += '<div class="mt-log-entry" data-entry="' + index + '">';
 
         // Collapsible header
         html += '<div class="query-log-header" data-toggle="' + entryId + '">';
@@ -596,7 +596,7 @@ function filterQueryLogs() {
     const slowFilter = document.getElementById('query-slow-filter').value;
     const searchTerm = document.getElementById('query-search').value.toLowerCase();
 
-    document.querySelectorAll('.mt-query-log-entry').forEach(function(entry) {
+    document.querySelectorAll('.mt-log-entry').forEach(function(entry) {
         let show = true;
 
         // Time filter (would require more complex logic with actual timestamps)

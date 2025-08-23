@@ -1,18 +1,13 @@
 <?php
-/**
- * File Manager Service - Backup and restore functionality
- */
 
-// Prevent direct access
+namespace ModernToolkit;
+
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class MT_File_Manager {
+class FileManager {
 
-    /**
-     * Create backup of any file
-     */
     public function create_backup($file_path, $backup_key) {
         if (!file_exists($file_path)) {
             return false;
@@ -30,7 +25,6 @@ class MT_File_Manager {
 
         array_unshift($backups, $backup);
 
-        // Keep only latest 3 backups
         if (count($backups) > 3) {
             $backups = array_slice($backups, 0, 3);
         }
@@ -38,16 +32,10 @@ class MT_File_Manager {
         return update_option("morden_{$backup_key}_backups", $backups);
     }
 
-    /**
-     * Get backups for a specific key
-     */
     public function get_backups($backup_key) {
         return get_option("morden_{$backup_key}_backups", array());
     }
 
-    /**
-     * Restore file from backup
-     */
     public function restore_backup($backup_key, $backup_index) {
         $backups = $this->get_backups($backup_key);
 
@@ -61,15 +49,11 @@ class MT_File_Manager {
             return false;
         }
 
-        // Create backup of current state before restoring
         $this->create_backup($backup['file_path'], $backup_key);
 
         return file_put_contents($backup['file_path'], $backup['content']) !== false;
     }
 
-    /**
-     * Delete specific backup
-     */
     public function delete_backup($backup_key, $backup_index) {
         $backups = $this->get_backups($backup_key);
 
@@ -78,21 +62,15 @@ class MT_File_Manager {
         }
 
         unset($backups[$backup_index]);
-        $backups = array_values($backups); // Re-index array
+        $backups = array_values($backups);
 
         return update_option("morden_{$backup_key}_backups", $backups);
     }
 
-    /**
-     * Clear all backups for a specific key
-     */
     public function clear_backups($backup_key) {
         return delete_option("morden_{$backup_key}_backups");
     }
 
-    /**
-     * Get backup statistics
-     */
     public function get_backup_stats($backup_key) {
         $backups = $this->get_backups($backup_key);
 
@@ -115,9 +93,6 @@ class MT_File_Manager {
         return $stats;
     }
 
-    /**
-     * Export backup as downloadable file
-     */
     public function export_backup($backup_key, $backup_index) {
         $backups = $this->get_backups($backup_key);
 
@@ -136,9 +111,6 @@ class MT_File_Manager {
         exit;
     }
 
-    /**
-     * Import backup from uploaded file
-     */
     public function import_backup($backup_key, $uploaded_file) {
         if (!isset($uploaded_file['tmp_name']) || !is_uploaded_file($uploaded_file['tmp_name'])) {
             return false;
@@ -150,7 +122,6 @@ class MT_File_Manager {
             return false;
         }
 
-        // Validate content based on backup type
         if (!$this->validate_backup_content($backup_key, $content)) {
             return false;
         }
@@ -167,7 +138,6 @@ class MT_File_Manager {
 
         array_unshift($backups, $backup);
 
-        // Keep only latest 3 backups
         if (count($backups) > 3) {
             $backups = array_slice($backups, 0, 3);
         }
@@ -175,17 +145,12 @@ class MT_File_Manager {
         return update_option("morden_{$backup_key}_backups", $backups);
     }
 
-    /**
-     * Validate backup content based on type
-     */
     private function validate_backup_content($backup_key, $content) {
         switch ($backup_key) {
             case 'htaccess':
-                // Basic .htaccess validation
                 return $this->validate_htaccess_content($content);
 
             case 'wp_config':
-                // Basic wp-config.php validation
                 return strpos($content, '<?php') !== false;
 
             default:
@@ -193,11 +158,7 @@ class MT_File_Manager {
         }
     }
 
-    /**
-     * Basic .htaccess content validation
-     */
     private function validate_htaccess_content($content) {
-        // Check for dangerous patterns
         $dangerous_patterns = array(
             '/<\?php/i',
             '/eval\s*\(/i',
@@ -214,9 +175,6 @@ class MT_File_Manager {
         return true;
     }
 
-    /**
-     * Get file information
-     */
     public function get_file_info($file_path) {
         $info = array(
             'exists' => false,
@@ -239,20 +197,15 @@ class MT_File_Manager {
         return $info;
     }
 
-    /**
-     * Safe file write with atomic operation
-     */
     public function safe_file_write($file_path, $content) {
         $temp_file = $file_path . '.tmp';
 
-        // Write to temporary file first
         $result = file_put_contents($temp_file, $content, LOCK_EX);
 
         if ($result === false) {
             return false;
         }
 
-        // Atomic move to final location
         if (!rename($temp_file, $file_path)) {
             unlink($temp_file);
             return false;
@@ -261,9 +214,6 @@ class MT_File_Manager {
         return true;
     }
 
-    /**
-     * Create directory if it doesn't exist
-     */
     public function ensure_directory($dir_path) {
         if (!is_dir($dir_path)) {
             return wp_mkdir_p($dir_path);
@@ -272,9 +222,6 @@ class MT_File_Manager {
         return true;
     }
 
-    /**
-     * Get directory size
-     */
     public function get_directory_size($dir_path) {
         if (!is_dir($dir_path)) {
             return 0;
@@ -295,16 +242,12 @@ class MT_File_Manager {
         return $size;
     }
 
-    /**
-     * Clean up old temporary files
-     */
     public function cleanup_temp_files() {
         $temp_pattern = ABSPATH . '*.tmp';
         $temp_files = glob($temp_pattern);
         $cleaned = 0;
 
         foreach ($temp_files as $temp_file) {
-            // Delete files older than 1 hour
             if (filemtime($temp_file) < (time() - 3600)) {
                 if (unlink($temp_file)) {
                     $cleaned++;

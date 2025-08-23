@@ -1,8 +1,6 @@
 /* Query Logs Specific Styles - Extensions to admin.css */
 
-.mt-query-logs-container {
-    margin-top: 20px;
-}
+/* Removed duplicate container class - using general .mt-logs-container instead */
 
 /* Enhanced log info styling for query logs */
 .mt-log-size,
@@ -25,17 +23,9 @@
     color: #0073aa;
 }
 
-/* Query-specific filters extension */
-.mt-query-logs-filters {
-    flex-wrap: wrap;
-}
+/* Removed duplicate filters class - using general .mt-logs-filters instead */
 
-/* Query log entries - extends .mt-log-entry */
-.mt-query-log-entry {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: #ffffff;
-}
+/* Removed duplicate log entry class - using general .mt-log-entry instead */
 
 .query-log-header {
     display: flex;

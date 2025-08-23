@@ -1,13 +1,12 @@
 <?php
-/**
- * Debug Service - WP_DEBUG management
- */
+
+namespace ModernToolkit;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class MT_Debug {
+class Debug {
 
     public function __construct() {
         $this->sync_debug_status();
@@ -41,16 +40,29 @@ class MT_Debug {
             return false;
         }
 
-        $config_content = file_get_contents($wp_config_path);
-
-        if ($enable) {
-            $config_content = $this->enable_debug_constants($config_content);
-        } else {
-            $config_content = $this->disable_debug_constants($config_content);
+        // Use safe WPConfigTransformer instead of regex patterns
+        $debug_constants = $this->get_debug_constants();
+        
+        // Convert values based on enable/disable
+        $debug_settings = array();
+        foreach ($debug_constants as $constant => $default_value) {
+            if ($enable) {
+                $debug_settings[$constant] = ($constant === 'WP_DEBUG_DISPLAY') ? false : true;
+            } else {
+                $debug_settings[$constant] = false;
+            }
         }
-
-        file_put_contents($wp_config_path, $config_content);
-        return true;
+        
+        // Apply debug constants using safe method
+        $result = WpConfigIntegration::apply_debug_constants($debug_settings);
+        
+        // Also handle ini_set for display_errors
+        if ($result) {
+            $display_errors_value = $enable ? '1' : '0';
+            WpConfigIntegration::apply_ini_set('display_errors', $display_errors_value);
+        }
+        
+        return $result;
     }
 
     public function enable_debug() {
@@ -85,94 +97,33 @@ class MT_Debug {
      * Set individual debug constant
      */
     private function set_debug_constant($content, $constant, $enable) {
-        $value = $enable ? 'true' : 'false';
-
         // Handle special cases
         if ($constant === 'display_errors') {
             return $this->set_ini_setting($content, 'display_errors', $enable ? '1' : '0');
         }
 
-        // Handle WP_DEBUG conditional wrapper
-        if ($constant === 'WP_DEBUG') {
-            // Pattern for conditional WP_DEBUG - SAFE version
-            $conditional_pattern = "/if\s*\(\s*!\s*defined\s*\(\s*['\"]WP_DEBUG['\"]\s*\)\s*\)\s*{\s*define\s*\(\s*['\"]WP_DEBUG['\"]\s*,\s*[^;)]+\s*\)\s*;\s*}/i";
-            if (preg_match($conditional_pattern, $content)) {
-                $replacement = "if ( ! defined( 'WP_DEBUG' ) ) {\n\tdefine('WP_DEBUG', " . $value . ");\n}";
-                $content = preg_replace($conditional_pattern, $replacement, $content);
-                return $content;
-            }
-        }
-
-        // Standard define pattern - more flexible regex
-        $patterns = array(
-            "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^;)]+\s*\)\s*;/i",
-            "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^;)]+\s*\);/i"
-        );
-
-        $replacement = "define('" . $constant . "', " . $value . ");";
-
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $content)) {
-                $content = preg_replace($pattern, $replacement, $content);
-                return $content;
-            }
-        }
-
-        // If constant not found, add it before "/* That's all" comment
-        $insert_position = strpos($content, "/* That's all");
-        if ($insert_position !== false) {
-            $before = substr($content, 0, $insert_position);
-            $after = substr($content, $insert_position);
-            $content = $before . "define('" . $constant . "', " . $value . ");\n\n" . $after;
-        } else {
-            // Fallback: add at the end before closing PHP tag
-            $content = rtrim($content);
-            if (substr($content, -2) === '?>') {
-                $content = substr($content, 0, -2) . "\ndefine('" . $constant . "', " . $value . ");\n?>";
-            } else {
-                $content .= "\ndefine('" . $constant . "', " . $value . ");\n";
-            }
-        }
-
-        return $content;
+        // Use safe WPConfigTransformer instead of regex patterns
+        $debug_settings = array();
+        
+        // Convert enable/disable to proper boolean
+        $debug_settings[$constant] = $enable ? true : false;
+        
+        // Apply debug constant using safe method
+        WpConfigIntegration::apply_debug_constants($debug_settings);
+        
+        // Return updated content (though not used anymore)
+        return file_get_contents(mt_get_wp_config_path());
     }
 
     /**
      * Set ini_set directive in wp-config.php
      */
     private function set_ini_setting($content, $setting, $value) {
-        // Pattern for existing ini_set calls
-        $patterns = array(
-            "/@?ini_set\s*\(\s*['\"]" . $setting . "['\"]\s*,\s*[^)]+\s*\)\s*;/i",
-            "/ini_set\s*\(\s*['\"]" . $setting . "['\"]\s*,\s*[^)]+\s*\)\s*;/i"
-        );
-
-        $replacement = "@ini_set('" . $setting . "', '" . $value . "');";
-
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $content)) {
-                $content = preg_replace($pattern, $replacement, $content);
-                return $content;
-            }
-        }
-
-        // If not found, add it before "/* That's all" comment
-        $insert_position = strpos($content, "/* That's all");
-        if ($insert_position !== false) {
-            $before = substr($content, 0, $insert_position);
-            $after = substr($content, $insert_position);
-            $content = $before . "@ini_set('" . $setting . "', '" . $value . "');\n\n" . $after;
-        } else {
-            // Fallback: add at the end before closing PHP tag
-            $content = rtrim($content);
-            if (substr($content, -2) === '?>') {
-                $content = substr($content, 0, -2) . "\n@ini_set('" . $setting . "', '" . $value . "');\n?>";
-            } else {
-                $content .= "\n@ini_set('" . $setting . "', '" . $value . "');\n";
-            }
-        }
-
-        return $content;
+        // Use safe apply_ini_set instead of regex patterns
+        WpConfigIntegration::apply_ini_set($setting, $value);
+        
+        // Return updated content (though not used anymore)
+        return file_get_contents(mt_get_wp_config_path());
     }
 
     /**
@@ -192,67 +143,40 @@ class MT_Debug {
      * Enable debug constants in wp-config.php
      */
     private function enable_debug_constants($content) {
+        // Use safe WPConfigTransformer instead of regex patterns
         $constants = $this->get_debug_constants();
-
+        
+        // Convert string values to boolean for proper handling
+        $debug_settings = array();
         foreach ($constants as $constant => $value) {
-            $pattern = "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^)]+\s*\)\s*;/i";
-            $replacement = "define('" . $constant . "', " . $value . ");";
-
-            if (preg_match($pattern, $content)) {
-                $content = preg_replace($pattern, $replacement, $content);
-            } else {
-                // Add constant before "/* That's all, stop editing!" line
-                $insert_before = "/* That's all, stop editing!";
-                $position = strpos($content, $insert_before);
-
-                if ($position !== false) {
-                    $before = substr($content, 0, $position);
-                    $after = substr($content, $position);
-                    $content = $before . $replacement . "\n" . $after;
-                } else {
-                    // Fallback: add at the end
-                    $content .= "\n" . $replacement . "\n";
-                }
-            }
+            $debug_settings[$constant] = ($constant === 'WP_DEBUG_DISPLAY') ? false : true;
         }
-
-        return $content;
+        
+        // Apply debug constants using safe method
+        WpConfigIntegration::apply_debug_constants($debug_settings);
+        
+        // Return updated content (though not used anymore)
+        return file_get_contents(mt_get_wp_config_path());
     }
 
     /**
      * Disable debug constants in wp-config.php
      */
     private function disable_debug_constants($content) {
+        // Use safe WPConfigTransformer instead of regex patterns
         $constants = $this->get_debug_constants();
-
-        // Convert all values to false for disabling
-        foreach ($constants as $key => $value) {
-            $constants[$key] = 'false';
-        }
-
+        
+        // Set all debug constants to false
+        $debug_settings = array();
         foreach ($constants as $constant => $value) {
-            if ($constant === 'WP_DEBUG') {
-                // Handle conditional WP_DEBUG
-                $conditional_pattern = "/if\s*\(\s*!\s*defined\s*\(\s*['\"]WP_DEBUG['\"]\s*\)\s*\)\s*{\s*define\s*\(\s*['\"]WP_DEBUG['\"]\s*,\s*[^}]+\s*}/i";
-                if (preg_match($conditional_pattern, $content)) {
-                    $replacement = "if ( ! defined( 'WP_DEBUG' ) ) {\n\tdefine('WP_DEBUG', " . $value . ");\n}";
-                    $content = preg_replace($conditional_pattern, $replacement, $content);
-                    continue;
-                }
-            }
-
-            $pattern = "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^)]+\s*\)\s*;/i";
-            $replacement = "define('" . $constant . "', " . $value . ");";
-
-            if (preg_match($pattern, $content)) {
-                $content = preg_replace($pattern, $replacement, $content);
-            }
+            $debug_settings[$constant] = false;
         }
-
-        // Also disable display_errors ini setting
-        $content = $this->set_ini_setting($content, 'display_errors', '0');
-
-        return $content;
+        
+        // Apply debug constants using safe method
+        WpConfigIntegration::apply_debug_constants($debug_settings);
+        
+        // Return updated content (though not used anymore)
+        return file_get_contents(mt_get_wp_config_path());
     }
 
     /**
@@ -262,7 +186,7 @@ class MT_Debug {
         $log_path = mt_get_debug_log_path();
 
         if (!file_exists($log_path)) {
-            return true; // Already cleared
+            return true;
         }
 
         return file_put_contents($log_path, '') !== false;
@@ -281,7 +205,7 @@ class MT_Debug {
         $content = file_get_contents($log_path);
         $lines = explode("\n", trim($content));
 
-        // Get latest entries
+
         $lines = array_slice($lines, -$limit);
         $entries = array();
 
@@ -296,14 +220,12 @@ class MT_Debug {
             }
         }
 
-        return array_reverse($entries); // Show newest first
+        return array_reverse($entries);
     }
 
-    /**
-     * Parse single log line
-     */
+
     private function parse_log_line($line) {
-        // Common WordPress debug.log format: [timestamp] PHP Error: message in file on line
+
         $pattern = '/^\[([^\]]+)\]\s+(PHP\s+)?([^:]+):\s+(.+?)(\s+in\s+(.+?)\s+on\s+line\s+(\d+))?$/';
 
         if (preg_match($pattern, $line, $matches)) {
@@ -317,7 +239,7 @@ class MT_Debug {
             );
         }
 
-        // Fallback for non-standard format
+
         return array(
             'timestamp' => date('Y-m-d H:i:s'),
             'level' => 'NOTICE',
@@ -328,9 +250,7 @@ class MT_Debug {
         );
     }
 
-    /**
-     * Normalize log level names
-     */
+
     private function normalize_log_level($level) {
         $level = strtoupper(trim($level));
 
@@ -349,14 +269,12 @@ class MT_Debug {
 
 
 
-    /**
-     * Get current debug status
-     */
+
     public function get_debug_status() {
-        // Check actual wp-config.php status
+
         $actual_wp_debug = defined('WP_DEBUG') && WP_DEBUG;
 
-        // Sync option with actual status if different
+
         if (function_exists('get_option') && function_exists('update_option')) {
             $stored_option = get_option('mt_debug_enabled', false);
             if ($stored_option !== $actual_wp_debug) {
@@ -364,7 +282,7 @@ class MT_Debug {
             }
         }
 
-        // Check display_errors ini setting
+
         $display_errors = ini_get('display_errors') == '1' || ini_get('display_errors') === 'On';
 
         return array(
@@ -386,9 +304,7 @@ class MT_Debug {
         );
     }
 
-    /**
-     * Get database query logs from $wpdb->queries
-     */
+
     public function get_query_logs() {
         global $wpdb;
 
@@ -465,13 +381,11 @@ class MT_Debug {
         );
     }
 
-    /**
-     * Write database queries to query.log file
-     */
+
     public function write_queries_to_log() {
         global $wpdb;
 
-        // Prevent multiple writes per request
+
         static $written = false;
         if ($written) {
             return false;
@@ -483,12 +397,12 @@ class MT_Debug {
 
         $query_log_path = mt_get_query_log_path();
 
-        // Check and rotate log if needed before writing
+
         $this->rotate_query_log_if_needed($query_log_path);
 
         $log_content = '';
 
-        // Header dengan informasi request
+
         $log_content .= "[" . date('Y-m-d H:i:s') . "] === NEW REQUEST ===\n";
         $log_content .= "URL: " . (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'CLI') . "\n";
         $log_content .= "Total Queries: " . count($wpdb->queries) . "\n";
@@ -530,9 +444,7 @@ class MT_Debug {
         return $result !== false;
     }
 
-    /**
-     * Rotate query log if it exceeds size limit
-     */
+
     private function rotate_query_log_if_needed($log_path) {
         if (!file_exists($log_path)) {
             return;
@@ -564,9 +476,7 @@ class MT_Debug {
         error_log("MT: Query log rotated. Size was " . mt_format_bytes($current_size));
     }
 
-    /**
-     * Clean up old query log files
-     */
+
     public function cleanup_old_query_logs() {
         $log_path = mt_get_query_log_path();
         $log_dir = dirname($log_path);
@@ -589,9 +499,7 @@ class MT_Debug {
         return $cleaned;
     }
 
-    /**
-     * Get total query log size including backups
-     */
+
     public function get_query_log_total_size() {
         $log_path = mt_get_query_log_path();
         $log_dir = dirname($log_path);
@@ -617,9 +525,7 @@ class MT_Debug {
         return $total_size;
     }
 
-    /**
-     * Format caller stack trace for better readability
-     */
+
     private function format_caller_stack($raw_caller) {
         if (empty($raw_caller)) {
             return "No caller information available";
@@ -637,9 +543,7 @@ class MT_Debug {
         return implode("\n", $formatted_stack);
     }
 
-    /**
-     * Parse WordPress caller format
-     */
+
     private function parse_wordpress_caller($caller) {
         // Split by comma and clean each part
         $parts = explode(',', $caller);
@@ -664,9 +568,7 @@ class MT_Debug {
         return $stack_entries;
     }
 
-    /**
-     * Parse individual function call
-     */
+
     private function parse_function_call($call) {
         $call = trim($call);
 
@@ -689,9 +591,7 @@ class MT_Debug {
         }
     }
 
-    /**
-     * Normalize function/method names
-     */
+
     private function normalize_function_name($name) {
         // Remove extra whitespace
         $name = preg_replace('/\s+/', ' ', trim($name));
@@ -707,9 +607,7 @@ class MT_Debug {
         return $name;
     }
 
-    /**
-     * Get file info for a function (simplified approach)
-     */
+
     private function get_file_info_for_function($function_name) {
         // This is a simplified approach - in real implementation,
         // we would need to parse the caller string more intelligently
@@ -744,9 +642,7 @@ class MT_Debug {
         return null;
     }
 
-    /**
-     * Enhance caller information with simulated backtrace
-     */
+
     private function enhance_caller_with_backtrace($raw_caller) {
         if (empty($raw_caller)) {
             return "No caller information available";
@@ -772,9 +668,7 @@ class MT_Debug {
         return implode("\n", $stack_trace);
     }
 
-    /**
-     * Extract clean function names from raw caller
-     */
+
     private function extract_function_names($raw_caller) {
         // Split by comma and clean
         $parts = explode(',', $raw_caller);
@@ -803,9 +697,7 @@ class MT_Debug {
         return array_reverse($functions); // Reverse to show call order (deepest first)
     }
 
-    /**
-     * Simple function name cleanup
-     */
+
     private function clean_function_name_simple($name) {
         $name = trim($name);
 
@@ -823,9 +715,7 @@ class MT_Debug {
         return $name;
     }
 
-    /**
-     * Get realistic file info for functions
-     */
+
     private function get_realistic_file_info($function_name) {
         // Extended mapping of WordPress functions to their files
         $function_map = array(
@@ -873,12 +763,10 @@ class MT_Debug {
             'MT_Query_Monitor->__construct' => 'morden-toolkit/includes/class-query-monitor.php:23',
         );
 
-        // Exact match first
         if (isset($function_map[$function_name])) {
             return $function_map[$function_name];
         }
 
-        // Partial match for class methods
         foreach ($function_map as $pattern => $file) {
             if (strpos($function_name, $pattern) !== false) {
                 return $file;
@@ -888,9 +776,7 @@ class MT_Debug {
         return null;
     }
 
-    /**
-     * Clear query log file
-     */
+
     public function clear_query_log() {
         $log_path = mt_get_query_log_path();
 
@@ -901,9 +787,7 @@ class MT_Debug {
         return file_put_contents($log_path, '') !== false;
     }
 
-    /**
-     * Get query log entries from file
-     */
+
     public function get_query_log_entries($limit = 50) {
         $log_path = mt_get_query_log_path();
 
@@ -914,15 +798,12 @@ class MT_Debug {
         $content = file_get_contents($log_path);
         $entries = array();
 
-        // Split by request sections
         $requests = explode('=== NEW REQUEST ===', $content);
 
-        // Remove empty first element
         if (isset($requests[0]) && empty(trim($requests[0]))) {
             array_shift($requests);
         }
 
-        // Get latest requests
         $requests = array_slice($requests, -$limit);
 
         foreach ($requests as $request) {
@@ -939,9 +820,7 @@ class MT_Debug {
         return array_reverse($entries); // Show newest first
     }
 
-    /**
-     * Parse single request section from query log
-     */
+
     private function parse_query_log_request($request_content) {
         $lines = explode("\n", $request_content);
 
@@ -949,7 +828,6 @@ class MT_Debug {
             return null;
         }
 
-        // Parse header info
         $timestamp = '';
         $url = '';
         $total_queries = 0;
@@ -972,7 +850,6 @@ class MT_Debug {
             }
         }
 
-        // Parse individual queries
         $queries = array();
         $current_query = null;
         $in_query_section = false;
@@ -984,7 +861,6 @@ class MT_Debug {
 
             if (strpos($line, 'Query #') === 0) {
                 if ($current_query) {
-                    // Save any accumulated caller stack
                     if (!empty($caller_lines)) {
                         $current_query['caller'] = implode("\n", $caller_lines);
                     }
@@ -1005,18 +881,15 @@ class MT_Debug {
                 $in_caller_stack = true;
                 $caller_lines = array();
             } elseif ($in_query_section && strpos($line, 'Caller:') === 0) {
-                // Legacy format support
                 $current_query['caller'] = trim(substr($line, 7));
                 $in_caller_stack = false;
             } elseif ($in_caller_stack && !empty($line) && $line !== '---') {
-                // Collect caller stack lines
                 $caller_lines[] = $line;
             } elseif ($in_query_section && strpos($line, '*** SLOW QUERY WARNING ***') === 0) {
                 $current_query['is_slow'] = true;
                 $in_caller_stack = false;
             } elseif ($line === '---') {
                 if ($current_query) {
-                    // Save any accumulated caller stack
                     if (!empty($caller_lines)) {
                         $current_query['caller'] = implode("\n", $caller_lines);
                     }
@@ -1029,9 +902,7 @@ class MT_Debug {
             }
         }
 
-        // Add last query if exists
         if ($current_query) {
-            // Save any accumulated caller stack for the last query
             if (!empty($caller_lines)) {
                 $current_query['caller'] = implode("\n", $caller_lines);
             }
@@ -1048,9 +919,7 @@ class MT_Debug {
         );
     }
 
-    /**
-     * Get performance summary for admin bar
-     */
+
     public function get_performance_summary() {
         global $wpdb;
 
@@ -1070,7 +939,7 @@ class MT_Debug {
             }
 
             $summary['queries'] = count($wpdb->queries);
-            $summary['time'] = round($total_time * 1000, 2); // Convert to milliseconds
+            $summary['time'] = round($total_time * 1000, 2);
         }
 
         return $summary;

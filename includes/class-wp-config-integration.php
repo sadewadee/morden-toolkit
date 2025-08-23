@@ -1,22 +1,12 @@
 <?php
 
-/**
- * Integration class untuk menggunakan WPConfigTransformer dalam MT PHP Config
- * 
- * Menggantikan metode manual editing wp-config.php yang rentan error
- * dengan implementasi yang lebih aman menggunakan WPConfigTransformer
- * 
- * @package Morden_Toolkit
- * @since 1.0.0
- */
+namespace ModernToolkit;
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+    exit;
 }
 
-require_once MT_PLUGIN_DIR . 'includes/WPConfigTransformer.php';
-
-class MT_WP_Config_Integration {
+class WpConfigIntegration {
     
     /**
      * Apply PHP configuration using WPConfigTransformer
@@ -43,7 +33,7 @@ class MT_WP_Config_Integration {
         }
         
         try {
-            $transformer = new WPConfigTransformer($wp_config_path);
+            $transformer = new \WPConfigTransformer($wp_config_path);
             
             // Remove existing MT configuration
             self::remove_existing_mt_config($transformer);
@@ -94,7 +84,7 @@ class MT_WP_Config_Integration {
         }
         
         try {
-            $transformer = new WPConfigTransformer($wp_config_path);
+            $transformer = new \WPConfigTransformer($wp_config_path);
             
             foreach ($debug_settings as $constant => $value) {
                 $formatted_value = self::format_debug_value($value);
@@ -207,6 +197,23 @@ class MT_WP_Config_Integration {
                     'separator' => "\n"
                 ]);
             }
+        }
+    }
+    
+    /**
+     * Apply ini_set directive safely (public wrapper)
+     * 
+     * @param string $setting PHP setting name
+     * @param mixed $value Setting value
+     * @return bool Success status
+     */
+    public static function apply_ini_set($setting, $value) {
+        try {
+            self::apply_ini_set_safe(null, $setting, $value);
+            return true;
+        } catch (Exception $e) {
+            error_log('MT WP Config Integration: ini_set failed - ' . $e->getMessage());
+            return false;
         }
     }
     
