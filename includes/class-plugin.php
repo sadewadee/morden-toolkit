@@ -46,6 +46,7 @@ class MT_Plugin {
             add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
             add_action('wp_ajax_mt_save_custom_preset', array($this, 'ajax_save_custom_preset'));
             add_action('wp_ajax_mt_reset_custom_preset', array($this, 'ajax_reset_custom_preset'));
+            add_action('wp_ajax_mt_test_debug_transformer', array($this, 'ajax_test_debug_transformer'));
 
             add_action('init', array($this, 'schedule_log_cleanup'));
             add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
@@ -58,6 +59,9 @@ class MT_Plugin {
         $this->services['htaccess'] = new MT_Htaccess();
         $this->services['php_config'] = new MT_PHP_Config();
         $this->services['file_manager'] = new MT_File_Manager();
+
+        // Ensure log directory security is set up
+        mt_ensure_log_directory_security();
     }
 
     public function get_service($name) {
@@ -145,10 +149,10 @@ class MT_Plugin {
     }
 
     public function enqueue_frontend_scripts() {
-        $enabled = (function_exists('get_option') ? get_option('mt_query_monitor_enabled') : false) && 
-                   (function_exists('is_user_logged_in') ? is_user_logged_in() : false) && 
+        $enabled = (function_exists('get_option') ? get_option('mt_query_monitor_enabled') : false) &&
+                   (function_exists('is_user_logged_in') ? is_user_logged_in() : false) &&
                    (function_exists('current_user_can') ? current_user_can('manage_options') : false);
-        
+
         if (!$enabled) {
             return;
         }
@@ -371,6 +375,12 @@ class MT_Plugin {
         // Cleanup old query logs
         $this->services['debug']->cleanup_old_query_logs();
 
+        // Cleanup old debug logs (keep only 3 most recent)
+        $cleaned_debug_logs = mt_cleanup_old_debug_logs();
+        if ($cleaned_debug_logs > 0) {
+            error_log("MT: Cleaned up {$cleaned_debug_logs} old debug log files");
+        }
+
         // Also cleanup large debug logs if they exceed 50MB
         $debug_log_path = mt_get_debug_log_path();
         if (file_exists($debug_log_path)) {
@@ -442,10 +452,10 @@ class MT_Plugin {
 
         // Use wp_unslash to remove WordPress auto-added slashes, then basic sanitization
         $content = wp_unslash($_POST['content']);
-        
+
         // Basic sanitization without escaping special characters needed for .htaccess
         $content = wp_kses($content, array());
-        
+
         $result = $this->services['htaccess']->save_htaccess($content);
 
         if ($result) {
@@ -523,5 +533,44 @@ class MT_Plugin {
         $this->services['php_config']->reset_custom_preset();
 
         mt_send_json_success(__('Custom preset reset to default values.', 'morden-toolkit'));
+    }
+
+    /**
+     * AJAX Test handler for debugging WPConfigTransformer issues
+     */
+    public function ajax_test_debug_transformer() {
+        if (!mt_can_manage() || !mt_verify_nonce($_POST['nonce'])) {
+            mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
+        }
+
+        error_log('=== MT DEBUG TRANSFORMER TEST (via AJAX) ===');
+
+        // Test WPConfigTransformer functionality
+        $test_result = $this->services['debug']->test_wp_config_transformer();
+
+        // Test applying a simple debug constant
+        $reflection = new ReflectionClass($this->services['debug']);
+        $method = $reflection->getMethod('get_custom_debug_log_path');
+        $method->setAccessible(true);
+        $custom_path = $method->invoke($this->services['debug']);
+
+        $test_settings = [
+            'WP_DEBUG' => true,
+            'WP_DEBUG_LOG' => $custom_path
+        ];
+
+        error_log('MT Test: Attempting to apply test debug settings via WPConfigTransformer');
+        $apply_result = MT_WP_Config_Integration::apply_debug_constants($test_settings);
+        error_log('MT Test: Apply result: ' . ($apply_result ? 'SUCCESS' : 'FAILED'));
+
+        $response = [
+            'transformer_test' => $test_result,
+            'apply_test' => $apply_result,
+            'wp_config_path' => mt_get_wp_config_path(),
+            'wp_config_writable' => is_writable(mt_get_wp_config_path()),
+            'message' => 'Test completed. Check error logs for detailed results.'
+        ];
+
+        mt_send_json_success($response);
     }
 }
