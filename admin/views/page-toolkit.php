@@ -118,8 +118,9 @@ $setting_units = array(
                     </div>
                 </div>
 
-                <div class="mt-debug-settings">
-                    <h3><?php _e('Debug Settings', 'morden-toolkit'); ?></h3>
+                <!-- WP Debug Settings Section -->
+                <div class="mt-wp-debug-settings">
+                    <h3><?php _e('WP Debug Settings', 'morden-toolkit'); ?></h3>
                     <p class="description"><?php _e('WordPress debug constants configuration', 'morden-toolkit'); ?></p>
                     <div class="mt-toggle-group" <?php echo !$debug_enabled ? 'data-disabled="true"' : ''; ?>>
                         <div class="mt-toggle-wrapper <?php echo !$debug_enabled ? 'disabled' : ''; ?>">
@@ -175,6 +176,44 @@ $setting_units = array(
                     </div>
                 </div>
 
+                <!-- SMTP Debug Settings Section -->
+                <div class="mt-smtp-debug-settings">
+                    <h3><?php _e('SMTP Debug Settings', 'morden-toolkit'); ?></h3>
+                    <p class="description"><?php _e('Email logging and monitoring configuration', 'morden-toolkit'); ?></p>
+                    <?php
+                    // Get SMTP logging status
+                    $smtp_service = $plugin->get_service('smtp_logger');
+                    $smtp_status = $smtp_service ? $smtp_service->get_logging_status() : array('enabled' => false);
+                    $smtp_enabled = $smtp_status['enabled'];
+                    ?>
+                    <div class="mt-toggle-group" <?php echo !$debug_enabled ? 'data-disabled="true"' : ''; ?>>
+                        <div class="mt-toggle-wrapper <?php echo !$debug_enabled ? 'disabled' : ''; ?>">
+                            <input type="checkbox" id="smtp-logging-toggle" <?php checked($smtp_enabled); ?> <?php disabled(!$debug_enabled); ?>>
+                            <div class="mt-toggle <?php echo ($smtp_enabled && $debug_enabled) ? 'active' : ''; ?>">
+                                <div class="mt-toggle-slider"></div>
+                            </div>
+                            <label for="smtp-logging-toggle" class="mt-toggle-label">
+                                <span>SMTP Logging</span>
+                                <small class="description"><?php _e('Log all email activity to smtp-ddmmyyyy.log files', 'morden-toolkit'); ?></small>
+                            </label>
+                        </div>
+                        <?php
+                        // Get IP address logging status
+                        $ip_logging_enabled = \get_option('mt_smtp_log_ip_address', false);
+                        ?>
+                        <div class="mt-toggle-wrapper <?php echo (!$debug_enabled || !$smtp_enabled) ? 'disabled' : ''; ?>">
+                            <input type="checkbox" id="smtp-ip-logging-toggle" <?php checked($ip_logging_enabled); ?> <?php disabled(!$debug_enabled || !$smtp_enabled); ?>>
+                            <div class="mt-toggle <?php echo ($ip_logging_enabled && $debug_enabled && $smtp_enabled) ? 'active' : ''; ?>">
+                                <div class="mt-toggle-slider"></div>
+                            </div>
+                            <label for="smtp-ip-logging-toggle" class="mt-toggle-label">
+                                <span>IP Address Logging</span>
+                                <small class="description"><?php _e('Include originating IP addresses in SMTP logs (requires SMTP logging)', 'morden-toolkit'); ?></small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-status-info">
                     <div class="mt-status-item">
                         <span class="mt-status-indicator <?php echo $debug_enabled ? 'active' : 'inactive'; ?>"></span>
@@ -189,6 +228,10 @@ $setting_units = array(
                         <a href="<?php echo admin_url('tools.php?page=mt-logs'); ?>" class="button button-small" style="margin-left: 10px;">
                             <?php _e('View Debug Logs', 'morden-toolkit'); ?>
                         </a>
+                        <button type="button" id="clear-all-debug-logs" class="button button-small" style="margin-left: 5px;" title="<?php _e('Clear all wp-errors-* log files except the currently active one', 'morden-toolkit'); ?>">
+                            <span class="dashicons dashicons-trash"></span>
+                            <?php _e('Clear All Logs', 'morden-toolkit'); ?>
+                        </button>
                     </div>
                     <?php endif; ?>
                     <?php if (defined('SAVEQUERIES') && SAVEQUERIES): ?>
@@ -210,6 +253,86 @@ $setting_units = array(
                         </a>
                     </div>
                     <?php endif; ?>
+                    <?php if ($smtp_enabled): ?>
+                    <div class="mt-status-item">
+                        <span class="dashicons dashicons-email"></span>
+                        <span><?php _e('SMTP Logging:', 'morden-toolkit'); ?>
+                            <?php echo $smtp_enabled ? __('Enabled', 'morden-toolkit') : __('Disabled', 'morden-toolkit'); ?>
+                        </span>
+                        <?php if ($smtp_status['current_log_exists']): ?>
+                        <span style="margin-left: 10px; color: #646970;">
+                            <?php _e('Today:', 'morden-toolkit'); ?> <?php echo esc_html($smtp_status['current_log_size']); ?>
+                            <?php if (count($smtp_status['available_files']) > 0): ?>
+                            <small style="margin-left: 5px; color: #007cba;">
+                                (<?php echo sprintf(__('%d log files', 'morden-toolkit'), count($smtp_status['available_files'])); ?>)
+                            </small>
+                            <?php endif; ?>
+                        </span>
+                        <?php endif; ?>
+                        <a href="<?php echo admin_url('tools.php?page=mt-smtp-logs'); ?>" class="button button-small" style="margin-left: 10px;">
+                            <?php _e('View SMTP Logs', 'morden-toolkit'); ?>
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="mt-log-cleanup-section">
+                    <h3><?php _e('Log Management', 'morden-toolkit'); ?></h3>
+                    <p class="description"><?php _e('Manage and cleanup log files created by the plugin.', 'morden-toolkit'); ?></p>
+
+                    <div class="mt-cleanup-actions">
+                        <div class="mt-cleanup-item">
+                            <div class="mt-cleanup-info">
+                                <strong><?php _e('Debug Logs Cleanup', 'morden-toolkit'); ?></strong>
+                                <p class="description"><?php _e('Remove old wp-errors-* log files, keeping only the most recent ones.', 'morden-toolkit'); ?></p>
+                            </div>
+                            <div class="mt-cleanup-controls mt-logs-actions">
+                                <select id="debug-cleanup-keep-count">
+                                    <option value="1"><?php _e('Keep 1 file', 'morden-toolkit'); ?></option>
+                                    <option value="3" selected><?php _e('Keep 3 files', 'morden-toolkit'); ?></option>
+                                    <option value="5"><?php _e('Keep 5 files', 'morden-toolkit'); ?></option>
+                                </select>
+                                <button type="button" id="cleanup-debug-logs" class="button">
+                                    <span class="dashicons dashicons-admin-tools"></span>
+                                    <?php _e('Cleanup Debug Logs', 'morden-toolkit'); ?>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-cleanup-item">
+                            <div class="mt-cleanup-info">
+                                <strong><?php _e('All Logs Cleanup', 'morden-toolkit'); ?></strong>
+                                <p class="description"><?php _e('Remove all log files created by the plugin (wp-errors-*, wp-queries-*, etc.).', 'morden-toolkit'); ?></p>
+                            </div>
+                            <div class="mt-cleanup-controls mt-logs-actions">
+                                <label>
+                                    <input type="checkbox" id="include-current-logs">
+                                    <?php _e('Include current active logs', 'morden-toolkit'); ?>
+                                </label>
+                                <button type="button" id="cleanup-all-logs" class="button button-secondary">
+                                    <span class="dashicons dashicons-trash"></span>
+                                    <?php _e('Remove All Logs', 'morden-toolkit'); ?>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-cleanup-item">
+                            <div class="mt-cleanup-info">
+                                <strong><?php _e('Query Log Rotation Cleanup', 'morden-toolkit'); ?></strong>
+                                <p class="description"><?php _e('Remove old query log rotation files (query.log.1, query.log.2, etc.) that accumulate over time.', 'morden-toolkit'); ?></p>
+                            </div>
+                            <div class="mt-cleanup-controls mt-logs-actions">
+                                <label>
+                                    <input type="checkbox" id="keep-latest-rotation" checked>
+                                    <?php _e('Keep latest backup (query.log.1)', 'morden-toolkit'); ?>
+                                </label>
+                                <button type="button" id="cleanup-query-rotation-logs" class="button button-secondary">
+                                    <span class="dashicons dashicons-database-remove"></span>
+                                    <?php _e('Cleanup Rotation Files', 'morden-toolkit'); ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

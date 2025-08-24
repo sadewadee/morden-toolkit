@@ -284,9 +284,149 @@
     background: #d63638;
 }
 
+/* Log Cleanup Section */
+.mt-log-cleanup-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f1;
+    display: none;
+}
+
+.mt-cleanup-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mt-cleanup-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    gap: 20px;
+}
+
+.mt-cleanup-info {
+    flex: 1;
+}
+
+.mt-cleanup-info strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.mt-cleanup-info .description {
+    margin: 0;
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.4;
+}
+
+.mt-cleanup-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.mt-cleanup-controls select {
+    min-width: 120px;
+}
+
+.mt-cleanup-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #646970;
+    margin: 0;
+}
+
+.mt-cleanup-controls input[type="checkbox"] {
+    margin: 0;
+}
+
+.mt-cleanup-controls button {
+    white-space: nowrap;
+}
+
+.mt-cleanup-controls button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+/* Responsive adjustments for cleanup section */
+@media (max-width: 768px) {
+    .mt-cleanup-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .mt-cleanup-controls {
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+}
+
 /* Debug Settings */
 .mt-debug-settings {
     margin: 20px 0;
+}
+
+/* WP Debug Settings Section */
+.mt-wp-debug-settings {
+    margin: 20px 0;
+    background: #f8f9fa;
+    border: 1px solid #e2e4e7;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.mt-wp-debug-settings h3 {
+    color: #0073aa;
+    margin-top: 0;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mt-wp-debug-settings h3:before {
+    content: '\f119'; /* WordPress dashicon */
+    font-family: dashicons;
+    font-size: 18px;
+}
+
+/* SMTP Debug Settings Section */
+.mt-smtp-debug-settings {
+    margin: 20px 0;
+    background: #f0f6fc;
+    border: 1px solid #c8d5e2;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.mt-smtp-debug-settings h3 {
+    color: #0073aa;
+    margin-top: 0;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mt-smtp-debug-settings h3:before {
+    content: '\f465'; /* Email dashicon */
+    font-family: dashicons;
+    font-size: 18px;
 }
 
 .mt-checkbox-group {
@@ -313,6 +453,77 @@
     display: flex;
     gap: 12px;
     margin-top: 20px;
+}
+
+/* Clear All Debug Logs Button */
+#clear-all-debug-logs {
+    background: #d63638;
+    border-color: #d63638;
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+#clear-all-debug-logs:hover {
+    background: #c92d2f;
+    border-color: #c92d2f;
+    color: #ffffff;
+}
+
+#clear-all-debug-logs:focus {
+    background: #c92d2f;
+    border-color: #c92d2f;
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(214, 54, 56, 0.5);
+}
+
+#clear-all-debug-logs .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: text-top;
+}
+
+/* Status item buttons spacing */
+.mt-status-item .button {
+    margin-left: 8px;
+}
+
+.mt-status-item .button:first-of-type {
+    margin-left: 10px;
+}
+
+.mt-status-item .button + .button {
+    margin-left: 5px;
+}
+
+/* Query Rotation Logs Cleanup Button */
+#cleanup-query-rotation-logs {
+    background: #646970;
+    border-color: #646970;
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+#cleanup-query-rotation-logs:hover {
+    background: #50575e;
+    border-color: #50575e;
+    color: #ffffff;
+}
+
+#cleanup-query-rotation-logs:focus {
+    background: #50575e;
+    border-color: #50575e;
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(100, 105, 112, 0.5);
+}
+
+#cleanup-query-rotation-logs .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: text-top;
 }
 
 /* Performance Preview */

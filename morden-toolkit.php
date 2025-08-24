@@ -41,6 +41,7 @@ require_once MT_PLUGIN_DIR . 'includes/class-query-monitor.php';
 require_once MT_PLUGIN_DIR . 'includes/class-htaccess.php';
 require_once MT_PLUGIN_DIR . 'includes/class-php-config.php';
 require_once MT_PLUGIN_DIR . 'includes/class-file-manager.php';
+require_once MT_PLUGIN_DIR . 'includes/class-smtp-logger.php';
 
 function mt_init() {
     MT_Plugin::get_instance();
@@ -84,5 +85,16 @@ register_deactivation_hook(__FILE__, function() {
         $debug_service = new MT_Debug();
         $debug_service->disable_debug();
         update_option('mt_debug_enabled', false);
+    }
+
+    // Optional: Clean up old log files (can be controlled via filter)
+    $cleanup_on_deactivation = apply_filters('mt_cleanup_logs_on_deactivation', false);
+
+    if ($cleanup_on_deactivation && function_exists('mt_cleanup_old_debug_logs')) {
+        // Only clean up old files, keep recent ones
+        $cleaned = mt_cleanup_old_debug_logs(1); // Keep only 1 most recent
+        if ($cleaned > 0) {
+            error_log("MT: Cleaned up {$cleaned} old log files on deactivation");
+        }
     }
 });

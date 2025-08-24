@@ -152,6 +152,49 @@ function mt_cleanup_transients() {
 }
 
 /**
+ * Clean up all log files created by the plugin
+ */
+function mt_cleanup_log_files() {
+    $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+
+    if (!is_dir($log_directory)) {
+        return 0;
+    }
+
+    $patterns = [
+        'wp-errors-*.log',    // Debug logs
+        'wp-queries-*.log',   // Query logs
+        'query.log',          // Main query log
+        'query.log.*',        // Query log rotation files (query.log.1, query.log.2, etc.)
+        'debug.log',          // Main debug log
+        '.htaccess',          // Protection file
+        'index.php'           // Protection file
+    ];
+
+    $removed_count = 0;
+
+    foreach ($patterns as $pattern) {
+        $files = glob($log_directory . $pattern);
+
+        foreach ($files as $file) {
+            if (file_exists($file) && unlink($file)) {
+                $removed_count++;
+            }
+        }
+    }
+
+    // Try to remove the directory if it's empty
+    if (is_dir($log_directory)) {
+        $remaining_files = glob($log_directory . '*');
+        if (empty($remaining_files)) {
+            rmdir($log_directory);
+        }
+    }
+
+    return $removed_count;
+}
+
+/**
  * Log uninstall action
  */
 function mt_log_uninstall() {
@@ -168,6 +211,13 @@ try {
     mt_cleanup_php_ini();
     mt_cleanup_temp_files();
     mt_cleanup_transients();
+
+    // Clean up all log files
+    $removed_logs = mt_cleanup_log_files();
+    if ($removed_logs > 0) {
+        error_log("MT: Removed {$removed_logs} log files during uninstall");
+    }
+
     mt_log_uninstall();
 } catch (Exception $e) {
     // Silently fail to prevent blocking uninstall process

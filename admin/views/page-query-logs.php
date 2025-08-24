@@ -37,11 +37,11 @@ $debug_status = $debug_service->get_debug_status();
                 <span class="dashicons dashicons-update"></span>
                 <?php _e('Refresh', 'morden-toolkit'); ?>
             </button>
-            <button type="button" id="clear-query-logs" class="button">
+            <button type="button" id="clear-query-logs" class="button" title="<?php _e('Clear active query log content (empties query.log)', 'morden-toolkit'); ?>">
                 <span class="dashicons dashicons-trash"></span>
                 <?php _e('Clear', 'morden-toolkit'); ?>
             </button>
-            <button type="button" id="cleanup-query-logs" class="button" title="<?php _e('Remove old backup log files', 'morden-toolkit'); ?>">
+            <button type="button" id="cleanup-query-logs" class="button" title="<?php _e('Remove rotation/archived files (query.log.1, query.log.2, etc.)', 'morden-toolkit'); ?>">
                 <span class="dashicons dashicons-admin-tools"></span>
                 <?php _e('Cleanup', 'morden-toolkit'); ?>
             </button>
@@ -292,9 +292,9 @@ function initializeQueryLogsPage() {
         loadQueryLogs();
     });
 
-    // Clear query logs
+    // Clear query logs (empties active query.log content)
     document.getElementById('clear-query-logs').addEventListener('click', function() {
-        if (!confirm(<?php echo json_encode(__('Are you sure you want to clear all query logs?', 'morden-toolkit')); ?>)) {
+        if (!confirm(<?php echo json_encode(__('Are you sure you want to clear the active query log? This will delete all recorded logs in query.log but keep rotation files (query.log.1, etc.).', 'morden-toolkit')); ?>)) {
             return;
         }
 
@@ -325,9 +325,9 @@ function initializeQueryLogsPage() {
         });
     });
 
-    // Cleanup old query logs
+    // Cleanup old query logs (removes rotation/archived files like query.log.1, query.log.2, etc.)
     document.getElementById('cleanup-query-logs').addEventListener('click', function() {
-        if (!confirm(<?php echo json_encode(__('Are you sure you want to cleanup old backup log files?', 'morden-toolkit')); ?>)) {
+        if (!confirm(<?php echo json_encode(__('Are you sure you want to cleanup rotation/archived log files? This will remove query.log.1, query.log.2, etc. but keep the active query.log file.', 'morden-toolkit')); ?>)) {
             return;
         }
 

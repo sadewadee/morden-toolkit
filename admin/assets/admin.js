@@ -32,6 +32,7 @@
         initializeToggles();
         initializeDebugActions();
         initializeQueryMonitor();
+        initializeSmtpLogging();
         initializeHtaccessEditor();
         initializePHPConfig();
         initializeLogsPage();
@@ -199,21 +200,144 @@
         });
 
         // Add click handlers for debug constant toggle buttons
-        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle').siblings('.mt-toggle').on('click', function() {
+        $('#wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle, #smtp-logging-toggle').siblings('.mt-toggle').on('click', function() {
             const $checkbox = $(this).siblings('input[type="checkbox"]');
-            
+
             // Prevent action if master debug is disabled
             if (!$('#debug-mode-toggle').is(':checked')) {
                 showNotice('Please enable Debug Mode first', 'error');
                 return;
             }
-            
+
             // Check if the wrapper is disabled
             if ($(this).closest('.mt-toggle-wrapper').hasClass('disabled')) {
                 return;
             }
-            
+
             $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+        });
+
+        // Debug logs cleanup handler
+        $('#cleanup-debug-logs').on('click', function() {
+            const keepCount = $('#debug-cleanup-keep-count').val() || 3;
+
+            if (!confirm('Are you sure you want to cleanup old debug log files? This will keep only the ' + keepCount + ' most recent files.')) {
+                return;
+            }
+
+            const $button = $(this);
+            const originalText = $button.html();
+            $button.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Cleaning...');
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_cleanup_debug_logs',
+                keep_count: keepCount,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                $button.prop('disabled', false).html(originalText);
+
+                if (response.success) {
+                    showNotice(response.data, 'success');
+                } else {
+                    showNotice(response.data || 'Failed to cleanup debug logs', 'error');
+                }
+            }).fail(function() {
+                $button.prop('disabled', false).html(originalText);
+                showNotice('Network error occurred during cleanup', 'error');
+            });
+        });
+
+        // Clear all debug logs handler (except active)
+        $('#clear-all-debug-logs').on('click', function() {
+            if (!confirm('Are you sure you want to clear all wp-errors-* log files except the currently active one? This action cannot be undone.')) {
+                return;
+            }
+
+            const $button = $(this);
+            const originalText = $button.html();
+            $button.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Clearing...');
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_clear_all_debug_logs',
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                $button.prop('disabled', false).html(originalText);
+
+                if (response.success) {
+                    showNotice(response.data, 'success');
+                } else {
+                    showNotice(response.data || 'Failed to clear debug logs', 'error');
+                }
+            }).fail(function() {
+                $button.prop('disabled', false).html(originalText);
+                showNotice('Network error occurred during cleanup', 'error');
+            });
+        });
+
+        // All logs cleanup handler
+        $('#cleanup-all-logs').on('click', function() {
+            const includeCurrent = $('#include-current-logs').is(':checked');
+            const warningText = includeCurrent ?
+                'Are you sure you want to remove ALL log files? This will delete all debug and query logs including current active logs. This action cannot be undone!' :
+                'Are you sure you want to cleanup old log files? This will remove old debug and query logs but keep current active logs.';
+
+            if (!confirm(warningText)) {
+                return;
+            }
+
+            const $button = $(this);
+            const originalText = $button.html();
+            $button.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Removing...');
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_cleanup_all_logs',
+                include_current: includeCurrent,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                $button.prop('disabled', false).html(originalText);
+
+                if (response.success) {
+                    showNotice(response.data, 'success');
+                } else {
+                    showNotice(response.data || 'Failed to cleanup logs', 'error');
+                }
+            }).fail(function() {
+                $button.prop('disabled', false).html(originalText);
+                showNotice('Network error occurred during cleanup', 'error');
+            });
+        });
+
+        // Query rotation logs cleanup handler
+        $('#cleanup-query-rotation-logs').on('click', function() {
+            const keepLatest = $('#keep-latest-rotation').is(':checked');
+            const warningText = keepLatest ?
+                'Are you sure you want to cleanup old query rotation files? The latest backup (query.log.1) will be preserved.' :
+                'Are you sure you want to cleanup ALL query rotation files? This action cannot be undone!';
+
+            if (!confirm(warningText)) {
+                return;
+            }
+
+            const $button = $(this);
+            const originalText = $button.html();
+            $button.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Cleaning...');
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_cleanup_query_rotation_logs',
+                keep_latest: keepLatest,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                $button.prop('disabled', false).html(originalText);
+
+                if (response.success) {
+                    showNotice(response.data, 'success');
+                } else {
+                    showNotice(response.data || 'Failed to cleanup rotation logs', 'error');
+                }
+            }).fail(function() {
+                $button.prop('disabled', false).html(originalText);
+                showNotice('Network error occurred during cleanup', 'error');
+            });
         });
     }
 
@@ -222,8 +346,8 @@
      */
     function initializeToggles() {
         // Exclude toggles that have specific handlers to prevent double execution
-        const excludeSelectors = '#debug-mode-toggle, #wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle, #query-monitor-toggle';
-        
+        const excludeSelectors = '#debug-mode-toggle, #wp-debug-log-toggle, #wp-debug-display-toggle, #script-debug-toggle, #savequeries-toggle, #display-errors-toggle, #query-monitor-toggle, #smtp-logging-toggle, #smtp-ip-logging-toggle';
+
         $('.mt-toggle-wrapper input[type="checkbox"]').not(excludeSelectors).on('change', function() {
             const $toggle = $(this).siblings('.mt-toggle');
             if ($(this).is(':checked')) {
@@ -238,6 +362,137 @@
             if (!$checkbox.is(excludeSelectors)) {
                 $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
             }
+        });
+    }
+
+    /**
+     * Initialize SMTP logging actions
+     */
+    function initializeSmtpLogging() {
+        $('#smtp-logging-toggle').off('change').on('change', function() {
+            const enabled = $(this).is(':checked');
+
+            showLoading();
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_toggle_smtp_logging',
+                enabled: enabled,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    showNotice(response.data.message, 'success');
+                    // Update visual toggle state
+                    const $toggle = $('#smtp-logging-toggle').siblings('.mt-toggle');
+                    if (enabled) {
+                        $toggle.addClass('active');
+                        // Enable IP logging toggle
+                        $('#smtp-ip-logging-toggle').closest('.mt-toggle-wrapper').removeClass('disabled');
+                        $('#smtp-ip-logging-toggle').prop('disabled', false);
+                    } else {
+                        $toggle.removeClass('active');
+                        // Disable IP logging toggle
+                        $('#smtp-ip-logging-toggle').closest('.mt-toggle-wrapper').addClass('disabled');
+                        $('#smtp-ip-logging-toggle').prop('disabled', true).prop('checked', false);
+                        $('#smtp-ip-logging-toggle').siblings('.mt-toggle').removeClass('active');
+                    }
+                } else {
+                    showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
+                    $('#smtp-logging-toggle').prop('checked', !enabled);
+                    // Revert visual toggle state
+                    const $toggle = $('#smtp-logging-toggle').siblings('.mt-toggle');
+                    if (!enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
+                }
+            }).fail(function() {
+                hideLoading();
+                showNotice(mtToolkit.strings.error_occurred, 'error');
+                // Revert toggle state
+                $('#smtp-logging-toggle').prop('checked', !enabled);
+                // Revert visual toggle state
+                const $toggle = $('#smtp-logging-toggle').siblings('.mt-toggle');
+                if (!enabled) {
+                    $toggle.addClass('active');
+                } else {
+                    $toggle.removeClass('active');
+                }
+            });
+        });
+
+        // IP address logging toggle
+        $('#smtp-ip-logging-toggle').off('change').on('change', function() {
+            const enabled = $(this).is(':checked');
+
+            showLoading();
+
+            $.post(mtToolkit.ajaxurl, {
+                action: 'mt_toggle_smtp_ip_logging',
+                enabled: enabled,
+                nonce: mtToolkit.nonce
+            }, function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    showNotice(response.data.message, 'success');
+                    // Update visual toggle state
+                    const $toggle = $('#smtp-ip-logging-toggle').siblings('.mt-toggle');
+                    if (enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
+                } else {
+                    showNotice(response.data || mtToolkit.strings.error_occurred, 'error');
+                    $('#smtp-ip-logging-toggle').prop('checked', !enabled);
+                    // Revert visual toggle state
+                    const $toggle = $('#smtp-ip-logging-toggle').siblings('.mt-toggle');
+                    if (!enabled) {
+                        $toggle.addClass('active');
+                    } else {
+                        $toggle.removeClass('active');
+                    }
+                }
+            }).fail(function() {
+                hideLoading();
+                showNotice(mtToolkit.strings.error_occurred, 'error');
+                // Revert toggle state
+                $('#smtp-ip-logging-toggle').prop('checked', !enabled);
+                // Revert visual toggle state
+                const $toggle = $('#smtp-ip-logging-toggle').siblings('.mt-toggle');
+                if (!enabled) {
+                    $toggle.addClass('active');
+                } else {
+                    $toggle.removeClass('active');
+                }
+            });
+        });
+
+        // Add click handler for SMTP IP logging visual toggle
+        $('#smtp-ip-logging-toggle').siblings('.mt-toggle').on('click', function() {
+            const $checkbox = $(this).siblings('input[type="checkbox"]');
+
+            // Prevent action if master debug is disabled
+            if (!$('#debug-mode-toggle').is(':checked')) {
+                showNotice('Please enable Debug Mode first', 'error');
+                return;
+            }
+
+            // Check if SMTP logging is enabled
+            if (!$('#smtp-logging-toggle').is(':checked')) {
+                showNotice('Please enable SMTP Logging first', 'error');
+                return;
+            }
+
+            // Check if the wrapper is disabled
+            if ($(this).closest('.mt-toggle-wrapper').hasClass('disabled')) {
+                return;
+            }
+
+            $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
         });
     }
 

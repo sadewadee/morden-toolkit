@@ -201,8 +201,8 @@ class MT_Debug {
             'WP_DEBUG' => 'true',
             'WP_DEBUG_LOG' => 'true',
             'WP_DEBUG_DISPLAY' => 'false',
-            'SCRIPT_DEBUG' => 'true',
-            'SAVEQUERIES' => 'true'
+            'SCRIPT_DEBUG' => 'false',
+            'SAVEQUERIES' => 'false'
         );
     }
 
@@ -774,23 +774,25 @@ class MT_Debug {
     }
 
     /**
-     * Clean up old query log files
+     * Clean up old query log files (remove all rotation/archived files like query.log.1, query.log.2, etc.)
+     * This removes retention/rotation/archived logs but keeps the active query.log
      */
     public function cleanup_old_query_logs() {
         $log_path = mt_get_query_log_path();
         $log_dir = dirname($log_path);
         $log_name = basename($log_path);
 
-        // Look for old log files (query.log.1, query.log.2, etc)
+        // Look for all rotation log files (query.log.1, query.log.2, etc)
         $pattern = $log_dir . '/' . $log_name . '.*';
         $old_logs = glob($pattern);
 
         $cleaned = 0;
         foreach ($old_logs as $old_log) {
-            // Keep only the most recent backup (.1)
-            if (preg_match('/\.([2-9]|\d{2,})$/', $old_log)) {
-                if (unlink($old_log)) {
+            // Remove ALL rotation files (.1, .2, .3, etc.) - this is what cleanup should do
+            if (preg_match('/\.\d+$/', $old_log)) {
+                if (file_exists($old_log) && unlink($old_log)) {
                     $cleaned++;
+                    error_log('MT: Cleaned up rotation log file: ' . basename($old_log));
                 }
             }
         }
@@ -1098,7 +1100,8 @@ class MT_Debug {
     }
 
     /**
-     * Clear query log file
+     * Clear query log file (empty the content of active query.log)
+     * This deletes all recorded logs in the active query.log file
      */
     public function clear_query_log() {
         $log_path = mt_get_query_log_path();
@@ -1107,7 +1110,19 @@ class MT_Debug {
             return true; // Already cleared
         }
 
+        // Empty the content of the active log file
         return file_put_contents($log_path, '') !== false;
+    }
+
+    /**
+     * Clear all query logs - both active content and rotation files
+     * This combines clearing active log content and removing all rotation files
+     */
+    public function clear_all_query_logs() {
+        $cleared_active = $this->clear_query_log();
+        $cleaned_rotation = $this->cleanup_old_query_logs();
+
+        return $cleared_active && ($cleaned_rotation >= 0);
     }
 
     /**

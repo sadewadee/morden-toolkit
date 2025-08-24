@@ -263,3 +263,184 @@ function mt_sanitize_file_content($content) {
     // Don't modify the content - just validate it
     return $content;
 }
+
+/**
+ * Clear all debug log files except the currently active one
+ *
+ * @return int Number of files cleaned up
+ */
+function mt_clear_all_debug_logs_except_active() {
+    $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+
+    if (!is_dir($log_directory)) {
+        return 0;
+    }
+
+    // Get current active debug log path
+    $current_debug_log = mt_get_debug_log_path();
+    $current_filename = basename($current_debug_log);
+
+    // Find all debug log files
+    $debug_pattern = $log_directory . 'wp-errors-*.log';
+    $debug_files = glob($debug_pattern);
+
+    if (empty($debug_files)) {
+        return 0; // Nothing to clean up
+    }
+
+    $removed_count = 0;
+
+    foreach ($debug_files as $file) {
+        $filename = basename($file);
+
+        // Skip the currently active log file
+        if ($filename === $current_filename) {
+            continue;
+        }
+
+        if (file_exists($file) && unlink($file)) {
+            $removed_count++;
+            error_log('MT: Cleared debug log file: ' . basename($file));
+        }
+    }
+
+    return $removed_count;
+}
+
+/**
+ * Cleanup old debug log files, keeping only the most recent ones
+ *
+ * @param int $keep_count Number of recent files to keep (default: 3)
+ * @return int Number of files cleaned up
+ */
+function mt_cleanup_old_debug_logs($keep_count = 3) {
+    $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+
+    if (!is_dir($log_directory)) {
+        return 0;
+    }
+
+    // Find all debug log files
+    $debug_pattern = $log_directory . 'wp-errors-*.log';
+    $debug_files = glob($debug_pattern);
+
+    if (empty($debug_files) || count($debug_files) <= $keep_count) {
+        return 0; // Nothing to clean up
+    }
+
+    // Sort files by modification time (newest first)
+    usort($debug_files, function($a, $b) {
+        return filemtime($b) - filemtime($a);
+    });
+
+    // Keep only the most recent files, remove the rest
+    $files_to_remove = array_slice($debug_files, $keep_count);
+    $removed_count = 0;
+
+    foreach ($files_to_remove as $file) {
+        if (file_exists($file) && unlink($file)) {
+            $removed_count++;
+            error_log('MT: Cleaned up old debug log file: ' . basename($file));
+        }
+    }
+
+    return $removed_count;
+}
+
+/**
+ * Cleanup all log files (debug and query logs) from morden-toolkit directory
+ *
+ * @param bool $include_current Whether to include current log files (default: false)
+ * @return int Number of files cleaned up
+ */
+function mt_cleanup_all_log_files($include_current = false) {
+    $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+
+    if (!is_dir($log_directory)) {
+        return 0;
+    }
+
+    $patterns = [
+        'wp-errors-*.log',    // Debug logs
+        'wp-queries-*.log',   // Query logs
+        'query.log.*',        // Query log rotation files (query.log.1, query.log.2, etc.)
+    ];
+
+    if ($include_current) {
+        $patterns[] = 'query.log';       // Current query log
+        $patterns[] = 'debug.log';       // Current debug log
+    }
+
+    $removed_count = 0;
+
+    foreach ($patterns as $pattern) {
+        $log_files = glob($log_directory . $pattern);
+
+        foreach ($log_files as $log_file) {
+            if (file_exists($log_file) && unlink($log_file)) {
+                $removed_count++;
+                error_log('MT: Cleaned up log file: ' . basename($log_file));
+            }
+        }
+    }
+
+    return $removed_count;
+}
+
+/**
+ * Cleanup query log rotation files (query.log.1, query.log.2, etc.)
+ *
+ * @param bool $keep_latest Whether to keep the latest rotation file (query.log.1)
+ * @return int Number of files cleaned up
+ */
+function mt_cleanup_query_log_rotation_files($keep_latest = true) {
+    $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+
+    if (!is_dir($log_directory)) {
+        return 0;
+    }
+
+    // Find all query log rotation files using multiple patterns to be thorough
+    $patterns = [
+        $log_directory . 'query.log.*',  // Standard rotation files
+        $log_directory . 'query.log.[0-9]*'  // Numbered rotation files specifically
+    ];
+
+    $rotation_files = [];
+    foreach ($patterns as $pattern) {
+        $files = glob($pattern);
+        if ($files) {
+            $rotation_files = array_merge($rotation_files, $files);
+        }
+    }
+
+    // Remove duplicates
+    $rotation_files = array_unique($rotation_files);
+
+    if (empty($rotation_files)) {
+        return 0; // Nothing to clean up
+    }
+
+    $removed_count = 0;
+
+    foreach ($rotation_files as $file) {
+        $filename = basename($file);
+
+        // Skip files that are not actually rotation files (e.g., query.log.backup)
+        if (!preg_match('/^query\.log\.[0-9]+$/', $filename)) {
+            continue;
+        }
+
+        // If keep_latest is true, skip query.log.1 (the most recent rotation)
+        if ($keep_latest && $filename === 'query.log.1') {
+            continue;
+        }
+
+        if (file_exists($file) && is_writable($file) && unlink($file)) {
+            $removed_count++;
+            error_log('MT: Cleaned up query rotation file: ' . $filename);
+        }
+    }
+
+    return $removed_count;
+}
