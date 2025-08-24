@@ -403,7 +403,7 @@ class MT_Debug {
             foreach ($log_files as $log_file) {
                 if (file_exists($log_file) && unlink($log_file)) {
                     $removed_count++;
-                    error_log('MT: Removed custom log file: ' . basename($log_file));
+                    mt_debug_log('Removed custom log file: ' . basename($log_file));
                 }
             }
         }
@@ -770,7 +770,7 @@ class MT_Debug {
         file_put_contents($log_path, '');
 
         // Log rotation info
-        error_log("MT: Query log rotated. Size was " . mt_format_bytes($current_size));
+        mt_debug_log("Query log rotated. Size was " . mt_format_bytes($current_size));
     }
 
     /**
@@ -792,7 +792,7 @@ class MT_Debug {
             if (preg_match('/\.\d+$/', $old_log)) {
                 if (file_exists($old_log) && unlink($old_log)) {
                     $cleaned++;
-                    error_log('MT: Cleaned up rotation log file: ' . basename($old_log));
+                    mt_debug_log('Cleaned up rotation log file: ' . basename($old_log));
                 }
             }
         }

@@ -13,6 +13,10 @@
  * Requires at least: 5.0
  * Tested up to: 6.6
  * Requires PHP: 7.4
+ *
+ * Internal Logging Control:
+ * Add to wp-config.php to enable internal plugin logging:
+ * define('MT_INTERNAL_LOGGING', true);
  */
 
 if (!defined('ABSPATH')) {
@@ -35,6 +39,7 @@ function mt_load_textdomain() {
 add_action('plugins_loaded', 'mt_load_textdomain');
 
 require_once MT_PLUGIN_DIR . 'includes/helpers.php';
+require_once MT_PLUGIN_DIR . 'includes/mt-internal-log.php';
 require_once MT_PLUGIN_DIR . 'includes/class-plugin.php';
 require_once MT_PLUGIN_DIR . 'includes/class-debug.php';
 require_once MT_PLUGIN_DIR . 'includes/class-query-monitor.php';
@@ -91,10 +96,9 @@ register_deactivation_hook(__FILE__, function() {
     $cleanup_on_deactivation = apply_filters('mt_cleanup_logs_on_deactivation', false);
 
     if ($cleanup_on_deactivation && function_exists('mt_cleanup_old_debug_logs')) {
-        // Only clean up old files, keep recent ones
-        $cleaned = mt_cleanup_old_debug_logs(1); // Keep only 1 most recent
+        $cleaned = mt_cleanup_old_debug_logs(1);
         if ($cleaned > 0) {
-            error_log("MT: Cleaned up {$cleaned} old log files on deactivation");
+            mt_debug_log("Cleaned up {$cleaned} old log files on deactivation");
         }
     }
 });

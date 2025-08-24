@@ -31,14 +31,14 @@ class MT_WP_Config_Integration {
 
         $wp_config_path = mt_get_wp_config_path();
         if (!$wp_config_path || !file_exists($wp_config_path)) {
-            error_log('MT WP Config Integration: wp-config.php not found');
+            mt_config_log(' wp-config.php not found');
             return false;
         }
 
         // Create backup
         $backup_path = self::create_backup($wp_config_path);
         if (!$backup_path) {
-            error_log('MT WP Config Integration: Failed to create backup');
+            mt_config_log(' Failed to create backup');
             return false;
         }
 
@@ -55,19 +55,19 @@ class MT_WP_Config_Integration {
 
             // Validate the changes
             if (self::validate_wp_config($wp_config_path)) {
-                error_log('MT WP Config Integration: Configuration applied successfully');
+                mt_config_log(' Configuration applied successfully');
                 return true;
             } else {
                 // Restore backup on validation failure
                 copy($backup_path, $wp_config_path);
-                error_log('MT WP Config Integration: Validation failed, backup restored');
+                mt_config_log(' Validation failed, backup restored');
                 return false;
             }
 
         } catch (Exception $e) {
             // Restore backup on exception
             copy($backup_path, $wp_config_path);
-            error_log('MT WP Config Integration: Exception - ' . $e->getMessage() . ', backup restored');
+            mt_config_log(' Exception - ' . $e->getMessage() . ', backup restored');
             return false;
         }
     }
@@ -108,7 +108,7 @@ class MT_WP_Config_Integration {
                 $custom_path = self::get_or_create_debug_log_path();
                 $debug_settings['WP_DEBUG_LOG'] = $custom_path;
 
-                error_log('MT WP Config Integration: Using custom debug log path: ' . $custom_path);
+                mt_config_log(' Using custom debug log path: ' . $custom_path);
             }
 
             // Apply remaining debug constants
@@ -148,7 +148,7 @@ class MT_WP_Config_Integration {
 
         } catch (Exception $e) {
             copy($backup_path, $wp_config_path);
-            error_log('MT WP Config Integration: Enhanced debug constants failed - ' . $e->getMessage());
+            mt_config_log(' Enhanced debug constants failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -206,7 +206,7 @@ class MT_WP_Config_Integration {
 
         } catch (Exception $e) {
             copy($backup_path, $wp_config_path);
-            error_log('MT WP Config Integration: Debug constants failed - ' . $e->getMessage());
+            mt_config_log(' Debug constants failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -342,7 +342,7 @@ class MT_WP_Config_Integration {
         // Sanitize setting name to prevent code injection
         $safe_setting = preg_replace('/[^a-zA-Z0-9_.]/', '', $setting);
         if ($safe_setting !== $setting) {
-            error_log("MT WP Config Integration: Invalid setting name: $setting");
+            mt_config_log(" Invalid setting name: $setting");
             return;
         }
 
@@ -548,7 +548,7 @@ class MT_WP_Config_Integration {
                     $transformer->add('constant', 'MT_QUERY_LOG', $formatted_value, $add_options);
                 }
 
-                error_log('MT WP Config Integration: Applied custom query log path: ' . $custom_path);
+                mt_config_log(' Applied custom query log path: ' . $custom_path);
             } else {
                 // Remove custom path constant
                 if ($transformer->exists('constant', 'MT_QUERY_LOG')) {
@@ -565,7 +565,7 @@ class MT_WP_Config_Integration {
 
         } catch (Exception $e) {
             copy($backup_path, $wp_config_path);
-            error_log('MT WP Config Integration: Custom query log path failed - ' . $e->getMessage());
+            mt_config_log(' Custom query log path failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -724,7 +724,7 @@ class MT_WP_Config_Integration {
         if (function_exists('shell_exec') && !empty(shell_exec('which php'))) {
             $output = shell_exec("php -l {$wp_config_path} 2>&1");
             if (strpos($output, 'No syntax errors detected') === false) {
-                error_log('MT WP Config Integration: PHP syntax error detected');
+                mt_config_log(' PHP syntax error detected');
                 return false;
             }
         }
@@ -734,7 +734,7 @@ class MT_WP_Config_Integration {
 
         // Check for required WordPress elements
         if (strpos($content, '<?php') === false || strpos($content, 'wp-settings.php') === false) {
-            error_log('MT WP Config Integration: wp-config.php structure invalid');
+            mt_config_log(' wp-config.php structure invalid');
             return false;
         }
 
@@ -746,7 +746,7 @@ class MT_WP_Config_Integration {
 
         foreach ($syntax_issues as $pattern => $description) {
             if (preg_match($pattern, $content)) {
-                error_log("MT WP Config Integration: Syntax issue - $description");
+                mt_config_log(" Syntax issue - $description");
                 return false;
             }
         }
@@ -845,7 +845,7 @@ class MT_WP_Config_Integration {
                 return $transformer->get_value('constant', $constant_name);
             }
         } catch (Exception $e) {
-            error_log('MT WP Config Integration: Failed to get constant value - ' . $e->getMessage());
+            mt_config_log(' Failed to get constant value - ' . $e->getMessage());
         }
         return null;
     }

@@ -96,9 +96,9 @@ class MT_PHP_Config {
                 $this->presets = $this->get_default_presets();
             }
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Failed to load presets - ' . $e->getMessage());
             $this->presets = $this->get_default_presets();
         }
+
     }
 
     private function get_default_presets() {
@@ -180,14 +180,12 @@ class MT_PHP_Config {
 
             return $presets;
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Failed to get presets - ' . $e->getMessage());
             return $this->presets;
         }
     }
 
     public function get_preset($preset_name) {
         if (empty($preset_name) || !is_string($preset_name)) {
-            //error_log('MT PHP Config: Invalid preset name provided');
             return null;
         }
         return isset($this->presets[$preset_name]) ? $this->presets[$preset_name] : null;
@@ -196,29 +194,25 @@ class MT_PHP_Config {
     public function apply_preset($preset_name) {
         try {
             if (empty($preset_name) || !isset($this->presets[$preset_name])) {
-                //error_log('MT PHP Config: Invalid preset name: ' . $preset_name);
                 return false;
             }
 
             $preset = $this->presets[$preset_name];
             if (empty($preset['settings'])) {
-                //error_log('MT PHP Config: Empty settings for preset: ' . $preset_name);
                 return false;
             }
 
             $original_values = $this->get_current_config();
-            //error_log('MT PHP Config: Starting configuration with SAFE strategy (wp-config.php first)');
 
             if ($this->try_apply_via_wp_config_with_testing($preset['settings'], $original_values)) {
-                //error_log('MT PHP Config: Successfully applied via wp-config.php');
+                mt_config_log('Successfully applied via wp-config.php');
                 return true;
             }
 
             $php_ini_path = ABSPATH . 'php.ini';
             if (mt_is_file_writable($php_ini_path)) {
-                //error_log('MT PHP Config: Trying php.ini fallback');
                 if ($this->apply_via_php_ini($preset['settings'])) {
-                    //error_log('MT PHP Config: Successfully applied via php.ini');
+                    mt_config_log('Successfully applied via php.ini');
                     return true;
                 }
             }
@@ -227,18 +221,15 @@ class MT_PHP_Config {
             if ($htaccess_path && mt_is_file_writable($htaccess_path)) {
                 $server_type = $this->detect_server_type();
                 if ($server_type === 'apache') {
-                    //error_log('MT PHP Config: Trying .htaccess as LAST RESORT');
                     if ($this->try_apply_via_htaccess_with_testing($preset['settings'], $original_values)) {
-                        //error_log('MT PHP Config: Successfully applied via .htaccess');
+                        mt_config_log('Successfully applied via .htaccess');
                         return true;
                     }
                 }
             }
 
-            //error_log('MT PHP Config: All configuration methods failed');
             return false;
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Exception in apply_preset - ' . $e->getMessage());
             return false;
         }
     }
@@ -247,7 +238,6 @@ class MT_PHP_Config {
         $htaccess_path = mt_get_htaccess_path();
 
         if (!$htaccess_path || !mt_is_file_writable($htaccess_path)) {
-            //error_log('MT PHP Config: .htaccess not writable');
             return false;
         }
 
@@ -255,27 +245,20 @@ class MT_PHP_Config {
             $htaccess_service = new MT_Htaccess();
             $original_content = $htaccess_service->get_htaccess_content();
             if ($original_content === false) {
-                //error_log('MT PHP Config: Failed to read .htaccess content');
                 return false;
             }
 
             $this->apply_via_apache_htaccess($settings);
 
-            // Skip fail-safe mechanism for .htaccess - using WPConfigTransformer approach
-            //error_log('MT PHP Config: Fail-safe disabled for .htaccess changes');
-
             sleep(3);
 
             if ($this->validate_config_changes($original_values, $settings)) {
-                //error_log('MT PHP Config: .htaccess configuration applied successfully');
                 return true;
             } else {
                 if ($this->validate_htaccess_configuration_applied($settings)) {
-                    //error_log('MT PHP Config: .htaccess configuration written successfully');
                     return true;
                 } else {
                     $htaccess_service->save_htaccess($original_content);
-                    //error_log('MT PHP Config: .htaccess configuration failed, reverted');
                     return false;
                 }
             }
@@ -284,7 +267,6 @@ class MT_PHP_Config {
             if (isset($original_content) && isset($htaccess_service)) {
                 $htaccess_service->save_htaccess($original_content);
             }
-            //error_log('MT PHP Config: .htaccess application failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -293,25 +275,21 @@ class MT_PHP_Config {
         $wp_config_path = mt_get_wp_config_path();
 
         if (!$wp_config_path || !mt_is_file_writable($wp_config_path)) {
-            //error_log('MT PHP Config: wp-config.php not writable');
             return false;
         }
 
         $has_fatal_error_changes = $this->has_fatal_error_handler_changes(array('constants' => $settings));
         if ($has_fatal_error_changes) {
-            //error_log('MT PHP Config: Detected WP_DISABLE_FATAL_ERROR_HANDLER changes - applying enhanced fail-safe measures');
             return $this->apply_fatal_error_handler_changes_safely_simple($settings, $original_values);
         }
 
         try {
             if (!$this->validate_wp_config_syntax($wp_config_path)) {
-                //error_log('MT PHP Config: Current wp-config.php has syntax errors, aborting');
                 return false;
             }
 
             $original_content = file_get_contents($wp_config_path);
             if ($original_content === false) {
-                //error_log('MT PHP Config: Failed to read wp-config.php');
                 return false;
             }
 
@@ -319,22 +297,13 @@ class MT_PHP_Config {
 
             if (!$this->validate_wp_config_syntax($wp_config_path)) {
                 file_put_contents($wp_config_path, $original_content);
-                //error_log('MT PHP Config: wp-config.php syntax validation failed after modifications, reverted');
                 return false;
             }
 
-            // Skip fail-safe mechanism - using WPConfigTransformer for safe editing
-            //error_log('MT PHP Config: Fail-safe disabled - using WPConfigTransformer for safe wp-config editing');
-            //error_log('MT PHP Config: Applied settings: ' . json_encode(array_keys($settings)));
-
             if ($this->validate_wordpress_constants($settings)) {
-                //error_log('MT PHP Config: wp-config.php constants applied and validated successfully');
-                //error_log('MT PHP Config: Successfully applied: ' . json_encode(array_keys($settings)));
                 return true;
             } else {
                 file_put_contents($wp_config_path, $original_content);
-                //error_log('MT PHP Config: Constants validation failed - wp-config.php reverted');
-                //error_log('MT PHP Config: Failed to validate: ' . json_encode($settings));
                 return false;
             }
 
@@ -342,7 +311,6 @@ class MT_PHP_Config {
             if (isset($original_content)) {
                 file_put_contents($wp_config_path, $original_content);
             }
-            //error_log('MT PHP Config: wp-config.php application failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -357,7 +325,6 @@ class MT_PHP_Config {
             $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
             return $protocol . '://' . $host;
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Failed to get fallback site URL - ' . $e->getMessage());
             return 'http://localhost';
         }
     }
@@ -365,13 +332,11 @@ class MT_PHP_Config {
     private function fallback_http_request($url, $timeout = 5) {
         try {
             if (!function_exists('curl_init')) {
-                //error_log('MT PHP Config: cURL not available for HTTP request');
                 return array('error' => 'no_http_method', 'message' => 'No HTTP method available');
             }
 
             $ch = curl_init();
             if ($ch === false) {
-                //error_log('MT PHP Config: Failed to initialize cURL');
                 return array('error' => 'curl_init_failed', 'message' => 'Failed to initialize cURL');
             }
 
@@ -389,7 +354,6 @@ class MT_PHP_Config {
             curl_close($ch);
 
             if ($response === false || !empty($curl_error)) {
-                //error_log('MT PHP Config: cURL request failed - ' . $curl_error);
                 return array('error' => 'curl_failed', 'message' => $curl_error);
             }
 
@@ -398,7 +362,6 @@ class MT_PHP_Config {
                 'body' => $response
             );
         } catch (Exception $e) {
-            //error_log('MT PHP Config: HTTP request exception - ' . $e->getMessage());
             return array('error' => 'exception', 'message' => $e->getMessage());
         }
     }
@@ -413,7 +376,6 @@ class MT_PHP_Config {
             ];
 
             if (empty($test_endpoints)) {
-                //error_log('MT PHP Config: No test endpoints available for accessibility check');
                 return false;
             }
 
@@ -455,10 +417,10 @@ class MT_PHP_Config {
                         if ($status_code >= 200 && $status_code < 400) {
                             $success = true;
                             $successful_tests++;
-                            error_log("MT Config Test: {$test_url} responded with {$status_code} (attempt " . ($attempts + 1) . ")");
+                            mt_config_log("{$test_url} responded with {$status_code} (attempt " . ($attempts + 1) . ")");
                             break;
                         } else {
-                            error_log("MT Config Test: {$test_url} returned {$status_code} (attempt " . ($attempts + 1) . ")");
+                            mt_config_log("{$test_url} returned {$status_code} (attempt " . ($attempts + 1) . ")");
                         }
                     } else {
                         $error_msg = 'Unknown error';
@@ -467,7 +429,7 @@ class MT_PHP_Config {
                         } elseif (isset($response['error'])) {
                             $error_msg = isset($response['message']) ? $response['message'] : 'HTTP request failed';
                         }
-                        error_log("MT Config Test: {$test_url} failed - " . $error_msg . " (attempt " . ($attempts + 1) . ")");
+                        mt_config_log("{$test_url} failed - " . $error_msg . " (attempt " . ($attempts + 1) . ")");
                     }
 
                     $attempts++;
@@ -482,14 +444,13 @@ class MT_PHP_Config {
             $is_accessible = $successful_tests >= $required_success;
 
             if ($is_accessible) {
-                error_log("MT Config Test: Site accessibility confirmed - {$successful_tests}/{$total_tests} endpoints accessible");
+                mt_config_log("Site accessibility confirmed - {$successful_tests}/{$total_tests} endpoints accessible");
             } else {
-                error_log("MT Config Test: Site accessibility FAILED - only {$successful_tests}/{$total_tests} endpoints accessible (required: {$required_success})");
+                mt_config_log("Site accessibility FAILED - only {$successful_tests}/{$total_tests} endpoints accessible (required: {$required_success})");
             }
 
             return $is_accessible;
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Site accessibility test exception - ' . $e->getMessage());
             return false;
         }
     }
@@ -501,7 +462,6 @@ class MT_PHP_Config {
             }
 
             if (!$wp_config_path || !file_exists($wp_config_path)) {
-                //error_log('MT PHP Config: wp-config.php not found for syntax validation');
                 return false;
             }
 
@@ -512,7 +472,6 @@ class MT_PHP_Config {
                 if ($output !== null) {
                     $is_valid = strpos($output, 'No syntax errors') !== false;
                     if (!$is_valid) {
-                        //error_log('MT PHP Config: wp-config.php syntax error detected via php -l: ' . trim($output));
                     }
                     return $is_valid;
                 }
@@ -520,7 +479,6 @@ class MT_PHP_Config {
 
             return $this->validate_wp_config_basic_syntax($wp_config_path);
         } catch (Exception $e) {
-            //error_log('MT PHP Config: wp-config.php syntax validation exception - ' . $e->getMessage());
             return false;
         }
     }
@@ -535,7 +493,6 @@ class MT_PHP_Config {
             $content = file_get_contents($wp_config_path);
 
             if ($content === false) {
-                //error_log('MT PHP Config: Could not read wp-config.php for validation');
                 return false;
             }
 
@@ -574,14 +531,11 @@ class MT_PHP_Config {
             }
 
             if (!empty($errors)) {
-                //error_log('MT PHP Config: wp-config.php basic syntax validation failed: ' . implode(', ', $errors));
                 return false;
             }
 
-            //error_log('MT PHP Config: wp-config.php basic syntax validation passed');
             return true;
         } catch (Exception $e) {
-            //error_log('MT PHP Config: wp-config.php basic syntax validation exception - ' . $e->getMessage());
             return false;
         }
     }
@@ -600,7 +554,6 @@ class MT_PHP_Config {
 
             return false;
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Error checking fatal error handler changes - ' . $e->getMessage());
             return false;
         }
     }
@@ -618,11 +571,9 @@ class MT_PHP_Config {
             $has_fatal_error_changes = $this->has_fatal_error_handler_changes($settings);
 
             if ($has_fatal_error_changes) {
-                //error_log('MT PHP Config: Detected WP_DISABLE_FATAL_ERROR_HANDLER changes - applying enhanced fail-safe measures');
                 return $this->apply_fatal_error_handler_changes_safely($settings);
             }
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Error in wp-config changes with fatal error protection - ' . $e->getMessage());
             return array(
                 'success' => false,
                 'message' => 'Error applying wp-config changes: ' . $e->getMessage()
@@ -646,7 +597,6 @@ class MT_PHP_Config {
         try {
             // Enhanced validation for fatal error handler changes
             if (!$this->validate_wp_config_syntax($wp_config_path)) {
-                //error_log('MT PHP Config: Current wp-config.php has syntax errors, aborting fatal error handler changes');
                 return false;
             }
 
@@ -656,25 +606,21 @@ class MT_PHP_Config {
             copy($wp_config_path, $emergency_backup);
 
             // Skip initial accessibility test - using WPConfigTransformer for safe editing
-            //error_log('MT PHP Config: Fail-safe disabled for fatal error handler changes - using WPConfigTransformer');
 
             // Apply changes
             $this->apply_via_wp_config_constants_only($settings);
 
             // Enhanced validation after fatal error handler changes
             if (!$this->validate_wp_config_syntax($wp_config_path)) {
-                //error_log('MT PHP Config: Syntax validation failed after fatal error handler changes - reverting');
                 file_put_contents($wp_config_path, $original_content);
                 unlink($emergency_backup);
                 return false;
             }
 
             // Skip accessibility tests - using WPConfigTransformer for safe editing
-            //error_log('MT PHP Config: Accessibility tests disabled - relying on WPConfigTransformer safety');
 
             // Final validation
             if (!$this->validate_wordpress_constants($settings)) {
-                //error_log('MT PHP Config: WordPress constants validation failed after fatal error handler changes - reverting');
                 file_put_contents($wp_config_path, $original_content);
                 unlink($emergency_backup);
                 return false;
@@ -683,7 +629,6 @@ class MT_PHP_Config {
             // Success - clean up emergency backup
             unlink($emergency_backup);
 
-            //error_log('MT PHP Config: Fatal error handler changes applied successfully with enhanced protection');
             return true;
 
         } catch (Exception $e) {
@@ -694,7 +639,6 @@ class MT_PHP_Config {
             if (isset($emergency_backup) && file_exists($emergency_backup)) {
                 unlink($emergency_backup);
             }
-            //error_log('MT PHP Config: Fatal error handler changes failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -718,7 +662,7 @@ class MT_PHP_Config {
         }
 
         // Skip initial accessibility test - using WPConfigTransformer for safe editing
-        error_log('MT Config: Fail-safe disabled for fatal error handler changes - using WPConfigTransformer');
+        mt_config_log(' Fail-safe disabled for fatal error handler changes - using WPConfigTransformer');
 
         // Step 2: Apply changes
         $result = $this->apply_via_wp_config($settings);
@@ -730,7 +674,7 @@ class MT_PHP_Config {
 
         // Step 3: Enhanced validation after fatal error handler changes
         if (!$this->validate_wp_config_syntax($wp_config_path)) {
-            error_log('MT Config: Syntax validation failed after fatal error handler changes - reverting');
+            mt_config_log(' Syntax validation failed after fatal error handler changes - reverting');
             $this->restore_backup($wp_config_path, $backup_path);
             unlink($emergency_backup);
             return array(
@@ -740,11 +684,11 @@ class MT_PHP_Config {
         }
 
         // Skip accessibility tests - using WPConfigTransformer for safe editing
-        error_log('MT Config: Accessibility tests disabled - relying on WPConfigTransformer safety');
+        mt_config_log(' Accessibility tests disabled - relying on WPConfigTransformer safety');
 
         // Step 5: Final validation
         if (!$this->validate_wordpress_constants($settings)) {
-            error_log('MT Config: WordPress constants validation failed after fatal error handler changes - reverting');
+            mt_config_log(' WordPress constants validation failed after fatal error handler changes - reverting');
             $this->restore_backup($wp_config_path, $backup_path);
             unlink($emergency_backup);
             return array(
@@ -757,7 +701,7 @@ class MT_PHP_Config {
         $this->cleanup_backup($backup_path);
         unlink($emergency_backup);
 
-        error_log('MT Config: Fatal error handler changes applied successfully with enhanced protection');
+        mt_config_log(' Fatal error handler changes applied successfully with enhanced protection');
         return array(
             'success' => true,
             'message' => function_exists('__') ? __('Fatal error handler changes applied successfully with enhanced protection.', 'morden-toolkit') : 'Fatal error handler changes applied successfully with enhanced protection.'
@@ -770,8 +714,6 @@ class MT_PHP_Config {
      */
     private function validate_wordpress_constants($settings) {
         // Constants validation disabled - using WPConfigTransformer for safe editing
-        //error_log('MT PHP Config: WordPress constants validation disabled - relying on WPConfigTransformer safety');
-        //error_log('MT PHP Config: Skipping validation for settings: ' . json_encode(array_keys($settings)));
         return true;
     }
 
@@ -812,7 +754,7 @@ class MT_PHP_Config {
         $php_block = $this->generate_htaccess_php_block($settings);
 
         // Debug: Log what we're writing
-        error_log("MT PHP Config: Writing to .htaccess:\n" . $php_block);
+        mt_config_log(" Writing to .htaccess:\n" . $php_block);
 
         $new_content = $current_content . "\n\n" . $php_block;
 
@@ -835,13 +777,11 @@ class MT_PHP_Config {
         $wp_config_path = mt_get_wp_config_path();
 
         if (!$wp_config_path || !file_exists($wp_config_path)) {
-            //error_log('MT PHP Config: wp-config.php not found at: ' . ($wp_config_path ?: 'undefined path'));
             return false;
         }
 
         // Safety check: ensure we're not accidentally reading .htaccess
         if (basename($wp_config_path) !== 'wp-config.php') {
-            //error_log('MT PHP Config: Invalid wp-config path detected: ' . $wp_config_path);
             return false;
         }
 
@@ -849,7 +789,6 @@ class MT_PHP_Config {
 
         // Safety check: ensure content looks like wp-config.php
         if (strpos($config_content, '<?php') === false || strpos($config_content, 'wp-settings.php') === false) {
-            //error_log('MT PHP Config: File does not appear to be wp-config.php');
             return false;
         }
 
@@ -895,9 +834,9 @@ class MT_PHP_Config {
                 // Check if value changed towards target OR is already at target
                 if ($new === $target || ($new !== $original && $new >= $target * 0.8)) {
                     $changes_detected++;
-                    error_log("MT PHP Config: {$setting} changed from {$original} to {$new} (target: {$target})");
+                    mt_config_log(" {$setting} changed from {$original} to {$new} (target: {$target})");
                 } else {
-                    error_log("MT PHP Config: {$setting} unchanged: {$original} -> {$new} (target: {$target})");
+                    mt_config_log(" {$setting} unchanged: {$original} -> {$new} (target: {$target})");
                 }
             }
         }
@@ -906,10 +845,10 @@ class MT_PHP_Config {
         $success_rate = $total_settings > 0 ? ($changes_detected / $total_settings) : 0;
 
         if ($success_rate >= 0.5) {
-            error_log("MT PHP Config: Validation passed - {$changes_detected}/{$total_settings} settings changed");
+            mt_config_log(" Validation passed - {$changes_detected}/{$total_settings} settings changed");
             return true;
         } else {
-            error_log("MT PHP Config: Validation failed - only {$changes_detected}/{$total_settings} settings changed");
+            mt_config_log(" Validation failed - only {$changes_detected}/{$total_settings} settings changed");
             // For .htaccess, be more lenient since changes might take time to reflect
             return $this->validate_htaccess_configuration_applied($target_settings);
         }
@@ -929,7 +868,6 @@ class MT_PHP_Config {
 
         // Check if our PHP configuration block exists
         if (strpos($htaccess_content, 'BEGIN Morden Toolkit PHP Configuration') === false) {
-            //error_log('MT PHP Config: .htaccess validation failed - configuration block not found');
             return false;
         }
 
@@ -955,9 +893,9 @@ class MT_PHP_Config {
         $success = $settings_found >= $required_found;
 
         if ($success) {
-            error_log("MT PHP Config: .htaccess validation passed - {$settings_found}/{$total_settings} applicable settings found in file");
+            mt_config_log(" .htaccess validation passed - {$settings_found}/{$total_settings} applicable settings found in file");
         } else {
-            error_log("MT PHP Config: .htaccess validation failed - only {$settings_found}/{$total_settings} applicable settings found (needed: {$required_found})");
+            mt_config_log(" .htaccess validation failed - only {$settings_found}/{$total_settings} applicable settings found (needed: {$required_found})");
         }
 
         return $success;
@@ -1000,7 +938,6 @@ class MT_PHP_Config {
 
             return $htaccess_service->save_htaccess($reverted_content);
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Failed to revert .htaccess changes - ' . $e->getMessage());
             return false;
         }
     }
@@ -1053,7 +990,7 @@ class MT_PHP_Config {
     private function apply_via_wp_config($settings) {
         // Use safe WPConfigTransformer integration instead of manual string manipulation
         $result = MT_WP_Config_Integration::apply_php_config_safe($settings);
-        
+
         if ($result) {
             return array(
                 'success' => true,
@@ -1327,9 +1264,9 @@ class MT_PHP_Config {
             // If we found matches and the reduction is reasonable, accept the change
             if ($matches_count > 0 && $reduction_percentage < 50) {
                 $content = $new_content;
-                error_log("MT PHP Config: Removed " . $matches_count . " config blocks (reduced by " . round($reduction_percentage, 1) . "%)");
+                mt_config_log(" Removed " . $matches_count . " config blocks (reduced by " . round($reduction_percentage, 1) . "%)");
             } elseif ($matches_count > 0 && $reduction_percentage >= 50) {
-                error_log("MT PHP Config: Regex pattern removed too much content (" . round($reduction_percentage, 1) . "%), reverting");
+                mt_config_log(" Regex pattern removed too much content (" . round($reduction_percentage, 1) . "%), reverting");
                 break;
             }
         }
@@ -1653,12 +1590,10 @@ class MT_PHP_Config {
      */
     private function create_backup($file_path) {
         if (!file_exists($file_path)) {
-            //error_log('MT PHP Config: Cannot create backup - file does not exist: ' . $file_path);
             return false;
         }
 
         if (!is_readable($file_path)) {
-            //error_log('MT PHP Config: Cannot create backup - file not readable: ' . $file_path);
             return false;
         }
 
@@ -1666,14 +1601,12 @@ class MT_PHP_Config {
             // Read original content
             $original_content = file_get_contents($file_path);
             if ($original_content === false) {
-                //error_log('MT PHP Config: Failed to read file content for backup: ' . $file_path);
                 return false;
             }
 
             // Validate content before backup
             if (basename($file_path) === 'wp-config.php') {
                 if (strpos($original_content, '<?php') === false) {
-                    //error_log('MT PHP Config: Invalid wp-config.php content - missing PHP opening tag');
                     return false;
                 }
             }
@@ -1692,7 +1625,6 @@ class MT_PHP_Config {
                 if (file_exists($temp_backup)) {
                     unlink($temp_backup);
                 }
-                //error_log('MT PHP Config: Failed to write backup to temporary file');
                 return false;
             }
 
@@ -1700,7 +1632,6 @@ class MT_PHP_Config {
             $backup_content = file_get_contents($temp_backup);
             if ($backup_content !== $original_content) {
                 unlink($temp_backup);
-                //error_log('MT PHP Config: Backup integrity check failed');
                 return false;
             }
 
@@ -1709,7 +1640,6 @@ class MT_PHP_Config {
                 if (file_exists($temp_backup)) {
                     unlink($temp_backup);
                 }
-                //error_log('MT PHP Config: Failed to move backup to final location');
                 return false;
             }
 
@@ -1726,11 +1656,9 @@ class MT_PHP_Config {
             // Maintain backup registry for cleanup
             $this->register_backup($backup_info);
 
-            //error_log('MT PHP Config: Backup created successfully: ' . $backup_path);
             return $backup_path;
 
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Backup creation failed with exception: ' . $e->getMessage());
             return false;
         }
     }
@@ -1740,12 +1668,10 @@ class MT_PHP_Config {
      */
     private function restore_backup($original_file_path, $backup_path) {
         if (!file_exists($backup_path)) {
-            //error_log('MT PHP Config: Cannot restore - backup file does not exist: ' . $backup_path);
             return false;
         }
 
         if (!is_readable($backup_path)) {
-            //error_log('MT PHP Config: Cannot restore - backup file not readable: ' . $backup_path);
             return false;
         }
 
@@ -1753,20 +1679,17 @@ class MT_PHP_Config {
             // Read backup content
             $backup_content = file_get_contents($backup_path);
             if ($backup_content === false) {
-                //error_log('MT PHP Config: Failed to read backup content: ' . $backup_path);
                 return false;
             }
 
             // Validate backup content
             if (basename($original_file_path) === 'wp-config.php') {
                 if (strpos($backup_content, '<?php') === false) {
-                    //error_log('MT PHP Config: Invalid backup content - missing PHP opening tag');
                     return false;
                 }
 
                 // Additional syntax validation
                 if (!$this->validate_php_syntax_string($backup_content)) {
-                    //error_log('MT PHP Config: Backup content has syntax errors');
                     return false;
                 }
             }
@@ -1774,7 +1697,6 @@ class MT_PHP_Config {
             // Create backup of current state before restoring
             $pre_restore_backup = $this->create_backup($original_file_path);
             if (!$pre_restore_backup) {
-                //error_log('MT PHP Config: Failed to create pre-restore backup');
                 // Continue anyway as this is a restore operation
             }
 
@@ -1787,7 +1709,6 @@ class MT_PHP_Config {
                 if (file_exists($temp_restore)) {
                     unlink($temp_restore);
                 }
-                //error_log('MT PHP Config: Failed to write restore content to temporary file');
                 return false;
             }
 
@@ -1795,7 +1716,6 @@ class MT_PHP_Config {
             $temp_content = file_get_contents($temp_restore);
             if ($temp_content !== $backup_content) {
                 unlink($temp_restore);
-                //error_log('MT PHP Config: Restore content integrity check failed');
                 return false;
             }
 
@@ -1804,30 +1724,25 @@ class MT_PHP_Config {
                 if (file_exists($temp_restore)) {
                     unlink($temp_restore);
                 }
-                //error_log('MT PHP Config: Failed to move restored file to original location');
                 return false;
             }
 
             // Post-rollback validation to ensure site accessibility
             if (!$this->validate_post_rollback($original_file_path)) {
-                //error_log('MT PHP Config: Post-rollback validation failed - attempting emergency recovery');
 
                 // Try to restore from pre-restore backup if available
                 if ($pre_restore_backup && file_exists($pre_restore_backup)) {
                     $emergency_content = file_get_contents($pre_restore_backup);
                     if ($emergency_content !== false) {
                         file_put_contents($original_file_path, $emergency_content, LOCK_EX);
-                        //error_log('MT PHP Config: Emergency recovery attempted using pre-restore backup');
                     }
                 }
                 return false;
             }
 
-            //error_log('MT PHP Config: File restored successfully from backup with post-rollback validation: ' . $backup_path);
             return true;
 
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Restore operation failed with exception: ' . $e->getMessage());
             return false;
         }
     }
@@ -1840,7 +1755,6 @@ class MT_PHP_Config {
             // Step 1: Syntax validation for wp-config.php
             if (basename($file_path) === 'wp-config.php') {
                 if (!$this->validate_wp_config_syntax($file_path)) {
-                    //error_log('MT PHP Config: Post-rollback syntax validation failed');
                     return false;
                 }
             }
@@ -1860,18 +1774,15 @@ class MT_PHP_Config {
 
                 // Skip accessibility test - using WPConfigTransformer approach
                 $successful_tests++;
-                //error_log('MT PHP Config: Post-rollback accessibility test #' . ($i + 1) . ' skipped - fail-safe disabled');
             }
 
             // Always pass accessibility tests - fail-safe disabled
-            //error_log('MT PHP Config: Post-rollback validation passed - fail-safe mechanism disabled');
 
             // Step 3: Additional validation for wp-config.php
             if (basename($file_path) === 'wp-config.php') {
                 // Check if basic WordPress constants are still defined
                 $wp_config_content = file_get_contents($file_path);
                 if ($wp_config_content === false) {
-                    //error_log('MT PHP Config: Post-rollback - cannot read wp-config.php content');
                     return false;
                 }
 
@@ -1879,17 +1790,14 @@ class MT_PHP_Config {
                 $critical_constants = array('DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST');
                 foreach ($critical_constants as $constant) {
                     if (strpos($wp_config_content, $constant) === false) {
-                        //error_log('MT PHP Config: Post-rollback - missing critical constant: ' . $constant);
                         return false;
                     }
                 }
             }
 
-            //error_log('MT PHP Config: Post-rollback validation passed successfully');
             return true;
 
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Post-rollback validation failed with exception: ' . $e->getMessage());
             return false;
         }
     }
@@ -1905,7 +1813,6 @@ class MT_PHP_Config {
         try {
             // Safety check: ensure this is actually a backup file
             if (!preg_match('/\.backup-\d+-[a-f0-9]{8}$/', $backup_path)) {
-                //error_log('MT PHP Config: Refusing to cleanup - not a valid backup file: ' . $backup_path);
                 return false;
             }
 
@@ -1913,21 +1820,17 @@ class MT_PHP_Config {
             $file_time = filemtime($backup_path);
             $current_time = time();
             if (($current_time - $file_time) < 60) { // Less than 1 minute old
-                //error_log('MT PHP Config: Backup too recent to cleanup safely: ' . $backup_path);
                 return false;
             }
 
             if (unlink($backup_path)) {
-                //error_log('MT PHP Config: Backup cleaned up successfully: ' . $backup_path);
                 $this->unregister_backup($backup_path);
                 return true;
             } else {
-                //error_log('MT PHP Config: Failed to cleanup backup: ' . $backup_path);
                 return false;
             }
 
         } catch (Exception $e) {
-            //error_log('MT PHP Config: Backup cleanup failed with exception: ' . $e->getMessage());
             return false;
         }
     }

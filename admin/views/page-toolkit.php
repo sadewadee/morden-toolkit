@@ -20,7 +20,7 @@ try {
     $debug_enabled = isset($debug_status['enabled']) ? $debug_status['enabled'] : false;
 } catch (Exception $e) {
     $debug_enabled = false;
-    error_log('MT Debug Status Error: ' . $e->getMessage());
+    mt_error_log('Debug Status Error: ' . $e->getMessage());
 }
 
 $query_monitor_enabled = get_option('mt_query_monitor_enabled', false);

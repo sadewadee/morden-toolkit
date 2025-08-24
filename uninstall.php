@@ -1,14 +1,14 @@
 <?php
 /**
  * Uninstall script for Morden Toolkit
- *
- * This file is executed when the plugin is deleted through WordPress admin.
- * It cleans up all plugin data and settings.
  */
 
 if (!defined('WP_UNINSTALL_PLUGIN')) {
     exit;
 }
+
+// Include internal logging helper
+require_once __DIR__ . '/includes/mt-internal-log.php';
 
 function mt_cleanup_options() {
     $options_to_delete = array(
@@ -62,9 +62,6 @@ function mt_cleanup_wp_config() {
     file_put_contents($wp_config_path, $config_content);
 }
 
-/**
- * Clean up .htaccess modifications
- */
 function mt_cleanup_htaccess() {
     $htaccess_path = ABSPATH . '.htaccess';
 
@@ -84,9 +81,6 @@ function mt_cleanup_htaccess() {
     file_put_contents($htaccess_path, $htaccess_content);
 }
 
-/**
- * Clean up php.ini file
- */
 function mt_cleanup_php_ini() {
     $php_ini_path = ABSPATH . 'php.ini';
 
@@ -126,9 +120,6 @@ function mt_cleanup_php_ini() {
     }
 }
 
-/**
- * Clean up temporary files
- */
 function mt_cleanup_temp_files() {
     $temp_pattern = ABSPATH . '*.tmp';
     $temp_files = glob($temp_pattern);
@@ -140,9 +131,6 @@ function mt_cleanup_temp_files() {
     }
 }
 
-/**
- * Clean up transients
- */
 function mt_cleanup_transients() {
     global $wpdb;
 
@@ -151,9 +139,6 @@ function mt_cleanup_transients() {
     $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_mt_metrics_%'");
 }
 
-/**
- * Clean up all log files created by the plugin
- */
 function mt_cleanup_log_files() {
     $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
 
@@ -194,16 +179,10 @@ function mt_cleanup_log_files() {
     return $removed_count;
 }
 
-/**
- * Log uninstall action
- */
 function mt_log_uninstall() {
-    if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-        error_log('MT: Plugin uninstalled and cleaned up');
-    }
+    mt_debug_log('Plugin uninstalled and cleaned up');
 }
 
-// Execute cleanup functions
 try {
     mt_cleanup_options();
     mt_cleanup_wp_config();
@@ -212,16 +191,12 @@ try {
     mt_cleanup_temp_files();
     mt_cleanup_transients();
 
-    // Clean up all log files
     $removed_logs = mt_cleanup_log_files();
     if ($removed_logs > 0) {
-        error_log("MT: Removed {$removed_logs} log files during uninstall");
+        mt_debug_log("Removed {$removed_logs} log files during uninstall");
     }
 
     mt_log_uninstall();
 } catch (Exception $e) {
-    // Silently fail to prevent blocking uninstall process
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('MT uninstall error: ' . $e->getMessage());
-    }
+    mt_error_log('Uninstall error: ' . $e->getMessage());
 }

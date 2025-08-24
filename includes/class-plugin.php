@@ -498,7 +498,7 @@ class MT_Plugin {
         // Cleanup old debug logs (keep only 3 most recent)
         $cleaned_debug_logs = mt_cleanup_old_debug_logs();
         if ($cleaned_debug_logs > 0) {
-            error_log("MT: Cleaned up {$cleaned_debug_logs} old debug log files");
+            mt_debug_log("Cleaned up {$cleaned_debug_logs} old debug log files");
         }
 
         // Also cleanup large debug logs if they exceed 50MB
@@ -525,7 +525,7 @@ class MT_Plugin {
             $truncated_content = implode("\n", $lines);
             file_put_contents($log_path, $truncated_content);
 
-            error_log("MT: Debug log truncated to {$max_lines} lines");
+            mt_debug_log("Debug log truncated to {$max_lines} lines");
         }
     }
 
@@ -663,7 +663,7 @@ class MT_Plugin {
             mt_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
-        error_log('=== MT DEBUG TRANSFORMER TEST (via AJAX) ===');
+        mt_debug_log('=== DEBUG TRANSFORMER TEST (via AJAX) ===');
 
         // Test WPConfigTransformer functionality
         $test_result = $this->services['debug']->test_wp_config_transformer();
@@ -679,9 +679,9 @@ class MT_Plugin {
             'WP_DEBUG_LOG' => $custom_path
         ];
 
-        error_log('MT Test: Attempting to apply test debug settings via WPConfigTransformer');
+        mt_debug_log('Attempting to apply test debug settings via WPConfigTransformer');
         $apply_result = MT_WP_Config_Integration::apply_debug_constants($test_settings);
-        error_log('MT Test: Apply result: ' . ($apply_result ? 'SUCCESS' : 'FAILED'));
+        mt_debug_log('Apply result: ' . ($apply_result ? 'SUCCESS' : 'FAILED'));
 
         $response = [
             'transformer_test' => $test_result,

@@ -300,7 +300,7 @@ function mt_clear_all_debug_logs_except_active() {
 
         if (file_exists($file) && unlink($file)) {
             $removed_count++;
-            error_log('MT: Cleared debug log file: ' . basename($file));
+            mt_debug_log('Cleared debug log file: ' . basename($file));
         }
     }
 
@@ -340,7 +340,7 @@ function mt_cleanup_old_debug_logs($keep_count = 3) {
     foreach ($files_to_remove as $file) {
         if (file_exists($file) && unlink($file)) {
             $removed_count++;
-            error_log('MT: Cleaned up old debug log file: ' . basename($file));
+            mt_debug_log('Cleaned up old debug log file: ' . basename($file));
         }
     }
 
@@ -379,7 +379,7 @@ function mt_cleanup_all_log_files($include_current = false) {
         foreach ($log_files as $log_file) {
             if (file_exists($log_file) && unlink($log_file)) {
                 $removed_count++;
-                error_log('MT: Cleaned up log file: ' . basename($log_file));
+                mt_debug_log('Cleaned up log file: ' . basename($log_file));
             }
         }
     }
@@ -438,7 +438,7 @@ function mt_cleanup_query_log_rotation_files($keep_latest = true) {
 
         if (file_exists($file) && is_writable($file) && unlink($file)) {
             $removed_count++;
-            error_log('MT: Cleaned up query rotation file: ' . $filename);
+            mt_debug_log('Cleaned up query rotation file: ' . $filename);
         }
     }
 
