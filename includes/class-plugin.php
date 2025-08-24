@@ -59,9 +59,6 @@ class MT_Plugin {
         $this->services['htaccess'] = new MT_Htaccess();
         $this->services['php_config'] = new MT_PHP_Config();
         $this->services['file_manager'] = new MT_File_Manager();
-
-        // Ensure log directory security is set up
-        mt_ensure_log_directory_security();
     }
 
     public function get_service($name) {

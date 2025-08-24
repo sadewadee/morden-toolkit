@@ -35,22 +35,27 @@ class MT_Debug {
     }
 
     public function toggle_debug($enable = true) {
-        $wp_config_path = mt_get_wp_config_path();
+        // Use WPConfigTransformer for safe debug constant management
+        $debug_settings = $this->get_debug_constants();
 
-        if (!$wp_config_path || !mt_is_file_writable($wp_config_path)) {
-            return false;
-        }
-
-        $config_content = file_get_contents($wp_config_path);
-
-        if ($enable) {
-            $config_content = $this->enable_debug_constants($config_content);
+        if (!$enable) {
+            // Convert all values to false for disabling
+            foreach ($debug_settings as $key => $value) {
+                $debug_settings[$key] = false;
+            }
         } else {
-            $config_content = $this->disable_debug_constants($config_content);
+            // Convert string values to boolean for enabling
+            foreach ($debug_settings as $key => $value) {
+                if ($value === 'true') {
+                    $debug_settings[$key] = true;
+                } elseif ($value === 'false') {
+                    $debug_settings[$key] = false;
+                }
+            }
         }
 
-        file_put_contents($wp_config_path, $config_content);
-        return true;
+        // Use enhanced method for custom WP_DEBUG_LOG paths
+        return MT_WP_Config_Integration::apply_debug_constants_enhanced($debug_settings, $enable);
     }
 
     public function enable_debug() {
@@ -58,27 +63,40 @@ class MT_Debug {
     }
 
     public function disable_debug() {
-        return $this->toggle_debug(false);
+        $result = $this->toggle_debug(false);
+
+        // Optional: Auto-cleanup logs when debug is disabled
+        // This can be controlled via filter hook
+        $auto_cleanup = apply_filters('mt_debug_auto_cleanup_on_disable', false);
+
+        if ($auto_cleanup && $result) {
+            $this->cleanup_debug_logs();
+        }
+
+        return $result;
     }
 
     public function toggle_debug_constant($constant, $enable) {
-        $wp_config_path = mt_get_wp_config_path();
-
-        if (!$wp_config_path || !mt_is_file_writable($wp_config_path)) {
-            return false;
-        }
-
-        $config_content = file_get_contents($wp_config_path);
+        // Prepare debug settings for WPConfigTransformer
+        $debug_settings = array();
 
         // Auto-enable WP_DEBUG if any debug constant is being enabled
         if ($enable && $constant !== 'WP_DEBUG') {
-            $config_content = $this->set_debug_constant($config_content, 'WP_DEBUG', true);
+            $debug_settings['WP_DEBUG'] = true;
         }
 
-        $config_content = $this->set_debug_constant($config_content, $constant, $enable);
-        file_put_contents($wp_config_path, $config_content);
+        // Handle special case for display_errors (ini setting)
+        if ($constant === 'display_errors') {
+            // For display_errors, we still need to handle it as ini_set
+            // But let's use WPConfigTransformer's ini_set handling if available
+            $debug_settings['display_errors'] = $enable ? '1' : '0';
+        } else {
+            // Regular debug constants
+            $debug_settings[$constant] = $enable;
+        }
 
-        return true;
+        // Use enhanced method for custom WP_DEBUG_LOG paths
+        return MT_WP_Config_Integration::apply_debug_constants_enhanced($debug_settings, true);
     }
 
     /**
@@ -189,73 +207,6 @@ class MT_Debug {
     }
 
     /**
-     * Enable debug constants in wp-config.php
-     */
-    private function enable_debug_constants($content) {
-        $constants = $this->get_debug_constants();
-
-        foreach ($constants as $constant => $value) {
-            $pattern = "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^)]+\s*\)\s*;/i";
-            $replacement = "define('" . $constant . "', " . $value . ");";
-
-            if (preg_match($pattern, $content)) {
-                $content = preg_replace($pattern, $replacement, $content);
-            } else {
-                // Add constant before "/* That's all, stop editing!" line
-                $insert_before = "/* That's all, stop editing!";
-                $position = strpos($content, $insert_before);
-
-                if ($position !== false) {
-                    $before = substr($content, 0, $position);
-                    $after = substr($content, $position);
-                    $content = $before . $replacement . "\n" . $after;
-                } else {
-                    // Fallback: add at the end
-                    $content .= "\n" . $replacement . "\n";
-                }
-            }
-        }
-
-        return $content;
-    }
-
-    /**
-     * Disable debug constants in wp-config.php
-     */
-    private function disable_debug_constants($content) {
-        $constants = $this->get_debug_constants();
-
-        // Convert all values to false for disabling
-        foreach ($constants as $key => $value) {
-            $constants[$key] = 'false';
-        }
-
-        foreach ($constants as $constant => $value) {
-            if ($constant === 'WP_DEBUG') {
-                // Handle conditional WP_DEBUG
-                $conditional_pattern = "/if\s*\(\s*!\s*defined\s*\(\s*['\"]WP_DEBUG['\"]\s*\)\s*\)\s*{\s*define\s*\(\s*['\"]WP_DEBUG['\"]\s*,\s*[^}]+\s*}/i";
-                if (preg_match($conditional_pattern, $content)) {
-                    $replacement = "if ( ! defined( 'WP_DEBUG' ) ) {\n\tdefine('WP_DEBUG', " . $value . ");\n}";
-                    $content = preg_replace($conditional_pattern, $replacement, $content);
-                    continue;
-                }
-            }
-
-            $pattern = "/define\s*\(\s*['\"]" . $constant . "['\"]\s*,\s*[^)]+\s*\)\s*;/i";
-            $replacement = "define('" . $constant . "', " . $value . ");";
-
-            if (preg_match($pattern, $content)) {
-                $content = preg_replace($pattern, $replacement, $content);
-            }
-        }
-
-        // Also disable display_errors ini setting
-        $content = $this->set_ini_setting($content, 'display_errors', '0');
-
-        return $content;
-    }
-
-    /**
      * Clear debug log file
      */
     public function clear_debug_log() {
@@ -266,6 +217,244 @@ class MT_Debug {
         }
 
         return file_put_contents($log_path, '') !== false;
+    }
+
+    /**
+     * Comprehensive cleanup of all debug-related files
+     *
+     * @param array $options Cleanup options
+     * @return array Results of cleanup operations
+     */
+    public function cleanup_debug_logs($options = array()) {
+        $default_options = array(
+            'clear_debug_log' => true,
+            'clear_query_log' => true,
+            'remove_custom_log_files' => true,
+            'remove_wp_config_constants' => false // Keep constants but set to false
+        );
+
+        $options = array_merge($default_options, $options);
+        $results = array();
+
+        // Clear main debug log
+        if ($options['clear_debug_log']) {
+            $results['debug_log_cleared'] = $this->clear_debug_log();
+        }
+
+        // Clear query log
+        if ($options['clear_query_log']) {
+            $results['query_log_cleared'] = $this->clear_query_log();
+            $results['old_query_logs_cleaned'] = $this->cleanup_old_query_logs();
+        }
+
+        // Remove custom log files in morden-toolkit directory
+        if ($options['remove_custom_log_files']) {
+            $results['custom_logs_removed'] = $this->remove_custom_debug_files();
+        }
+
+        // Optionally remove/disable WP_DEBUG constants
+        if ($options['remove_wp_config_constants']) {
+            $results['constants_removed'] = $this->remove_debug_constants_from_config();
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get information about existing debug log files
+     *
+     * @return array Information about log files
+     */
+    public function get_debug_log_files_info() {
+        $info = array(
+            'main_debug_log' => array(),
+            'custom_debug_logs' => array(),
+            'query_logs' => array(),
+            'total_size' => 0,
+            'total_files' => 0
+        );
+
+        // Main debug log
+        $main_log_path = mt_get_debug_log_path();
+        if (file_exists($main_log_path)) {
+            $size = filesize($main_log_path);
+            $info['main_debug_log'] = array(
+                'path' => $main_log_path,
+                'size' => $size,
+                'size_formatted' => mt_format_bytes($size),
+                'modified' => filemtime($main_log_path),
+                'modified_formatted' => date('Y-m-d H:i:s', filemtime($main_log_path))
+            );
+            $info['total_size'] += $size;
+            $info['total_files']++;
+        }
+
+        // Custom debug logs in morden-toolkit directory
+        $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+        if (is_dir($log_directory)) {
+            // Debug logs
+            $debug_pattern = $log_directory . 'wp-errors-*.log';
+            $custom_debug_logs = glob($debug_pattern);
+
+            foreach ($custom_debug_logs as $log_file) {
+                if (file_exists($log_file)) {
+                    $size = filesize($log_file);
+                    $info['custom_debug_logs'][] = array(
+                        'path' => $log_file,
+                        'filename' => basename($log_file),
+                        'size' => $size,
+                        'size_formatted' => mt_format_bytes($size),
+                        'modified' => filemtime($log_file),
+                        'modified_formatted' => date('Y-m-d H:i:s', filemtime($log_file))
+                    );
+                    $info['total_size'] += $size;
+                    $info['total_files']++;
+                }
+            }
+
+            // Custom query logs
+            $query_pattern = $log_directory . 'wp-queries-*.log';
+            $custom_query_logs = glob($query_pattern);
+
+            foreach ($custom_query_logs as $log_file) {
+                if (file_exists($log_file)) {
+                    $size = filesize($log_file);
+                    $info['query_logs']['custom'][] = array(
+                        'path' => $log_file,
+                        'filename' => basename($log_file),
+                        'size' => $size,
+                        'size_formatted' => mt_format_bytes($size),
+                        'modified' => filemtime($log_file),
+                        'modified_formatted' => date('Y-m-d H:i:s', filemtime($log_file))
+                    );
+                    $info['total_size'] += $size;
+                    $info['total_files']++;
+                }
+            }
+        }
+
+        // Query logs
+        $query_log_path = mt_get_query_log_path();
+        if (file_exists($query_log_path)) {
+            $size = filesize($query_log_path);
+            $info['query_logs']['main'] = array(
+                'path' => $query_log_path,
+                'size' => $size,
+                'size_formatted' => mt_format_bytes($size),
+                'modified' => filemtime($query_log_path),
+                'modified_formatted' => date('Y-m-d H:i:s', filemtime($query_log_path))
+            );
+            $info['total_size'] += $size;
+            $info['total_files']++;
+        }
+
+        // Query log backups
+        $query_log_dir = dirname($query_log_path);
+        $query_log_name = basename($query_log_path);
+        $backup_pattern = $query_log_dir . '/' . $query_log_name . '.*';
+        $backup_logs = glob($backup_pattern);
+
+        foreach ($backup_logs as $backup_log) {
+            if (file_exists($backup_log)) {
+                $size = filesize($backup_log);
+                $info['query_logs']['backups'][] = array(
+                    'path' => $backup_log,
+                    'filename' => basename($backup_log),
+                    'size' => $size,
+                    'size_formatted' => mt_format_bytes($size),
+                    'modified' => filemtime($backup_log),
+                    'modified_formatted' => date('Y-m-d H:i:s', filemtime($backup_log))
+                );
+                $info['total_size'] += $size;
+                $info['total_files']++;
+            }
+        }
+
+        $info['total_size_formatted'] = mt_format_bytes($info['total_size']);
+
+        return $info;
+    }
+
+    /**
+     * Remove custom debug log files from morden-toolkit directory
+     *
+     * @return int Number of files removed
+     */
+    private function remove_custom_debug_files() {
+        $removed_count = 0;
+
+        // Look for wp-errors-*.log and wp-queries-*.log files in morden-toolkit directory
+        $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+
+        if (!is_dir($log_directory)) {
+            return 0;
+        }
+
+        // Patterns for both debug and query logs
+        $patterns = [
+            $log_directory . 'wp-errors-*.log',   // Debug logs
+            $log_directory . 'wp-queries-*.log',  // Query logs
+            $log_directory . 'query.log'          // Default query log
+        ];
+
+        foreach ($patterns as $pattern) {
+            $log_files = glob($pattern);
+
+            foreach ($log_files as $log_file) {
+                if (file_exists($log_file) && unlink($log_file)) {
+                    $removed_count++;
+                    error_log('MT: Removed custom log file: ' . basename($log_file));
+                }
+            }
+        }
+
+        return $removed_count;
+    }
+
+    /**
+     * Remove or disable debug constants from wp-config.php
+     *
+     * @return bool Success status
+     */
+    private function remove_debug_constants_from_config() {
+        // Use WPConfigTransformer to safely disable debug constants
+        $debug_settings = array(
+            'WP_DEBUG' => false,
+            'WP_DEBUG_LOG' => false,
+            'WP_DEBUG_DISPLAY' => false,
+            'SCRIPT_DEBUG' => false,
+            'SAVEQUERIES' => false
+        );
+
+        return MT_WP_Config_Integration::apply_debug_constants($debug_settings);
+    }
+
+    /**
+     * Enable custom query log path
+     *
+     * @param bool $enable Whether to enable custom query log path
+     * @return bool Success status
+     */
+    public function toggle_custom_query_log_path($enable = true) {
+        return MT_WP_Config_Integration::apply_custom_query_log_path($enable);
+    }
+
+    /**
+     * Enable custom query log path
+     *
+     * @return bool Success status
+     */
+    public function enable_custom_query_log_path() {
+        return $this->toggle_custom_query_log_path(true);
+    }
+
+    /**
+     * Disable custom query log path
+     *
+     * @return bool Success status
+     */
+    public function disable_custom_query_log_path() {
+        return $this->toggle_custom_query_log_path(false);
     }
 
     /**
@@ -367,10 +556,30 @@ class MT_Debug {
         // Check display_errors ini setting
         $display_errors = ini_get('display_errors') == '1' || ini_get('display_errors') === 'On';
 
+        // Enhanced WP_DEBUG_LOG detection
+        $wp_debug_log_enabled = false;
+        $wp_debug_log_path = null;
+        $wp_debug_log_custom = false;
+
+        if (defined('WP_DEBUG_LOG')) {
+            if (is_string(WP_DEBUG_LOG) && !in_array(WP_DEBUG_LOG, ['true', 'false', '1', '0'], true)) {
+                // Custom path detected
+                $wp_debug_log_enabled = true;
+                $wp_debug_log_path = WP_DEBUG_LOG;
+                $wp_debug_log_custom = true;
+            } else {
+                // Boolean value
+                $wp_debug_log_enabled = (bool) WP_DEBUG_LOG;
+                $wp_debug_log_path = mt_get_debug_log_path();
+            }
+        }
+
         return array(
             'enabled' => $actual_wp_debug, // Use actual status, not stored option
             'wp_debug' => $actual_wp_debug,
-            'wp_debug_log' => defined('WP_DEBUG_LOG') && WP_DEBUG_LOG,
+            'wp_debug_log' => $wp_debug_log_enabled,
+            'wp_debug_log_path' => $wp_debug_log_path,
+            'wp_debug_log_custom' => $wp_debug_log_custom,
             'wp_debug_display' => defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY,
             'script_debug' => defined('SCRIPT_DEBUG') && SCRIPT_DEBUG,
             'savequeries' => defined('SAVEQUERIES') && SAVEQUERIES,
