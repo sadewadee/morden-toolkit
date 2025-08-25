@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.16] - 2025-01-18
 
+### Added
+- **SMTP Logger**: Fitur baru untuk mencatat (log) semua email yang dikirim melalui `wp_mail`. Berguna untuk men-debug masalah pengiriman email.
+- **Internal Logging**: Mekanisme logging internal untuk Morden Toolkit, dapat diaktifkan melalui `wp-config.php` untuk membantu proses debug plugin.
+
 ### Changed
 - Cleaned up unnecessary comments throughout the codebase for better code readability
 - Removed redundant inline comments that didn't add value to code understanding

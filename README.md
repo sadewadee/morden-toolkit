@@ -22,6 +22,7 @@ Morden Toolkit is a WordPress plugin that provides essential developer tools wit
 - **Real-time monitoring** - Database queries, execution time, memory usage
 - **Detailed metrics** - PHP version, WordPress version, peak memory
 - **Mobile responsive** - Optimal display on all device sizes
+- **SMTP Logging** - Log all outgoing emails sent via `wp_mail` for easy debugging.
 
 ### 📝 File Editor
 - **Safe .htaccess editing** - Built-in syntax validation
