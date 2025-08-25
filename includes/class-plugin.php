@@ -214,6 +214,14 @@ class MT_Plugin {
                 MT_VERSION,
                 true
             );
+
+            wp_enqueue_script(
+                'mt-performance-tabs',
+                MT_PLUGIN_URL . 'public/assets/performance-tabs.js',
+                array(),
+                MT_VERSION,
+                true
+            );
         }
     }
 
@@ -277,11 +285,13 @@ class MT_Plugin {
             wp_send_json_error(__('Missing constant parameter.', 'morden-toolkit'));
         }
 
-        $constant = sanitize_key($_POST['constant']);
-        $enabled = isset($_POST['enabled']) && sanitize_key($_POST['enabled']) === 'true';
+        // Preserve correct casing: keep lowercase for ini settings like display_errors, uppercase for others
+        $raw_constant = sanitize_text_field( wp_unslash( $_POST['constant'] ) );
+        $constant     = ( 'display_errors' === $raw_constant ) ? 'display_errors' : strtoupper( $raw_constant );
+        $enabled      = isset($_POST['enabled']) && sanitize_key($_POST['enabled']) === 'true';
 
-        // Validate constant name
-        $allowed_constants = array('WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'display_errors');
+        // Validate constant name (case-sensitive, all uppercase except ini setting)
+        $allowed_constants = array( 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'SMTP_LOGGING', 'display_errors' );
         if (!in_array($constant, $allowed_constants)) {
             wp_send_json_error(__('Invalid debug constant.', 'morden-toolkit'));
         }

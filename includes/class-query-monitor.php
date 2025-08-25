@@ -1724,10 +1724,7 @@ class MT_Query_Monitor {
                 if (limitSelect) limitSelect.addEventListener('change', filterRealtimeHooks);
             }
 
-            // Initialize existing MT_Hooks if available
-            if (typeof MT_Hooks !== 'undefined') {
-                MT_Hooks.init();
-            }
+            // Script initialization is now handled by performance-tabs.js
         });
         </script>
         <?php
@@ -2481,13 +2478,6 @@ class MT_Query_Monitor {
 
         echo '</tbody>';
         echo '</table>';
-
-        // Add JavaScript for filtering and sorting
-        echo '<script>';
-        echo 'document.addEventListener("DOMContentLoaded", function() {';
-        echo '    MT_Images.init();';
-        echo '});';
-        echo '</script>';
     }
 
     /**
@@ -2635,13 +2625,6 @@ class MT_Query_Monitor {
 
         echo '</tbody>';
         echo '</table>';
-
-        // Add JavaScript for filtering and sorting
-        echo '<script>';
-        echo 'document.addEventListener("DOMContentLoaded", function() {';
-        echo '    MT_Hooks.init();';
-        echo '});';
-        echo '</script>';
     }
 
     /**

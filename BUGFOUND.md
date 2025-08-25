@@ -1,5 +1,25 @@
 # Bug Report & Fixes - Morden Toolkit
 
+## Invalid Debug Constant Error (fix_015)
+
+**Problem:** "Invalid debug constant" error when toggling WP_DEBUG
+- JavaScript sending 'WP_DEBUG' constant to ajax_toggle_debug_constant function
+- PHP validation array $allowed_constants missing 'WP_DEBUG' entry
+- Only included 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'display_errors'
+- Users unable to toggle main WP_DEBUG constant due to validation failure
+- Error occurs when clicking debug mode toggle in admin interface
+
+**Solution:** Added 'WP_DEBUG' to allowed constants array
+- Added 'WP_DEBUG' as first entry in $allowed_constants array
+- Updated validation logic in ajax_toggle_debug_constant function
+- Ensures WP_DEBUG constant can be properly toggled via AJAX
+- Maintains security by keeping validation for allowed constants only
+
+**Status:** Fixed
+**File:** includes/class-plugin.php
+**Severity:** High
+**Date:** 2025-01-18
+
 ## Debug Mode Toggle Button Not Clickable (fix_014)
 
 **Problem:** Debug mode toggle button (id="debug-mode-toggle") not responding to clicks

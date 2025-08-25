@@ -5,6 +5,13 @@ All notable changes to Morden Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.16] - 2025-01-18
+
+### Fixed
+- Fixed "Invalid debug constant" error when toggling WP_DEBUG - added 'WP_DEBUG' to allowed constants array in ajax_toggle_debug_constant function
+- Resolved validation failure preventing users from toggling main WP_DEBUG constant via admin interface
+- Enhanced AJAX validation to properly handle WP_DEBUG constant alongside other debug constants
+
 ## [1.2.15] - 2025-01-18
 
 ### Fixed
