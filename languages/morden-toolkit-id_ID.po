@@ -1,0 +1,606 @@
+# Indonesian (Indonesia) language file for Morden Toolkit
+# Copyright (C) 2024 Morden Pro
+# This file is distributed under the same license as the Morden Toolkit package.
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Morden Toolkit 1.2.16\n"
+"Report-Msgid-Bugs-To: https://github.com/morden-pro/morden-toolkit/issues\n"
+"POT-Creation-Date: 2025-01-15 07:41+0000\n"
+"PO-Revision-Date: 2025-01-15 07:41+0000\n"
+"Last-Translator: Morden Pro <support@morden.pro>\n"
+"Language-Team: Indonesian\n"
+"Language: id_ID\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: admin/views/page-toolkit.php:15
+msgid "Overview"
+msgstr "Ringkasan"
+
+#: admin/views/page-toolkit.php:16
+#, php-format
+msgid "Queries (%d)"
+msgstr "Query (%d)"
+
+#: admin/views/page-toolkit.php:17
+#, php-format
+msgid "Scripts (%d)"
+msgstr "Skrip (%d)"
+
+#: admin/views/page-toolkit.php:18
+#, php-format
+msgid "Styles (%d)"
+msgstr "Gaya (%d)"
+
+#: admin/views/page-toolkit.php:19
+msgid "Images"
+msgstr "Gambar"
+
+#: admin/views/page-toolkit.php:20
+msgid "Hooks & Actions"
+msgstr "Hook & Aksi"
+
+#: admin/views/page-toolkit.php:21
+#, php-format
+msgid "Real-time Hooks (%d)"
+msgstr "Hook Real-time (%d)"
+
+#: admin/views/page-toolkit.php:22
+#, php-format
+msgid "Bootstrap Phases (%d)"
+msgstr "Fase Bootstrap (%d)"
+
+#: admin/views/page-toolkit.php:23
+msgid "Domain Panels"
+msgstr "Panel Domain"
+
+#: admin/views/page-toolkit.php:24
+msgid "ENV"
+msgstr "ENV"
+
+#: admin/views/page-toolkit.php:25
+msgid "Performance Details"
+msgstr "Detail Performa"
+
+#: admin/views/page-toolkit.php:26
+msgid "Database Queries:"
+msgstr "Query Database:"
+
+#: admin/views/page-toolkit.php:27
+msgid "Execution Time:"
+msgstr "Waktu Eksekusi:"
+
+#: admin/views/page-toolkit.php:28
+msgid "Database Time:"
+msgstr "Waktu Database:"
+
+#: admin/views/page-toolkit.php:29
+msgid "Memory Usage:"
+msgstr "Penggunaan Memori:"
+
+#: admin/views/page-toolkit.php:30
+msgid "Peak Memory:"
+msgstr "Puncak Memori:"
+
+#: admin/views/page-toolkit.php:31
+msgid "HTTP Requests:"
+msgstr "Permintaan HTTP:"
+
+#: admin/views/page-toolkit.php:32
+msgid "PHP Errors:"
+msgstr "Error PHP:"
+
+#: admin/views/page-toolkit.php:33
+msgid "WordPress Version:"
+msgstr "Versi WordPress:"
+
+#: admin/views/page-toolkit.php:34
+msgid "PHP Version:"
+msgstr "Versi PHP:"
+
+#: admin/views/page-toolkit.php:35
+msgid "MySQL Version:"
+msgstr "Versi MySQL:"
+
+#: admin/views/page-toolkit.php:36
+msgid "Server Software:"
+msgstr "Software Server:"
+
+#: admin/views/page-toolkit.php:37
+msgid "Active Theme:"
+msgstr "Tema Aktif:"
+
+#: admin/views/page-toolkit.php:38
+msgid "Active Plugins:"
+msgstr "Plugin Aktif:"
+
+#: admin/views/page-toolkit.php:39
+msgid "Debug Mode:"
+msgstr "Mode Debug:"
+
+#: admin/views/page-toolkit.php:40
+msgid "WP_DEBUG:"
+msgstr "WP_DEBUG:"
+
+#: admin/views/page-toolkit.php:41
+msgid "WP_DEBUG_LOG:"
+msgstr "WP_DEBUG_LOG:"
+
+#: admin/views/page-toolkit.php:42
+msgid "WP_DEBUG_DISPLAY:"
+msgstr "WP_DEBUG_DISPLAY:"
+
+#: admin/views/page-toolkit.php:43
+msgid "SCRIPT_DEBUG:"
+msgstr "SCRIPT_DEBUG:"
+
+#: admin/views/page-toolkit.php:44
+msgid "SAVEQUERIES:"
+msgstr "SAVEQUERIES:"
+
+#: admin/views/page-toolkit.php:45
+msgid "Enabled"
+msgstr "Diaktifkan"
+
+#: admin/views/page-toolkit.php:46
+msgid "Disabled"
+msgstr "Dinonaktifkan"
+
+#: admin/views/page-toolkit.php:47
+msgid "Yes"
+msgstr "Ya"
+
+#: admin/views/page-toolkit.php:48
+msgid "No"
+msgstr "Tidak"
+
+#: admin/views/page-toolkit.php:49
+msgid "On"
+msgstr "Aktif"
+
+#: admin/views/page-toolkit.php:50
+msgid "Off"
+msgstr "Nonaktif"
+
+#: admin/views/page-logs.php:15
+msgid "Debug Logs"
+msgstr "Log Debug"
+
+#: admin/views/page-logs.php:16
+msgid "Clear Logs"
+msgstr "Hapus Log"
+
+#: admin/views/page-logs.php:17
+msgid "Download Logs"
+msgstr "Unduh Log"
+
+#: admin/views/page-logs.php:18
+msgid "Refresh"
+msgstr "Segarkan"
+
+#: admin/views/page-logs.php:19
+msgid "Auto Refresh"
+msgstr "Segarkan Otomatis"
+
+#: admin/views/page-logs.php:20
+msgid "Filter by Level"
+msgstr "Filter berdasarkan Level"
+
+#: admin/views/page-logs.php:21
+msgid "All Levels"
+msgstr "Semua Level"
+
+#: admin/views/page-logs.php:22
+msgid "Error"
+msgstr "Error"
+
+#: admin/views/page-logs.php:23
+msgid "Warning"
+msgstr "Peringatan"
+
+#: admin/views/page-logs.php:24
+msgid "Notice"
+msgstr "Pemberitahuan"
+
+#: admin/views/page-logs.php:25
+msgid "Info"
+msgstr "Info"
+
+#: admin/views/page-logs.php:26
+msgid "Debug"
+msgstr "Debug"
+
+#: admin/views/page-logs.php:27
+msgid "Search logs..."
+msgstr "Cari log..."
+
+#: admin/views/page-logs.php:28
+msgid "Loading logs..."
+msgstr "Memuat log..."
+
+#: admin/views/page-logs.php:29
+msgid "Previous"
+msgstr "Sebelumnya"
+
+#: admin/views/page-logs.php:30
+msgid "Next"
+msgstr "Selanjutnya"
+
+#: admin/views/page-logs.php:31
+msgid "No log entries found."
+msgstr "Tidak ada entri log yang ditemukan."
+
+#: admin/views/page-query-logs.php:15
+msgid "Query Logs"
+msgstr "Log Query"
+
+#: admin/views/page-query-logs.php:16
+msgid "Clear Query Logs"
+msgstr "Hapus Log Query"
+
+#: admin/views/page-query-logs.php:17
+msgid "Download Query Logs"
+msgstr "Unduh Log Query"
+
+#: admin/views/page-smtp-logs.php:15
+msgid "SMTP Logs"
+msgstr "Log SMTP"
+
+#: admin/views/page-smtp-logs.php:16
+msgid "Clear SMTP Logs"
+msgstr "Hapus Log SMTP"
+
+#: admin/views/page-smtp-logs.php:17
+msgid "Download SMTP Logs"
+msgstr "Unduh Log SMTP"
+
+#: includes/class-plugin.php:50
+msgid "Morden Toolkit"
+msgstr "Morden Toolkit"
+
+#: includes/class-plugin.php:51
+msgid "Debug Tools"
+msgstr "Alat Debug"
+
+#: includes/class-plugin.php:52
+msgid "Query Logs"
+msgstr "Log Query"
+
+#: includes/class-plugin.php:53
+msgid "SMTP Logs"
+msgstr "Log SMTP"
+
+#: includes/class-plugin.php:54
+msgid "Settings"
+msgstr "Pengaturan"
+
+#: includes/class-plugin.php:55
+msgid "Performance Monitor"
+msgstr "Monitor Performa"
+
+#: includes/class-plugin.php:56
+msgid "File Manager"
+msgstr "Pengelola File"
+
+#: includes/class-plugin.php:57
+msgid "PHP Configuration"
+msgstr "Konfigurasi PHP"
+
+#: includes/class-plugin.php:58
+msgid "WP Config Editor"
+msgstr "Editor WP Config"
+
+#: includes/class-plugin.php:59
+msgid ".htaccess Editor"
+msgstr "Editor .htaccess"
+
+#: includes/class-plugin.php:60
+msgid "Database Tools"
+msgstr "Alat Database"
+
+#: includes/class-plugin.php:61
+msgid "System Information"
+msgstr "Informasi Sistem"
+
+#: includes/class-plugin.php:62
+msgid "Security Scanner"
+msgstr "Pemindai Keamanan"
+
+#: includes/class-plugin.php:63
+msgid "Backup Manager"
+msgstr "Pengelola Backup"
+
+#: includes/class-plugin.php:64
+msgid "Cache Manager"
+msgstr "Pengelola Cache"
+
+#: includes/class-plugin.php:65
+msgid "Error Handler"
+msgstr "Penanganan Error"
+
+#: includes/class-plugin.php:66
+msgid "Log Viewer"
+msgstr "Penampil Log"
+
+#: includes/class-plugin.php:67
+msgid "Code Editor"
+msgstr "Editor Kode"
+
+#: includes/class-plugin.php:68
+msgid "Plugin Manager"
+msgstr "Pengelola Plugin"
+
+#: includes/class-plugin.php:69
+msgid "Theme Manager"
+msgstr "Pengelola Tema"
+
+#: includes/class-plugin.php:70
+msgid "User Manager"
+msgstr "Pengelola Pengguna"
+
+#: includes/class-plugin.php:71
+msgid "Media Manager"
+msgstr "Pengelola Media"
+
+#: includes/class-plugin.php:72
+msgid "Comment Manager"
+msgstr "Pengelola Komentar"
+
+#: includes/class-plugin.php:73
+msgid "Menu Manager"
+msgstr "Pengelola Menu"
+
+#: includes/class-plugin.php:74
+msgid "Widget Manager"
+msgstr "Pengelola Widget"
+
+#: includes/class-plugin.php:75
+msgid "Customizer Tools"
+msgstr "Alat Customizer"
+
+#: includes/class-plugin.php:76
+msgid "Import/Export"
+msgstr "Impor/Ekspor"
+
+#: includes/class-plugin.php:77
+msgid "Maintenance Mode"
+msgstr "Mode Pemeliharaan"
+
+#: includes/class-plugin.php:78
+msgid "SEO Tools"
+msgstr "Alat SEO"
+
+#: includes/class-plugin.php:79
+msgid "Analytics"
+msgstr "Analitik"
+
+#: includes/class-plugin.php:80
+msgid "Social Media"
+msgstr "Media Sosial"
+
+#: includes/class-plugin.php:81
+msgid "Email Tools"
+msgstr "Alat Email"
+
+#: includes/class-plugin.php:82
+msgid "Form Builder"
+msgstr "Pembuat Form"
+
+#: includes/class-plugin.php:83
+msgid "Gallery Manager"
+msgstr "Pengelola Galeri"
+
+#: includes/class-plugin.php:84
+msgid "Slider Manager"
+msgstr "Pengelola Slider"
+
+#: includes/class-plugin.php:85
+msgid "Contact Manager"
+msgstr "Pengelola Kontak"
+
+#: includes/class-plugin.php:86
+msgid "Newsletter"
+msgstr "Newsletter"
+
+#: includes/class-plugin.php:87
+msgid "E-commerce Tools"
+msgstr "Alat E-commerce"
+
+#: includes/class-plugin.php:88
+msgid "Membership Tools"
+msgstr "Alat Keanggotaan"
+
+#: includes/class-plugin.php:89
+msgid "Event Manager"
+msgstr "Pengelola Acara"
+
+#: includes/class-plugin.php:90
+msgid "Booking System"
+msgstr "Sistem Booking"
+
+#: includes/class-plugin.php:91
+msgid "Payment Gateway"
+msgstr "Gateway Pembayaran"
+
+#: includes/class-plugin.php:92
+msgid "Shipping Manager"
+msgstr "Pengelola Pengiriman"
+
+#: includes/class-plugin.php:93
+msgid "Tax Manager"
+msgstr "Pengelola Pajak"
+
+#: includes/class-plugin.php:94
+msgid "Coupon Manager"
+msgstr "Pengelola Kupon"
+
+#: includes/class-plugin.php:95
+msgid "Inventory Manager"
+msgstr "Pengelola Inventori"
+
+#: includes/class-plugin.php:96
+msgid "Order Manager"
+msgstr "Pengelola Pesanan"
+
+#: includes/class-plugin.php:97
+msgid "Customer Manager"
+msgstr "Pengelola Pelanggan"
+
+#: includes/class-plugin.php:98
+msgid "Review Manager"
+msgstr "Pengelola Ulasan"
+
+#: includes/class-plugin.php:99
+msgid "Wishlist Manager"
+msgstr "Pengelola Wishlist"
+
+#: includes/class-plugin.php:100
+msgid "Compare Manager"
+msgstr "Pengelola Perbandingan"
+
+#: morden-toolkit.php:25
+msgid "Morden Toolkit requires PHP version 7.4 or higher."
+msgstr "Morden Toolkit memerlukan PHP versi 7.4 atau lebih tinggi."
+
+#: morden-toolkit.php:26
+msgid "Morden Toolkit requires WordPress version 5.0 or higher."
+msgstr "Morden Toolkit memerlukan WordPress versi 5.0 atau lebih tinggi."
+
+#: morden-toolkit.php:27
+msgid "Plugin activated successfully!"
+msgstr "Plugin berhasil diaktifkan!"
+
+#: morden-toolkit.php:28
+msgid "Plugin deactivated successfully!"
+msgstr "Plugin berhasil dinonaktifkan!"
+
+#: morden-toolkit.php:29
+msgid "Plugin uninstalled successfully!"
+msgstr "Plugin berhasil dihapus!"
+
+#: morden-toolkit.php:30
+msgid "Settings saved successfully!"
+msgstr "Pengaturan berhasil disimpan!"
+
+#: morden-toolkit.php:31
+msgid "Settings reset successfully!"
+msgstr "Pengaturan berhasil direset!"
+
+#: morden-toolkit.php:32
+msgid "Cache cleared successfully!"
+msgstr "Cache berhasil dihapus!"
+
+#: morden-toolkit.php:33
+msgid "Logs cleared successfully!"
+msgstr "Log berhasil dihapus!"
+
+#: morden-toolkit.php:34
+msgid "Backup created successfully!"
+msgstr "Backup berhasil dibuat!"
+
+#: morden-toolkit.php:35
+msgid "Backup restored successfully!"
+msgstr "Backup berhasil dipulihkan!"
+
+#: morden-toolkit.php:36
+msgid "File uploaded successfully!"
+msgstr "File berhasil diunggah!"
+
+#: morden-toolkit.php:37
+msgid "File deleted successfully!"
+msgstr "File berhasil dihapus!"
+
+#: morden-toolkit.php:38
+msgid "Configuration updated successfully!"
+msgstr "Konfigurasi berhasil diperbarui!"
+
+#: morden-toolkit.php:39
+msgid "Error: Invalid request."
+msgstr "Error: Permintaan tidak valid."
+
+#: morden-toolkit.php:40
+msgid "Error: Permission denied."
+msgstr "Error: Izin ditolak."
+
+#: morden-toolkit.php:41
+msgid "Error: File not found."
+msgstr "Error: File tidak ditemukan."
+
+#: morden-toolkit.php:42
+msgid "Error: Database connection failed."
+msgstr "Error: Koneksi database gagal."
+
+#: morden-toolkit.php:43
+msgid "Error: Operation failed."
+msgstr "Error: Operasi gagal."
+
+#: morden-toolkit.php:44
+msgid "Warning: This action cannot be undone."
+msgstr "Peringatan: Tindakan ini tidak dapat dibatalkan."
+
+#: morden-toolkit.php:45
+msgid "Confirm"
+msgstr "Konfirmasi"
+
+#: morden-toolkit.php:46
+msgid "Cancel"
+msgstr "Batal"
+
+#: morden-toolkit.php:47
+msgid "Save"
+msgstr "Simpan"
+
+#: morden-toolkit.php:48
+msgid "Reset"
+msgstr "Reset"
+
+#: morden-toolkit.php:49
+msgid "Delete"
+msgstr "Hapus"
+
+#: morden-toolkit.php:50
+msgid "Edit"
+msgstr "Edit"
+
+#: morden-toolkit.php:51
+msgid "View"
+msgstr "Lihat"
+
+#: morden-toolkit.php:52
+msgid "Download"
+msgstr "Unduh"
+
+#: morden-toolkit.php:53
+msgid "Upload"
+msgstr "Unggah"
+
+#: morden-toolkit.php:54
+msgid "Search"
+msgstr "Cari"
+
+#: morden-toolkit.php:55
+msgid "Filter"
+msgstr "Filter"
+
+#: morden-toolkit.php:56
+msgid "Sort"
+msgstr "Urutkan"
+
+#: morden-toolkit.php:57
+msgid "Export"
+msgstr "Ekspor"
+
+#: morden-toolkit.php:58
+msgid "Import"
+msgstr "Impor"
+
+#: morden-toolkit.php:59
+msgid "Backup"
+msgstr "Backup"
+
+#: morden-toolkit.php:60
+msgid "Restore"
+msgstr "Pulihkan"
