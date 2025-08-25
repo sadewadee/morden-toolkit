@@ -89,6 +89,7 @@
     background: #23282d !important;
     border-right: 1px solid #464b50 !important;
     flex-shrink: 0 !important;
+    overflow-y: scroll;
 }
 
 .mt-perf-tabs {
