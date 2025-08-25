@@ -183,7 +183,21 @@ vendor/bin/phpunit
 
 ## License
 
-GPL v2 or later - see [LICENSE](LICENSE) file
+This plugin is licensed under the GNU General Public License v3.0 or later.
+
+**GPL v3.0** - see [LICENSE](LICENSE) file for full license text.
+
+You are free to:
+- Use this software for any purpose
+- Study and modify the source code
+- Distribute copies of the software
+- Distribute modified versions
+
+Under the following conditions:
+- Any derivative work must also be licensed under GPL v3.0
+- Source code must be made available when distributing
+- Changes must be documented
+- Same license and copyright notices must be preserved
 
 ## Support
 
