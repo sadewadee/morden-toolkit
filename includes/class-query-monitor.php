@@ -1084,6 +1084,31 @@ class MT_Query_Monitor {
             padding: 10px !important;
         }
 
+        .env-category-section {
+            margin-bottom: 25px;
+        }
+
+        .env-category-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .env-category-title {
+            margin: 0 0 10px 0;
+            padding: 8px 12px;
+            background: #0073aa;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 4px 4px 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .env-category-table {
+            margin-top: 0 !important;
+            border-top: none;
+        }
+
         /* Sortable Column Headers */
         .sortable {
             cursor: pointer;
@@ -2908,33 +2933,46 @@ class MT_Query_Monitor {
     private function render_env_tab() {
         $env_data = $this->get_environment_data();
 
-        echo '<table class="query-log-table">';
-        echo '<thead>';
-        echo '<tr>';
-        echo '<th>Category</th>';
-        echo '<th>Setting</th>';
-        echo '<th>Value</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-
-        $current_category = '';
+        // Group data by categories
+        $categories = array();
         foreach ($env_data as $env_item) {
-            $category_cell = '';
-            if ($current_category !== $env_item['category']) {
-                $category_cell = '<td rowspan="' . $this->count_category_items($env_data, $env_item['category']) . '" class="env-category"><strong>' . (function_exists('esc_html') ? esc_html($env_item['category']) : htmlspecialchars($env_item['category'])) . '</strong></td>';
-                $current_category = $env_item['category'];
-            }
-
-            echo '<tr>';
-            echo $category_cell;
-            echo '<td class="mt-env-handle">' . (function_exists('esc_html') ? esc_html($env_item['name']) : htmlspecialchars($env_item['name'])) . '</td>';
-            echo '<td class="query-sql"><div class="sql-container"><code>' . (function_exists('esc_html') ? esc_html($env_item['value']) : htmlspecialchars($env_item['value'])) . '</code></div></td>';
-            echo '</tr>';
+            $categories[$env_item['category']][] = $env_item;
         }
 
-        echo '</tbody>';
-        echo '</table>';
+        // Define category order and display names
+        $category_order = array(
+            'PHP' => 'PHP Environment',
+            'Database' => 'Database Configuration',
+            'WordPress' => 'WordPress Configuration',
+            'Server' => 'Server Information'
+        );
+
+        // Render each category as separate table
+        foreach ($category_order as $category_key => $category_title) {
+            if (!isset($categories[$category_key])) continue;
+
+            echo '<div class="env-category-section">';
+            echo '<h5 class="env-category-title">' . (function_exists('esc_html') ? esc_html($category_title) : htmlspecialchars($category_title)) . '</h5>';
+            echo '<table class="query-log-table env-category-table">';
+            echo '<thead>';
+            echo '<tr>';
+            echo '<th>Setting</th>';
+            echo '<th>Value</th>';
+            echo '</tr>';
+            echo '</thead>';
+            echo '<tbody>';
+
+            foreach ($categories[$category_key] as $env_item) {
+                echo '<tr>';
+                echo '<td class="mt-env-handle">' . (function_exists('esc_html') ? esc_html($env_item['name']) : htmlspecialchars($env_item['name'])) . '</td>';
+                echo '<td class="query-sql"><div class="sql-container"><code>' . (function_exists('esc_html') ? esc_html($env_item['value']) : htmlspecialchars($env_item['value'])) . '</code></div></td>';
+                echo '</tr>';
+            }
+
+            echo '</tbody>';
+            echo '</table>';
+            echo '</div>';
+        }
     }
 
     /**
@@ -3459,18 +3497,7 @@ class MT_Query_Monitor {
         return $env_data;
     }
 
-    /**
-     * Count items in a category for rowspan calculation
-     */
-    private function count_category_items($env_data, $category) {
-        $count = 0;
-        foreach ($env_data as $item) {
-            if ($item['category'] === $category) {
-                $count++;
-            }
-        }
-        return $count;
-    }
+
 
     /**
      * Collect images from widgets and navigation menus
