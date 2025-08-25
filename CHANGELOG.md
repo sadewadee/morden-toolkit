@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.16] - 2025-01-18
 
+### Changed
+- Cleaned up unnecessary comments throughout the codebase for better code readability
+- Removed redundant inline comments that didn't add value to code understanding
+- Improved code maintainability by removing verbose explanatory comments
+
 ### Fixed
 - Fixed "Invalid debug constant" error when toggling WP_DEBUG - added 'WP_DEBUG' to allowed constants array in ajax_toggle_debug_constant function
 - Resolved validation failure preventing users from toggling main WP_DEBUG constant via admin interface

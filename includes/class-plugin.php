@@ -119,7 +119,7 @@ class MT_Plugin {
     }
 
     public function enqueue_admin_scripts($hook) {
-        // Load CSS/JS on Morden Toolkit pages only
+
         if (!in_array($hook, array('tools_page_mt', 'tools_page_mt-logs', 'tools_page_mt-query-logs', 'tools_page_mt-smtp-logs'))) {
             return;
         }
@@ -253,7 +253,7 @@ class MT_Plugin {
         include MT_PLUGIN_DIR . 'admin/views/page-smtp-logs.php';
     }
 
-    // AJAX Handlers
+
 
     public function ajax_toggle_debug() {
         check_ajax_referer('mt_action', 'nonce');
@@ -285,12 +285,12 @@ class MT_Plugin {
             wp_send_json_error(__('Missing constant parameter.', 'morden-toolkit'));
         }
 
-        // Preserve correct casing: keep lowercase for ini settings like display_errors, uppercase for others
+
         $raw_constant = sanitize_text_field( wp_unslash( $_POST['constant'] ) );
         $constant     = ( 'display_errors' === $raw_constant ) ? 'display_errors' : strtoupper( $raw_constant );
         $enabled      = isset($_POST['enabled']) && sanitize_key($_POST['enabled']) === 'true';
 
-        // Validate constant name (case-sensitive, all uppercase except ini setting)
+
         $allowed_constants = array( 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'SAVEQUERIES', 'SMTP_LOGGING', 'display_errors' );
         if (!in_array($constant, $allowed_constants)) {
             wp_send_json_error(__('Invalid debug constant.', 'morden-toolkit'));
@@ -299,7 +299,7 @@ class MT_Plugin {
         $result = $this->services['debug']->toggle_debug_constant($constant, $enabled);
 
         if ($result) {
-            // Get current status to return
+    
             $status = $this->services['debug']->get_debug_status();
 
             wp_send_json_success(array(
@@ -489,7 +489,7 @@ class MT_Plugin {
 
         $debug_status = $this->services['debug']->get_debug_status();
 
-        // Extract only log-related info
+        
         $log_info = array(
             'query_log_file_exists' => $debug_status['query_log_file_exists'],
             'query_log_file_size' => $debug_status['query_log_file_size'],
@@ -519,23 +519,23 @@ class MT_Plugin {
             return;
         }
 
-        // Cleanup old query logs
+
         $this->services['debug']->cleanup_old_query_logs();
 
-        // Cleanup old debug logs (keep only 3 most recent)
+
         $cleaned_debug_logs = mt_cleanup_old_debug_logs();
         if ($cleaned_debug_logs > 0) {
             mt_debug_log("Cleaned up {$cleaned_debug_logs} old debug log files");
         }
 
-        // Also cleanup large debug logs if they exceed 50MB
+
         $debug_log_path = mt_get_debug_log_path();
         if (file_exists($debug_log_path)) {
             $debug_log_size = filesize($debug_log_path);
             $max_debug_size = mt_get_debug_log_max_size();
 
             if ($debug_log_size > $max_debug_size) {
-                // Keep only latest 10000 lines
+        
                 $this->truncate_debug_log($debug_log_path, 10000);
             }
         }
@@ -604,10 +604,10 @@ class MT_Plugin {
             wp_send_json_error(__('Missing content parameter.', 'morden-toolkit'));
         }
 
-        // Use wp_unslash to remove WordPress auto-added slashes, then basic sanitization
+
         $content = wp_unslash($_POST['content']);
 
-        // Basic sanitization without escaping special characters needed for .htaccess
+
         $content = wp_kses($content, array());
 
         $result = $this->services['htaccess']->save_htaccess($content);
@@ -680,16 +680,16 @@ class MT_Plugin {
             wp_send_json_error(__('Invalid settings data.', 'morden-toolkit'));
         }
 
-        // Validate and sanitize settings
+        
         $validated_settings = $this->services['php_config']->validate_custom_settings($settings);
         if (!$validated_settings) {
             wp_send_json_error(__('Invalid configuration values.', 'morden-toolkit'));
         }
 
-        // Save custom preset settings
+        
         update_option('mt_custom_preset_settings', $validated_settings);
 
-        // Update the custom preset in php_config service
+        
         $this->services['php_config']->update_custom_preset($validated_settings);
 
         wp_send_json_success(__('Custom preset saved successfully.', 'morden-toolkit'));
@@ -701,10 +701,10 @@ class MT_Plugin {
             wp_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
-        // Reset to default custom preset values
+        
         delete_option('mt_custom_preset_settings');
 
-        // Reset the custom preset in php_config service
+        
         $this->services['php_config']->reset_custom_preset();
 
         wp_send_json_success(__('Custom preset reset to default values.', 'morden-toolkit'));
@@ -718,10 +718,10 @@ class MT_Plugin {
 
         mt_debug_log('=== DEBUG TRANSFORMER TEST (via AJAX) ===');
 
-        // Test WPConfigTransformer functionality
+
         $test_result = $this->services['debug']->test_wp_config_transformer();
 
-        // Test applying a simple debug constant
+
         $reflection = new ReflectionClass($this->services['debug']);
         $method = $reflection->getMethod('get_custom_debug_log_path');
         $method->setAccessible(true);
@@ -747,7 +747,7 @@ class MT_Plugin {
         wp_send_json_success($response);
     }
 
-    // SMTP Logger AJAX Handlers
+
 
     public function ajax_toggle_smtp_logging() {
         check_ajax_referer('mt_action', 'nonce');
@@ -757,17 +757,17 @@ class MT_Plugin {
 
         $enabled = isset($_POST['enabled']) && sanitize_key($_POST['enabled']) === 'true';
 
-        // Update the option
+
         update_option('mt_smtp_logging_enabled', $enabled);
 
-        // Update the SMTP logger instance
+
         if (isset($this->services['smtp_logger'])) {
             $reflection = new ReflectionClass($this->services['smtp_logger']);
             $property = $reflection->getProperty('log_enabled');
             $property->setAccessible(true);
             $property->setValue($this->services['smtp_logger'], $enabled);
 
-            // Reinitialize hooks if logging is enabled
+
             if ($enabled) {
                 $init_method = $reflection->getMethod('init_hooks');
                 $init_method->setAccessible(true);
@@ -789,10 +789,10 @@ class MT_Plugin {
 
         $enabled = isset($_POST['enabled']) && sanitize_key($_POST['enabled']) === 'true';
 
-        // Update the option
+
         update_option('mt_smtp_log_ip_address', $enabled);
 
-        // Update the SMTP logger instance
+
         if (isset($this->services['smtp_logger'])) {
             $reflection = new ReflectionClass($this->services['smtp_logger']);
             $property = $reflection->getProperty('log_ip_address');

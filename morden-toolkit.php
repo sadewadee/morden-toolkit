@@ -3,7 +3,7 @@
  * Plugin Name: Morden Toolkit
  * Plugin URI: https://github.com/sadewadee/morden-toolkit
  * Description: Lightweight developer tools for WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
- * Version: 1.2.15
+ * Version: 1.2.16
  * Author: Morden Team
  * Author URI: https://mordenhost.com
  * License: GPL v2 or later
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MT_VERSION', '1.2.15');
+define('MT_VERSION', '1.2.16');
 define('MT_PLUGIN_FILE', __FILE__);
 define('MT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MT_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -53,9 +53,7 @@ function mt_init() {
 }
 add_action('plugins_loaded', 'mt_init');
 
-// Note: PHP configuration is now handled through MT_PHP_Config class
-// which uses proper methods (.htaccess, .user.ini, wp-config.php constants)
-// instead of ini_set() which doesn't work on many hosting providers
+
 
 register_activation_hook(__FILE__, function() {
     if (!get_option('mt_debug_enabled')) {
@@ -92,7 +90,6 @@ register_deactivation_hook(__FILE__, function() {
         update_option('mt_debug_enabled', false);
     }
 
-    // Optional: Clean up old log files (can be controlled via filter)
     $cleanup_on_deactivation = apply_filters('mt_cleanup_logs_on_deactivation', false);
 
     if ($cleanup_on_deactivation && function_exists('mt_cleanup_old_debug_logs')) {

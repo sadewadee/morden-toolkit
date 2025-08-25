@@ -68,12 +68,12 @@ function mt_format_time($time) {
 }
 
 function mt_get_debug_log_path() {
-    // Check if WP_DEBUG_LOG is defined with a custom path
+
     if (defined('WP_DEBUG_LOG') && is_string(WP_DEBUG_LOG) && !in_array(WP_DEBUG_LOG, ['true', 'false', '1', '0'], true)) {
-        // WP_DEBUG_LOG contains a custom path
+
         $custom_path = WP_DEBUG_LOG;
 
-        // If it's a relative path, make it absolute
+
         if (!is_absolute_path($custom_path)) {
             $custom_path = ABSPATH . ltrim($custom_path, '/');
         }
@@ -81,27 +81,27 @@ function mt_get_debug_log_path() {
         return $custom_path;
     }
 
-    // Check for custom path in wp-config.php (backup detection)
+
     $wp_config_path = mt_get_wp_config_path();
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-        // Enhanced regex patterns to handle various quote escaping scenarios
+    
         $patterns = [
-            // Standard pattern: define( 'WP_DEBUG_LOG', '/path/to/file' )
+
             '/define\s*\(\s*[\'"]WP_DEBUG_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
-            // Handle escaped quotes: define( 'WP_DEBUG_LOG', '\''/path/to/file'\'' )
+
             '/define\s*\(\s*[\'"]WP_DEBUG_LOG[\'"]\s*,\s*[\'"]\\\\?[\'"]([^\\\\]+)\\\\?[\'"][\'"] *\)/',
-            // Handle double quotes with single quotes: define( "WP_DEBUG_LOG", '/path/to/file' )
+
             '/define\s*\(\s*"WP_DEBUG_LOG"\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
         ];
 
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-                // Clean any remaining escape characters
+        
                 $path = stripslashes($path);
-                // Only return if it looks like a custom log path
+        
                 if (strpos($path, 'wp-errors-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
                     return $path;
                 }
@@ -109,7 +109,7 @@ function mt_get_debug_log_path() {
         }
     }
 
-    // Default WordPress debug log path
+
     return WP_CONTENT_DIR . '/debug.log';
 }
 
@@ -125,27 +125,27 @@ function is_absolute_path($path) {
 
 
 function mt_get_query_log_path() {
-    // Check if custom query log path is defined (similar to debug log)
+
     $wp_config_path = mt_get_wp_config_path();
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-        // Enhanced regex patterns to handle various quote escaping scenarios for MT_QUERY_LOG
+    
         $patterns = [
-            // Standard pattern: define( 'MT_QUERY_LOG', '/path/to/file' )
+
             '/define\s*\(\s*[\'"]MT_QUERY_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
-            // Handle escaped quotes: define( 'MT_QUERY_LOG', '\''/path/to/file'\'' )
+
             '/define\s*\(\s*[\'"]MT_QUERY_LOG[\'"]\s*,\s*[\'"]\\\\?[\'"]([^\\\\]+)\\\\?[\'"][\'"] *\)/',
-            // Handle double quotes with single quotes: define( "MT_QUERY_LOG", '/path/to/file' )
+
             '/define\s*\(\s*"MT_QUERY_LOG"\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
         ];
 
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-                // Clean any remaining escape characters
+        
                 $path = stripslashes($path);
-                // Only return if it looks like a custom query log path
+        
                 if (strpos($path, 'wp-queries-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
                     return $path;
                 }
@@ -153,10 +153,10 @@ function mt_get_query_log_path() {
         }
     }
 
-    // Default path: use morden-toolkit directory like debug.log
+
     $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
 
-    // Ensure directory exists
+
     if (!file_exists($log_directory)) {
         if (function_exists('wp_mkdir_p')) {
             wp_mkdir_p($log_directory);
