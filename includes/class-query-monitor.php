@@ -1086,6 +1086,13 @@ class MT_Query_Monitor {
 
         .env-category-section {
             margin-bottom: 25px;
+            flex: 0 0 calc(50% - 1rem);
+        }
+
+        .mt-env-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .env-category-section:last-child {
@@ -1485,6 +1492,9 @@ class MT_Query_Monitor {
         }
 
         /* Responsive adjustments */
+        @media (min-width: 1200px) {
+        .env-category-section { flex: 0 0 calc(25% - 1rem); } /* 4 columns on wide */
+        }
         @media (max-width: 768px) {
             .mt-domain-panels {
                 grid-template-columns: 1fr;
