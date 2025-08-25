@@ -1,12 +1,14 @@
 # Morden Toolkit POT file
 # Copyright (C) 2024 Morden Pro
 # This file is distributed under the same license as the Morden Toolkit package.
-
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Morden Toolkit 1.1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/morden-pro/morden-toolkit/issues\n"
-"POT-Creation-Date: 2025-08-17 17:05+0800\n"
+"Project-Id-Version: Morden Toolkit 1.2.16\n"
+"Report-Msgid-Bugs-To: https://github.com/sadewadee/morden-toolkit/issues\n"
+"POT-Creation-Date: 2025-08-25 23:32+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,237 +18,467 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: includes/class-query-monitor.php:147
+#: includes/class-query-monitor.php:658
+msgid "Overview"
+msgstr ""
+
+#: includes/class-query-monitor.php:668
+#, php-format
+msgid "Queries (%d)"
+msgstr ""
+
+#: includes/class-query-monitor.php:678
+#, php-format
+msgid "Scripts (%d)"
+msgstr ""
+
+#: includes/class-query-monitor.php:688
+#, php-format
+msgid "Styles (%d)"
+msgstr ""
+
+#: includes/class-query-monitor.php:698
+msgid "Images"
+msgstr ""
+
+#: includes/class-query-monitor.php:708
+msgid "Hooks & Actions"
+msgstr ""
+
+#: includes/class-query-monitor.php:719
+#, php-format
+msgid "Real-time Hooks (%d)"
+msgstr ""
+
+#: includes/class-query-monitor.php:730
+#, php-format
+msgid "Bootstrap Phases (%d)"
+msgstr ""
+
+#: includes/class-query-monitor.php:740
+msgid "Domain Panels"
+msgstr ""
+
+#: includes/class-query-monitor.php:750
+msgid "ENV"
+msgstr ""
+
+#: includes/class-query-monitor.php:763
 msgid "Performance Details"
 msgstr ""
 
-#: includes/class-query-monitor.php:150
+#: includes/class-query-monitor.php:772
 msgid "Database Queries:"
 msgstr ""
 
-#: includes/class-query-monitor.php:154
+#: includes/class-query-monitor.php:782
 msgid "Execution Time:"
 msgstr ""
 
-#: includes/class-query-monitor.php:158
+#: includes/class-query-monitor.php:792
+msgid "Database Time:"
+msgstr ""
+
+#: includes/class-query-monitor.php:802 admin/views/page-smtp-logs.php:473
 msgid "Peak Memory:"
 msgstr ""
 
-#: includes/class-query-monitor.php:162
+#: includes/class-query-monitor.php:812
 msgid "Memory Used:"
 msgstr ""
 
-#: includes/class-query-monitor.php:166
+#: includes/class-query-monitor.php:822 admin/views/page-smtp-logs.php:467
 msgid "PHP Version:"
 msgstr ""
 
-#: includes/class-query-monitor.php:170
+#: includes/class-query-monitor.php:832 admin/views/page-smtp-logs.php:464
 msgid "WordPress Version:"
 msgstr ""
 
-#: includes/class-php-config.php:48
-msgid "Basic"
-msgstr ""
-
-#: includes/class-php-config.php:49
-msgid "Suitable for small sites with light traffic"
-msgstr ""
-
-#: includes/class-php-config.php:60
-msgid "Medium"
-msgstr ""
-
-#: includes/class-php-config.php:61
-msgid "Good for most WordPress sites"
-msgstr ""
-
-#: includes/class-php-config.php:72
-msgid "High Performance"
-msgstr ""
-
-#: includes/class-php-config.php:73
-msgid "For high-traffic sites and complex applications"
-msgstr ""
-
-#: includes/class-php-config.php:84
-msgid "Custom High Memory"
-msgstr ""
-
-#: includes/class-php-config.php:85
-msgid "Maximum performance with 2GB memory (70% server capacity)"
-msgstr ""
-
-#: includes/class-php-config.php:109
+#: includes/class-query-monitor.php:845
 #, php-format
-msgid "Maximum performance with %s memory (%d%% server capacity)"
+msgid "Database Queries (%d)"
 msgstr ""
 
-#: includes/class-php-config.php:943
-msgid ".htaccess"
+#: includes/class-query-monitor.php:858
+msgid "Loaded Scripts"
 msgstr ""
 
-#: includes/class-php-config.php:944
-msgid "Apply via Apache .htaccess file"
+#: includes/class-query-monitor.php:871
+msgid "Loaded Styles"
 msgstr ""
 
-#: includes/class-php-config.php:954
-msgid "wp-config.php"
+#: includes/class-query-monitor.php:884
+msgid "Loaded Images"
 msgstr ""
 
-#: includes/class-php-config.php:955
-msgid "Apply via WordPress configuration file"
+#: includes/class-query-monitor.php:897
+msgid "WordPress Hooks & Actions"
 msgstr ""
 
-#: includes/class-php-config.php:965
-msgid ".user.ini"
+#: includes/class-query-monitor.php:911
+#, php-format
+msgid "Real-time Hook Execution (%d hooks captured)"
 msgstr ""
 
-#: includes/class-php-config.php:966
-msgid "Apply via PHP .user.ini file"
+#: includes/class-query-monitor.php:925
+#, php-format
+msgid "Bootstrap Hook Snapshots (%d phases)"
 msgstr ""
 
-#: includes/class-plugin.php:89 includes/class-plugin.php:90
-#: admin/views/page-toolkit.php:39
+#: includes/class-query-monitor.php:938
+msgid "Domain-Specific Hook Analysis"
+msgstr ""
+
+#: includes/class-query-monitor.php:951
+msgid "Environment Configuration"
+msgstr ""
+
+#: includes/class-query-monitor.php:1798
+msgid ""
+"Query logging is not enabled. Add define('SAVEQUERIES', true); to wp-"
+"config.php to enable."
+msgstr ""
+
+#: includes/class-query-monitor.php:1803
+msgid "No queries recorded for this page."
+msgstr ""
+
+#: includes/class-query-monitor.php:2052
+msgid "No scripts loaded on this page."
+msgstr ""
+
+#: includes/class-query-monitor.php:2170
+msgid "No styles loaded on this page."
+msgstr ""
+
+#: includes/class-query-monitor.php:2380
+msgid "No images found on this page."
+msgstr ""
+
+#: includes/class-query-monitor.php:2500
+msgid "No hooks registered."
+msgstr ""
+
+#: includes/class-query-monitor.php:2648
+msgid ""
+"No strategic hooks captured. This indicates the monitoring has not detected "
+"any significant WordPress activity."
+msgstr ""
+
+#: includes/class-query-monitor.php:2756
+msgid ""
+"No bootstrap snapshots captured. This indicates monitoring was not active "
+"during early WordPress loading."
+msgstr ""
+
+#: includes/class-php-config.php:660
+msgid "Failed to create backup for fatal error handler changes."
+msgstr ""
+
+#: includes/class-php-config.php:682
+msgid "Fatal error handler changes reverted: syntax validation failed."
+msgstr ""
+
+#: includes/class-php-config.php:696
+msgid "Fatal error handler changes reverted: constants validation failed."
+msgstr ""
+
+#: includes/class-php-config.php:707
+msgid ""
+"Fatal error handler changes applied successfully with enhanced protection."
+msgstr ""
+
+#: includes/class-plugin.php:83 includes/class-plugin.php:84
+#: admin/views/page-toolkit.php:76
 msgid "Morden Toolkit"
 msgstr ""
 
-#: includes/class-plugin.php:98 includes/class-plugin.php:99
-#: admin/views/page-logs.php:18
+#: includes/class-plugin.php:94 includes/class-plugin.php:95
+#: admin/views/page-logs.php:17
 msgid "Debug Logs"
 msgstr ""
 
-#: includes/class-plugin.php:107 includes/class-plugin.php:108
-#: admin/views/page-query-logs.php:18
+#: includes/class-plugin.php:103 includes/class-plugin.php:104
+#: admin/views/page-query-logs.php:17
 msgid "Query Logs"
 msgstr ""
 
-#: includes/class-plugin.php:152
+#: includes/class-plugin.php:112 includes/class-plugin.php:113
+#: admin/views/page-smtp-logs.php:16
+msgid "SMTP Logs"
+msgstr ""
+
+#: includes/class-plugin.php:160
 msgid "Are you sure you want to clear all debug logs?"
 msgstr ""
 
-#: includes/class-plugin.php:153
+#: includes/class-plugin.php:161
 msgid "Are you sure you want to restore this backup?"
 msgstr ""
 
-#: includes/class-plugin.php:154
+#: includes/class-plugin.php:162
 msgid "An error occurred. Please try again."
 msgstr ""
 
-#: includes/class-plugin.php:155
+#: includes/class-plugin.php:163
 msgid "Operation completed successfully."
 msgstr ""
 
-#: includes/class-plugin.php:182
+#: includes/class-plugin.php:193
 msgid "An error occurred"
 msgstr ""
 
-#: includes/class-plugin.php:183
+#: includes/class-plugin.php:194
 msgid "Are you sure you want to delete this?"
 msgstr ""
 
-#: includes/class-plugin.php:184
+#: includes/class-plugin.php:195
 msgid "Loading..."
 msgstr ""
 
-#: includes/class-plugin.php:229 includes/class-plugin.php:248
-#: includes/class-plugin.php:282 includes/class-plugin.php:296
-#: includes/class-plugin.php:305 includes/class-plugin.php:314
-#: includes/class-plugin.php:328 includes/class-plugin.php:342
-#: includes/class-plugin.php:408 includes/class-plugin.php:430
-#: includes/class-plugin.php:444 includes/class-plugin.php:459
-#: includes/class-plugin.php:474
+#: includes/class-plugin.php:261 includes/class-plugin.php:281
+#: includes/class-plugin.php:322 includes/class-plugin.php:337
+#: includes/class-plugin.php:347 includes/class-plugin.php:357
+#: includes/class-plugin.php:372 includes/class-plugin.php:387
+#: includes/class-plugin.php:402 includes/class-plugin.php:422
+#: includes/class-plugin.php:441 includes/class-plugin.php:464
+#: includes/class-plugin.php:487 includes/class-plugin.php:562
+#: includes/class-plugin.php:585 includes/class-plugin.php:600
+#: includes/class-plugin.php:625 includes/class-plugin.php:645
+#: includes/class-plugin.php:671 includes/class-plugin.php:701
+#: includes/class-plugin.php:716 includes/class-plugin.php:755
+#: includes/class-plugin.php:787 includes/class-plugin.php:812
+#: includes/class-plugin.php:823 includes/class-plugin.php:838
+#: includes/class-plugin.php:854
 msgid "Permission denied."
 msgstr ""
 
-#: includes/class-plugin.php:239
+#: includes/class-plugin.php:271
 msgid "Debug mode enabled."
 msgstr ""
 
-#: includes/class-plugin.php:239
+#: includes/class-plugin.php:271
 msgid "Debug mode disabled."
 msgstr ""
 
-#: includes/class-plugin.php:242
+#: includes/class-plugin.php:274
 msgid "Failed to toggle debug mode."
 msgstr ""
 
-#: includes/class-plugin.php:257
+#: includes/class-plugin.php:285
+msgid "Missing constant parameter."
+msgstr ""
+
+#: includes/class-plugin.php:296
 msgid "Invalid debug constant."
 msgstr ""
 
-#: includes/class-plugin.php:271
+#: includes/class-plugin.php:310
 #, php-format
 msgid "%s enabled."
 msgstr ""
 
-#: includes/class-plugin.php:271
+#: includes/class-plugin.php:310
 #, php-format
 msgid "%s disabled."
 msgstr ""
 
-#: includes/class-plugin.php:276
+#: includes/class-plugin.php:315
 msgid "Failed to toggle debug constant."
 msgstr ""
 
-#: includes/class-plugin.php:288
+#: includes/class-plugin.php:328
 msgid "Debug log cleared."
 msgstr ""
 
-#: includes/class-plugin.php:290
+#: includes/class-plugin.php:330
 msgid "Failed to clear debug log."
 msgstr ""
 
-#: includes/class-plugin.php:320
-msgid "Query logs cleared successfully."
+#: includes/class-plugin.php:363
+msgid "Active query log cleared successfully (content deleted)."
 msgstr ""
 
-#: includes/class-plugin.php:322
-msgid "Failed to clear query logs."
+#: includes/class-plugin.php:365
+msgid "Failed to clear active query log."
 msgstr ""
 
-#: includes/class-plugin.php:334
+#: includes/class-plugin.php:378
+msgid ""
+"All query logs cleared successfully (active content + rotation files "
+"removed)."
+msgstr ""
+
+#: includes/class-plugin.php:380
+msgid "Failed to clear all query logs."
+msgstr ""
+
+#: includes/class-plugin.php:393
+#, php-format
+msgid ""
+"Cleaned up %d rotation/archived log files (query.log.1, query.log.2, etc.). "
+"Active query.log preserved."
+msgstr ""
+
+#: includes/class-plugin.php:395
+msgid "Failed to cleanup rotation/archived logs."
+msgstr ""
+
+#: includes/class-plugin.php:413
+#, php-format
+msgid "Cleaned up %d old debug log files."
+msgstr ""
+
+#: includes/class-plugin.php:415
+msgid "Failed to cleanup old debug logs."
+msgstr ""
+
+#: includes/class-plugin.php:432
+#, php-format
+msgid "Cleared %d old debug log files. Current active log preserved."
+msgstr ""
+
+#: includes/class-plugin.php:434
+msgid "Failed to clear debug logs."
+msgstr ""
+
+#: includes/class-plugin.php:453
+#, php-format
+msgid "Removed all %d log files."
+msgstr ""
+
+#: includes/class-plugin.php:454
 #, php-format
 msgid "Cleaned up %d old log files."
 msgstr ""
 
-#: includes/class-plugin.php:336
-msgid "Failed to cleanup old logs."
+#: includes/class-plugin.php:457
+msgid "Failed to cleanup log files."
 msgstr ""
 
-#: includes/class-plugin.php:414
+#: includes/class-plugin.php:476
+#, php-format
+msgid ""
+"Cleaned up %d old rotation files. Latest backup (query.log.1) preserved."
+msgstr ""
+
+#: includes/class-plugin.php:477
+#, php-format
+msgid "Cleaned up %d rotation files."
+msgstr ""
+
+#: includes/class-plugin.php:480
+msgid "Failed to cleanup rotation log files."
+msgstr ""
+
+#: includes/class-plugin.php:568
 msgid "Query log file not found."
 msgstr ""
 
-#: includes/class-plugin.php:438
+#: includes/class-plugin.php:593
 msgid "Query Monitor enabled."
 msgstr ""
 
-#: includes/class-plugin.php:438
+#: includes/class-plugin.php:593
 msgid "Query Monitor disabled."
 msgstr ""
 
-#: includes/class-plugin.php:451
+#: includes/class-plugin.php:604
+msgid "Missing content parameter."
+msgstr ""
+
+#: includes/class-plugin.php:616
 msgid ".htaccess file saved successfully."
 msgstr ""
 
-#: includes/class-plugin.php:453
+#: includes/class-plugin.php:618
 msgid "Failed to save .htaccess file."
 msgstr ""
 
-#: includes/class-plugin.php:466
+#: includes/class-plugin.php:629
+msgid "Missing backup index parameter."
+msgstr ""
+
+#: includes/class-plugin.php:636
 msgid ".htaccess file restored successfully."
 msgstr ""
 
-#: includes/class-plugin.php:468
+#: includes/class-plugin.php:638
 msgid "Failed to restore .htaccess file."
 msgstr ""
 
-#: includes/class-plugin.php:482
+#: includes/class-plugin.php:649
+msgid "Missing preset parameter."
+msgstr ""
+
+#: includes/class-plugin.php:655
+msgid "Invalid preset value."
+msgstr ""
+
+#: includes/class-plugin.php:662
 msgid "PHP configuration applied successfully."
 msgstr ""
 
-#: includes/class-plugin.php:484
+#: includes/class-plugin.php:664
 msgid "Failed to apply PHP configuration."
+msgstr ""
+
+#: includes/class-plugin.php:675
+msgid "Missing settings parameter."
+msgstr ""
+
+#: includes/class-plugin.php:680
+msgid "Invalid settings data."
+msgstr ""
+
+#: includes/class-plugin.php:686
+msgid "Invalid configuration values."
+msgstr ""
+
+#: includes/class-plugin.php:695
+msgid "Custom preset saved successfully."
+msgstr ""
+
+#: includes/class-plugin.php:710
+msgid "Custom preset reset to default values."
+msgstr ""
+
+#: includes/class-plugin.php:780
+msgid "SMTP logging enabled."
+msgstr ""
+
+#: includes/class-plugin.php:780
+msgid "SMTP logging disabled."
+msgstr ""
+
+#: includes/class-plugin.php:805
+msgid "IP address logging enabled."
+msgstr ""
+
+#: includes/class-plugin.php:805
+msgid "IP address logging disabled."
+msgstr ""
+
+#: includes/class-plugin.php:829
+msgid "SMTP logs cleared successfully."
+msgstr ""
+
+#: includes/class-plugin.php:831
+msgid "Failed to clear SMTP logs."
+msgstr ""
+
+#: includes/class-plugin.php:845
+#, php-format
+msgid "Cleaned up %d old SMTP log files."
+msgstr ""
+
+#: includes/class-plugin.php:847
+msgid "Failed to cleanup old SMTP logs."
+msgstr ""
+
+#: includes/class-plugin.php:861
+msgid "SMTP log file not found."
 msgstr ""
 
 #: includes/class-htaccess.php:253
@@ -265,419 +497,837 @@ msgstr ""
 msgid "Security Headers"
 msgstr ""
 
-#: admin/views/page-toolkit.php:41
+#: admin/views/page-toolkit.php:57 admin/views/page-toolkit.php:492
+msgid "Memory Limit"
+msgstr ""
+
+#: admin/views/page-toolkit.php:58 admin/views/page-toolkit.php:493
+msgid "Upload Max Filesize"
+msgstr ""
+
+#: admin/views/page-toolkit.php:59 admin/views/page-toolkit.php:494
+msgid "Post Max Size"
+msgstr ""
+
+#: admin/views/page-toolkit.php:60 admin/views/page-toolkit.php:495
+msgid "Max Execution Time"
+msgstr ""
+
+#: admin/views/page-toolkit.php:61 admin/views/page-toolkit.php:496
+msgid "Max Input Vars"
+msgstr ""
+
+#: admin/views/page-toolkit.php:62 admin/views/page-toolkit.php:497
+msgid "Max Input Time"
+msgstr ""
+
+#: admin/views/page-toolkit.php:78
 msgid ""
 "Developer tools untuk WordPress: Debug Manager, Query Monitor, Htaccess "
 "Editor, PHP Config presets."
 msgstr ""
 
-#: admin/views/page-toolkit.php:48
+#: admin/views/page-toolkit.php:85
 msgid "Debug Management"
 msgstr ""
 
-#: admin/views/page-toolkit.php:52
+#: admin/views/page-toolkit.php:89
 msgid "Query Monitor"
 msgstr ""
 
-#: admin/views/page-toolkit.php:56
+#: admin/views/page-toolkit.php:93
 msgid "File Editor"
 msgstr ""
 
-#: admin/views/page-toolkit.php:60
+#: admin/views/page-toolkit.php:97
 msgid "PHP Config"
 msgstr ""
 
-#: admin/views/page-toolkit.php:70
+#: admin/views/page-toolkit.php:107
 msgid "Debug Mode Control"
 msgstr ""
 
-#: admin/views/page-toolkit.php:74 admin/views/page-logs.php:92
+#: admin/views/page-toolkit.php:116 admin/views/page-logs.php:91
 msgid "Enable Debug Mode"
 msgstr ""
 
-#: admin/views/page-toolkit.php:85
-msgid "Debug Settings"
+#: admin/views/page-toolkit.php:123
+msgid "WP Debug Settings"
 msgstr ""
 
-#: admin/views/page-toolkit.php:86
+#: admin/views/page-toolkit.php:124
 msgid "WordPress debug constants configuration"
 msgstr ""
 
-#: admin/views/page-toolkit.php:95
+#: admin/views/page-toolkit.php:133
 msgid "Log errors to file"
 msgstr ""
 
-#: admin/views/page-toolkit.php:105
+#: admin/views/page-toolkit.php:143
 msgid "Display errors on screen"
 msgstr ""
 
-#: admin/views/page-toolkit.php:115
+#: admin/views/page-toolkit.php:153
 msgid "Use unminified JS/CSS"
 msgstr ""
 
-#: admin/views/page-toolkit.php:125
+#: admin/views/page-toolkit.php:163
 msgid "Save database queries to query.log for analysis"
 msgstr ""
 
-#: admin/views/page-toolkit.php:135
+#: admin/views/page-toolkit.php:173
 msgid "Display PHP errors on screen"
 msgstr ""
 
-#: admin/views/page-toolkit.php:144
+#: admin/views/page-toolkit.php:181
+msgid "SMTP Debug Settings"
+msgstr ""
+
+#: admin/views/page-toolkit.php:182
+msgid "Email logging and monitoring configuration"
+msgstr ""
+
+#: admin/views/page-toolkit.php:197
+msgid "Log all email activity to smtp-ddmmyyyy.log files"
+msgstr ""
+
+#: admin/views/page-toolkit.php:211
+msgid "Include originating IP addresses in SMTP logs (requires SMTP logging)"
+msgstr ""
+
+#: admin/views/page-toolkit.php:220 admin/views/page-smtp-logs.php:82
 msgid "Status:"
 msgstr ""
 
-#: admin/views/page-toolkit.php:145
+#: admin/views/page-toolkit.php:221
 msgid "Debug Enabled"
 msgstr ""
 
-#: admin/views/page-toolkit.php:145
+#: admin/views/page-toolkit.php:221
 msgid "Debug Disabled"
 msgstr ""
 
-#: admin/views/page-toolkit.php:151
+#: admin/views/page-toolkit.php:227
 msgid "Debug Log Size:"
 msgstr ""
 
-#: admin/views/page-toolkit.php:153
+#: admin/views/page-toolkit.php:229
 msgid "View Debug Logs"
 msgstr ""
 
-#: admin/views/page-toolkit.php:160
-msgid "Query Logging:"
+#: admin/views/page-toolkit.php:231
+msgid "Clear all wp-errors-* log files except the currently active one"
 msgstr ""
 
-#: admin/views/page-toolkit.php:161
-msgid "Enabled"
-msgstr ""
-
-#: admin/views/page-toolkit.php:161
-msgid "Disabled"
-msgstr ""
-
-#: admin/views/page-toolkit.php:165
-msgid "Size:"
-msgstr ""
-
-#: admin/views/page-toolkit.php:167
-msgid "Auto-rotates at"
-msgstr ""
-
-#: admin/views/page-toolkit.php:172
-msgid "View Query Logs"
-msgstr ""
-
-#: admin/views/page-toolkit.php:183
-msgid "Performance Monitoring"
-msgstr ""
-
-#: admin/views/page-toolkit.php:187
-msgid "Enable Performance Bar"
-msgstr ""
-
-#: admin/views/page-toolkit.php:196
-msgid "Menampilkan bar performa di bagian bawah halaman untuk user yang login."
-msgstr ""
-
-#: admin/views/page-toolkit.php:201
-msgid "Frontend Display Preview"
-msgstr ""
-
-#: admin/views/page-toolkit.php:226
-msgid "Show for logged-in users only"
-msgstr ""
-
-#: admin/views/page-toolkit.php:235
-msgid ".htaccess Editor"
+#: admin/views/page-toolkit.php:233
+msgid "Clear All Logs"
 msgstr ""
 
 #: admin/views/page-toolkit.php:240
-msgid "Backups:"
+msgid "Query Logging:"
 msgstr ""
 
-#: admin/views/page-toolkit.php:246
-msgid "Last backup:"
+#: admin/views/page-toolkit.php:241 admin/views/page-toolkit.php:260
+msgid "Enabled"
 msgstr ""
 
-#: admin/views/page-toolkit.php:255
-msgid ".htaccess file is not writable. Please check file permissions."
+#: admin/views/page-toolkit.php:241 admin/views/page-toolkit.php:260
+msgid "Disabled"
 msgstr ""
 
-#: admin/views/page-toolkit.php:266
-msgid "Backup & Save"
+#: admin/views/page-toolkit.php:245 admin/views/page-smtp-logs.php:563
+msgid "Size:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:247
+msgid "Auto-rotates at"
+msgstr ""
+
+#: admin/views/page-toolkit.php:252
+msgid "View Query Logs"
+msgstr ""
+
+#: admin/views/page-toolkit.php:259
+msgid "SMTP Logging:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:264 admin/views/page-smtp-logs.php:57
+msgid "Today:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:267
+#, php-format
+msgid "%d log files"
 msgstr ""
 
 #: admin/views/page-toolkit.php:273
-msgid "Restore"
+msgid "View SMTP Logs"
+msgstr ""
+
+#: admin/views/page-toolkit.php:280
+msgid "Log Management"
+msgstr ""
+
+#: admin/views/page-toolkit.php:281
+msgid "Manage and cleanup log files created by the plugin."
+msgstr ""
+
+#: admin/views/page-toolkit.php:286
+msgid "Debug Logs Cleanup"
 msgstr ""
 
 #: admin/views/page-toolkit.php:287
-msgid "Cancel"
+msgid "Remove old wp-errors-* log files, keeping only the most recent ones."
+msgstr ""
+
+#: admin/views/page-toolkit.php:291
+msgid "Keep 1 file"
 msgstr ""
 
 #: admin/views/page-toolkit.php:292
-msgid "Common Snippets"
+msgid "Keep 3 files"
 msgstr ""
 
-#: admin/views/page-toolkit.php:307
-msgid "PHP Configuration Presets"
+#: admin/views/page-toolkit.php:293
+msgid "Keep 5 files"
 msgstr ""
 
-#: admin/views/page-toolkit.php:313
-msgid "Server Memory Information"
+#: admin/views/page-toolkit.php:297
+msgid "Cleanup Debug Logs"
 msgstr ""
 
-#: admin/views/page-toolkit.php:317
-msgid "Server Memory Limit:"
+#: admin/views/page-toolkit.php:304
+msgid "All Logs Cleanup"
+msgstr ""
+
+#: admin/views/page-toolkit.php:305
+msgid ""
+"Remove all log files created by the plugin (wp-errors-*, wp-queries-*, etc.)."
+msgstr ""
+
+#: admin/views/page-toolkit.php:310
+msgid "Include current active logs"
+msgstr ""
+
+#: admin/views/page-toolkit.php:314
+msgid "Remove All Logs"
 msgstr ""
 
 #: admin/views/page-toolkit.php:321
-msgid "Current Usage:"
+msgid "Query Log Rotation Cleanup"
 msgstr ""
 
-#: admin/views/page-toolkit.php:325
-msgid "Recommended Safe Limit:"
+#: admin/views/page-toolkit.php:322
+msgid ""
+"Remove old query log rotation files (query.log.1, query.log.2, etc.) that "
+"accumulate over time."
 msgstr ""
 
-#: admin/views/page-toolkit.php:334
+#: admin/views/page-toolkit.php:327
+msgid "Keep latest backup (query.log.1)"
+msgstr ""
+
+#: admin/views/page-toolkit.php:331
+msgid "Cleanup Rotation Files"
+msgstr ""
+
+#: admin/views/page-toolkit.php:343
+msgid "Performance Monitoring"
+msgstr ""
+
+#: admin/views/page-toolkit.php:347
+msgid "Enable Performance Bar"
+msgstr ""
+
+#: admin/views/page-toolkit.php:356
+msgid "Menampilkan bar performa di bagian bawah halaman untuk user yang login."
+msgstr ""
+
+#: admin/views/page-toolkit.php:361
+msgid "Frontend Display Preview"
+msgstr ""
+
+#: admin/views/page-toolkit.php:386
+msgid "Show for logged-in users only"
+msgstr ""
+
+#: admin/views/page-toolkit.php:395
+msgid ".htaccess Editor"
+msgstr ""
+
+#: admin/views/page-toolkit.php:400
+msgid "Backups:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:406
+msgid "Last backup:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:415
+msgid ".htaccess file is not writable. Please check file permissions."
+msgstr ""
+
+#: admin/views/page-toolkit.php:426
+msgid "Backup & Save"
+msgstr ""
+
+#: admin/views/page-toolkit.php:433
+msgid "Restore"
+msgstr ""
+
+#: admin/views/page-toolkit.php:447
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/page-toolkit.php:452
+msgid "Common Snippets"
+msgstr ""
+
+#: admin/views/page-toolkit.php:467
+msgid "PHP Configuration Presets"
+msgstr ""
+
+#: admin/views/page-toolkit.php:472
 msgid "Configuration Method:"
 msgstr ""
 
-#: admin/views/page-toolkit.php:340
+#: admin/views/page-toolkit.php:478
 msgid "Select Preset:"
 msgstr ""
 
-#: admin/views/page-toolkit.php:363
+#: admin/views/page-toolkit.php:488
+msgid "Custom Settings:"
+msgstr ""
+
+#: admin/views/page-toolkit.php:532
+msgid "Save Custom Settings"
+msgstr ""
+
+#: admin/views/page-toolkit.php:536
+msgid "Reset to Default"
+msgstr ""
+
+#: admin/views/page-toolkit.php:557
 msgid "Current Configuration"
 msgstr ""
 
-#: admin/views/page-toolkit.php:377
+#: admin/views/page-toolkit.php:571
 msgid "Apply Configuration"
 msgstr ""
 
-#: admin/views/page-toolkit.php:390
+#: admin/views/page-toolkit.php:584
 msgid "Processing..."
 msgstr ""
 
-#: admin/views/page-query-logs.php:20
+#: admin/views/page-query-logs.php:19
 msgid ""
 "View database query logs. SAVEQUERIES must be enabled to record queries."
 msgstr ""
 
-#: admin/views/page-query-logs.php:26
+#: admin/views/page-query-logs.php:25
 msgid "SAVEQUERIES is not enabled!"
 msgstr ""
 
-#: admin/views/page-query-logs.php:27
+#: admin/views/page-query-logs.php:26
 msgid "Database queries are not being recorded. "
 msgstr ""
 
-#: admin/views/page-query-logs.php:29 admin/views/page-query-logs.php:135
+#: admin/views/page-query-logs.php:28 admin/views/page-query-logs.php:134
 msgid "Enable SAVEQUERIES"
 msgstr ""
 
-#: admin/views/page-query-logs.php:39 admin/views/page-logs.php:27
+#: admin/views/page-query-logs.php:38 admin/views/page-smtp-logs.php:37
+#: admin/views/page-logs.php:26
 msgid "Refresh"
 msgstr ""
 
-#: admin/views/page-query-logs.php:43 admin/views/page-logs.php:31
+#: admin/views/page-query-logs.php:40
+msgid "Clear active query log content (empties query.log)"
+msgstr ""
+
+#: admin/views/page-query-logs.php:42 admin/views/page-smtp-logs.php:41
+#: admin/views/page-logs.php:30
 msgid "Clear"
 msgstr ""
 
-#: admin/views/page-query-logs.php:45
-msgid "Remove old backup log files"
+#: admin/views/page-query-logs.php:44
+msgid "Remove rotation/archived files (query.log.1, query.log.2, etc.)"
 msgstr ""
 
-#: admin/views/page-query-logs.php:47
+#: admin/views/page-query-logs.php:46 admin/views/page-smtp-logs.php:45
 msgid "Cleanup"
 msgstr ""
 
-#: admin/views/page-query-logs.php:51 admin/views/page-logs.php:35
+#: admin/views/page-query-logs.php:50 admin/views/page-smtp-logs.php:49
+#: admin/views/page-logs.php:34
 msgid "Download"
 msgstr ""
 
-#: admin/views/page-query-logs.php:59 admin/views/page-query-logs.php:232
+#: admin/views/page-query-logs.php:58 admin/views/page-query-logs.php:256
 msgid "Current:"
 msgstr ""
 
-#: admin/views/page-query-logs.php:64 admin/views/page-query-logs.php:237
+#: admin/views/page-query-logs.php:63 admin/views/page-query-logs.php:261
 msgid "Total (with backups):"
 msgstr ""
 
-#: admin/views/page-query-logs.php:70 admin/views/page-query-logs.php:242
+#: admin/views/page-query-logs.php:69 admin/views/page-query-logs.php:266
 msgid "Rotation at:"
 msgstr ""
 
-#: admin/views/page-query-logs.php:76 admin/views/page-query-logs.php:249
+#: admin/views/page-query-logs.php:75 admin/views/page-query-logs.php:273
 msgid "No query log file found"
 msgstr ""
 
-#: admin/views/page-query-logs.php:84 admin/views/page-logs.php:67
+#: admin/views/page-query-logs.php:83 admin/views/page-logs.php:66
 msgid "Time:"
 msgstr ""
 
-#: admin/views/page-query-logs.php:86 admin/views/page-logs.php:69
+#: admin/views/page-query-logs.php:85 admin/views/page-logs.php:68
 msgid "All Time"
 msgstr ""
 
-#: admin/views/page-query-logs.php:87 admin/views/page-logs.php:70
+#: admin/views/page-query-logs.php:86 admin/views/page-logs.php:69
 msgid "Last Hour"
 msgstr ""
 
-#: admin/views/page-query-logs.php:88 admin/views/page-logs.php:71
+#: admin/views/page-query-logs.php:87 admin/views/page-logs.php:70
 msgid "Last 24 Hours"
 msgstr ""
 
-#: admin/views/page-query-logs.php:89 admin/views/page-logs.php:72
+#: admin/views/page-query-logs.php:88 admin/views/page-logs.php:71
 msgid "Last 7 Days"
 msgstr ""
 
-#: admin/views/page-query-logs.php:94
+#: admin/views/page-query-logs.php:93
 msgid "Query Type:"
 msgstr ""
 
-#: admin/views/page-query-logs.php:96
+#: admin/views/page-query-logs.php:95
 msgid "All Types"
 msgstr ""
 
-#: admin/views/page-query-logs.php:97
+#: admin/views/page-query-logs.php:96
 msgid "SELECT"
 msgstr ""
 
-#: admin/views/page-query-logs.php:98
+#: admin/views/page-query-logs.php:97
 msgid "INSERT"
 msgstr ""
 
-#: admin/views/page-query-logs.php:99
+#: admin/views/page-query-logs.php:98
 msgid "UPDATE"
 msgstr ""
 
-#: admin/views/page-query-logs.php:100
+#: admin/views/page-query-logs.php:99
 msgid "DELETE"
 msgstr ""
 
-#: admin/views/page-query-logs.php:105
+#: admin/views/page-query-logs.php:104
 msgid "Performance:"
 msgstr ""
 
-#: admin/views/page-query-logs.php:107
+#: admin/views/page-query-logs.php:106
 msgid "All Queries"
 msgstr ""
 
-#: admin/views/page-query-logs.php:108
+#: admin/views/page-query-logs.php:107
 msgid "Slow Queries Only"
 msgstr ""
 
-#: admin/views/page-query-logs.php:109
+#: admin/views/page-query-logs.php:108
 msgid "Fast Queries Only"
 msgstr ""
 
-#: admin/views/page-query-logs.php:114 admin/views/page-logs.php:77
+#: admin/views/page-query-logs.php:113 admin/views/page-smtp-logs.php:92
+#: admin/views/page-logs.php:76
 msgid "Search:"
 msgstr ""
 
-#: admin/views/page-query-logs.php:115
+#: admin/views/page-query-logs.php:114
 msgid "Search in SQL or caller stack..."
 msgstr ""
 
-#: admin/views/page-query-logs.php:120
+#: admin/views/page-query-logs.php:119 admin/views/page-smtp-logs.php:98
 msgid "Clear Filters"
 msgstr ""
 
-#: admin/views/page-query-logs.php:130
+#: admin/views/page-query-logs.php:129
 msgid "No Query Logs Found"
 msgstr ""
 
-#: admin/views/page-query-logs.php:132
+#: admin/views/page-query-logs.php:131
 msgid "SAVEQUERIES is not enabled. Database queries are not being recorded."
 msgstr ""
 
-#: admin/views/page-query-logs.php:139
+#: admin/views/page-query-logs.php:138
 msgid ""
 "No database queries have been logged yet. Try visiting some pages first."
 msgstr ""
 
-#: admin/views/page-query-logs.php:145
+#: admin/views/page-query-logs.php:144
 msgid "Loading query logs..."
 msgstr ""
 
-#: admin/views/page-query-logs.php:273
-msgid "Are you sure you want to clear all query logs?"
+#: admin/views/page-query-logs.php:297
+msgid ""
+"Are you sure you want to clear the active query log? This will delete all "
+"recorded logs in query.log but keep rotation files (query.log.1, etc.)."
 msgstr ""
 
-#: admin/views/page-query-logs.php:292 admin/views/page-query-logs.php:385
+#: admin/views/page-query-logs.php:316 admin/views/page-query-logs.php:409
 msgid "No query log entries found."
 msgstr ""
 
-#: admin/views/page-query-logs.php:299 admin/views/page-query-logs.php:326
-#: admin/views/page-query-logs.php:375
+#: admin/views/page-query-logs.php:323 admin/views/page-query-logs.php:350
+#: admin/views/page-query-logs.php:399 admin/views/page-smtp-logs.php:236
+#: admin/views/page-smtp-logs.php:263 admin/views/page-smtp-logs.php:327
 msgid "Error occurred"
 msgstr ""
 
-#: admin/views/page-query-logs.php:306
-msgid "Are you sure you want to cleanup old backup log files?"
+#: admin/views/page-query-logs.php:330
+msgid ""
+"Are you sure you want to cleanup rotation/archived log files? This will "
+"remove query.log.1, query.log.2, etc. but keep the active query.log file."
 msgstr ""
 
-#: admin/views/page-logs.php:20
+#: admin/views/page-smtp-logs.php:18
+msgid ""
+"View email logs sent through WordPress. Enable logging to start recording "
+"email activity."
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:24
+msgid "SMTP logging is not enabled!"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:25
+msgid "Email logs are not being recorded. "
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:27 admin/views/page-smtp-logs.php:112
+msgid "Enable SMTP Logging"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:39
+msgid "Clear current day logs"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:43
+msgid "Remove old log files"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:62
+msgid "No log file for today"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:70
+msgid "Date:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:72
+msgid "Today"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:84
+msgid "All Status"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:85 admin/views/page-smtp-logs.php:131
+msgid "Sent"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:86 admin/views/page-smtp-logs.php:132
+msgid "Failed"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:87 admin/views/page-smtp-logs.php:133
+msgid "Queued"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:93
+msgid "Search sender, recipient, or subject..."
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:108
+msgid "No SMTP Logs Found"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:109
+msgid "SMTP logging is not enabled. Email activity is not being recorded."
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:119
+msgid "Loading SMTP logs..."
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:219
+msgid "Are you sure you want to clear today's SMTP logs?"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:246
+msgid "Keep logs for how many days?"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:306
+msgid ""
+"SMTP logging is disabled. Enable it in the Debug Management tab to start "
+"recording email activity."
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:337
+msgid "No SMTP log entries found."
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:370
+msgid "To:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:374
+msgid "CC:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:377
+msgid "BCC:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:382
+msgid "Message ID:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:385
+msgid "Reply-To:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:391
+msgid "Error:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:396
+msgid "Message Size:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:401
+msgid "Content Type:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:407
+msgid "Originating IP:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:413
+msgid "Email Source:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:415 admin/views/page-smtp-logs.php:544
+#: admin/views/page-smtp-logs.php:566
+msgid "Type:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:416
+msgid "Name:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:418 admin/views/page-smtp-logs.php:561
+msgid "File:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:421
+msgid "Line:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:424
+msgid "Function:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:427
+msgid "Class:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:431
+msgid "Plugin Version:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:434
+msgid "Theme Version:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:443
+msgid "WordPress Context:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:446
+msgid "URL:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:449
+msgid "User ID:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:452
+msgid "Request Method:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:455
+msgid "Admin Request:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:458
+msgid "AJAX Request:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:461
+msgid "Cron Request:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:470
+msgid "Memory Usage:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:477
+msgid "Source:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:484
+msgid "Email Headers:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:490
+msgid "Return-Path:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:493
+msgid "Message-ID:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:496
+msgid "In-Reply-To:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:499
+msgid "References:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:502
+msgid "Priority:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:523
+msgid "Raw Headers:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:524
+msgid "Show/Hide"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:525
+msgid "View Full"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:538
+msgid "Email Content:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:540
+msgid "View Full Content"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:547
+msgid "Format:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:556 admin/views/page-smtp-logs.php:578
+msgid "Attachments:"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:640
+msgid "Hide"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:643
+msgid "Show"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:693
+msgid "Full Email Headers"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:693
+msgid "Full Email Content"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:704
+msgid "Close"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:710 admin/views/page-smtp-logs.php:735
+msgid "Copy to Clipboard"
+msgstr ""
+
+#: admin/views/page-smtp-logs.php:733
+msgid "Copied!"
+msgstr ""
+
+#: admin/views/page-logs.php:19
 msgid "View dan manage WordPress debug logs."
 msgstr ""
 
-#: admin/views/page-logs.php:43
+#: admin/views/page-logs.php:42
 msgid "File Size:"
 msgstr ""
 
-#: admin/views/page-logs.php:48
+#: admin/views/page-logs.php:47
 msgid "No log file found"
 msgstr ""
 
-#: admin/views/page-logs.php:56
+#: admin/views/page-logs.php:55
 msgid "Level:"
 msgstr ""
 
-#: admin/views/page-logs.php:58
+#: admin/views/page-logs.php:57
 msgid "All Levels"
 msgstr ""
 
-#: admin/views/page-logs.php:59
+#: admin/views/page-logs.php:58
 msgid "Error"
 msgstr ""
 
-#: admin/views/page-logs.php:60
+#: admin/views/page-logs.php:59
 msgid "Warning"
 msgstr ""
 
-#: admin/views/page-logs.php:61
+#: admin/views/page-logs.php:60
 msgid "Notice"
 msgstr ""
 
-#: admin/views/page-logs.php:62
+#: admin/views/page-logs.php:61
 msgid "Deprecated"
 msgstr ""
 
-#: admin/views/page-logs.php:78
+#: admin/views/page-logs.php:77
 msgid "Search logs..."
 msgstr ""
 
-#: admin/views/page-logs.php:87
+#: admin/views/page-logs.php:86
 msgid "No Debug Logs Found"
 msgstr ""
 
-#: admin/views/page-logs.php:88
+#: admin/views/page-logs.php:87
 msgid "Debug logging is not enabled or no errors have been logged yet."
 msgstr ""
 
-#: admin/views/page-logs.php:100
+#: admin/views/page-logs.php:99
 msgid "Loading logs..."
 msgstr ""
 
-#: admin/views/page-logs.php:113
+#: admin/views/page-logs.php:112
 msgid "Previous"
 msgstr ""
 
-#: admin/views/page-logs.php:117
+#: admin/views/page-logs.php:116
 msgid "Next"
 msgstr ""
 
-#: admin/views/page-logs.php:162
+#: admin/views/page-logs.php:161
 msgid "No log entries found."
 msgstr ""
