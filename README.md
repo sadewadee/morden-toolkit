@@ -14,7 +14,7 @@ Morden Toolkit is a WordPress plugin that provides essential developer tools wit
 - **Safe configuration** - Auto-backup wp-config.php before modifications
 - **Clear debug logs** - Clean logs with one click
 
-### 📊 Query Monitor & Performance
+### Query Monitor & Performance
 - **Admin bar integration** - Performance metrics integrated with WordPress admin bar
 - **Unified display** - Execution time, memory usage, and query count in one indicator
 - **Query Monitor style** - Visual design consistent with popular developer tools
@@ -24,7 +24,7 @@ Morden Toolkit is a WordPress plugin that provides essential developer tools wit
 - **Mobile responsive** - Optimal display on all device sizes
 - **SMTP Logging** - Log all outgoing emails sent via `wp_mail` for easy debugging.
 
-### 📝 File Editor
+### File Editor
 - **Safe .htaccess editing** - Built-in syntax validation
 - **Auto-backup system** - Max 3 backups with timestamp
 - **One-click restore** - Rollback to previous backup
@@ -188,12 +188,12 @@ GPL v2 or later - see [LICENSE](LICENSE) file
 ## Support
 
 - **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/morden-pro/morden-toolkit/issues)
+- **Issues:** [GitHub Issues](https://github.com/sadewadee/morden-toolkit/issues)
 - **Support Forum:** [WordPress.org Support](https://wordpress.org/support/plugin/morden-toolkit/)
 
 ## Credits
 
-Developed by [Morden Pro](https://morden.pro) with focus on simplicity, safety, and developer experience.
+Developed by [Mordenhost Team](https://mordenhost.com) with focus on simplicity, safety, and developer experience.
 
 ---
 
