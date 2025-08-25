@@ -489,6 +489,72 @@ class MT_Debug {
     }
 
     /**
+     * Enhanced log parsing with improved caller stack
+     */
+    public function get_enhanced_debug_log_entries($limit = 50) {
+        $entries = $this->get_debug_log_entries($limit);
+
+        // Enhance each entry with better caller formatting
+        foreach ($entries as &$entry) {
+            if (!empty($entry['raw']) && strpos($entry['raw'], 'Caller:') !== false) {
+                // Extract caller information
+                if (preg_match('/Caller: (.+)$/', $entry['raw'], $matches)) {
+                    $raw_caller = trim($matches[1]);
+                    $entry['enhanced_caller'] = $this->format_caller_stack($raw_caller);
+                }
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Format a single log entry with enhanced caller information
+     */
+    public function format_enhanced_log_entry($entry) {
+        $output = array();
+
+        // Header with timestamp and level
+        $level_colors = array(
+            'ERROR' => '\033[1;31m',     // Bright red
+            'WARNING' => '\033[1;33m',   // Bright yellow
+            'NOTICE' => '\033[1;36m',    // Bright cyan
+            'DEPRECATED' => '\033[0;35m' // Purple
+        );
+
+        $reset = '\033[0m';
+        $level = $entry['level'] ?? 'NOTICE';
+        $color = $level_colors[$level] ?? $level_colors['NOTICE'];
+
+        $output[] = sprintf(
+            "[%s] %s%s%s: %s",
+            $entry['timestamp'] ?? 'Unknown',
+            $color,
+            $level,
+            $reset,
+            $entry['message'] ?? 'No message'
+        );
+
+        // File and line information
+        if (!empty($entry['file']) && !empty($entry['line'])) {
+            $output[] = sprintf("    File: %s:%s", $entry['file'], $entry['line']);
+        }
+
+        // Enhanced caller stack if available
+        if (!empty($entry['enhanced_caller'])) {
+            $output[] = "    Call Stack:";
+            $caller_lines = explode("\n", $entry['enhanced_caller']);
+            foreach ($caller_lines as $line) {
+                if (!empty(trim($line))) {
+                    $output[] = "    " . $line;
+                }
+            }
+        }
+
+        return implode("\n", $output);
+    }
+
+    /**
      * Parse single log line
      */
     private function parse_log_line($line) {
@@ -830,74 +896,104 @@ class MT_Debug {
 
     /**
      * Format caller stack trace for better readability
+     * Improved version with line splitting, bootstrap filtering, and colored output
      */
     private function format_caller_stack($raw_caller) {
         if (empty($raw_caller)) {
             return "No caller information available";
         }
 
-        // WordPress caller format is usually: func1, func2, func3, file:line, func4, func5
-        // We need to parse this properly and build a proper stack trace
+        // Parse and enhance the trace
+        $trace_entries = $this->parse_enhanced_trace($raw_caller);
 
-        $formatted_stack = $this->parse_wordpress_caller($raw_caller);
-
-        if (empty($formatted_stack)) {
+        if (empty($trace_entries)) {
             return $raw_caller; // Fallback to original if parsing fails
         }
 
-        return implode("\n", $formatted_stack);
+        // Format with colors and indentation
+        return $this->build_formatted_trace($trace_entries);
     }
 
     /**
-     * Parse WordPress caller format
+     * Parse enhanced trace with filtering and classification
      */
-    private function parse_wordpress_caller($caller) {
+    private function parse_enhanced_trace($caller) {
         // Split by comma and clean each part
         $parts = explode(',', $caller);
-        $stack_entries = array();
+        $trace_entries = array();
+        $prev_file_info = null;
 
-        foreach ($parts as $part) {
+        foreach ($parts as $i => $part) {
             $part = trim($part);
             if (empty($part)) continue;
 
             // Skip file includes like ('wp-load.php')
-            if (preg_match("/^\(['\"](.*?)['\"]?\)$/", $part, $matches)) {
+            if (preg_match("/^\(['\"](.+?)['\"]?\)$/", $part, $matches)) {
                 continue;
             }
 
-            // Parse function with potential file:line info
-            $entry = $this->parse_function_call($part);
-            if ($entry) {
-                $stack_entries[] = $entry;
+            // Check for file:line pattern
+            if (preg_match('/^(.+\.php):(\d+)$/', $part, $matches)) {
+                $prev_file_info = array(
+                    'file' => $matches[1],
+                    'line' => $matches[2]
+                );
+                continue;
             }
+
+            // Parse function call
+            $entry = $this->parse_enhanced_function_call($part, $prev_file_info);
+            if ($entry && $this->should_include_in_trace($entry)) {
+                $trace_entries[] = $entry;
+            }
+
+            $prev_file_info = null; // Reset after use
         }
 
-        return $stack_entries;
+        return $this->deduplicate_trace_entries($trace_entries);
     }
 
     /**
-     * Parse individual function call
+     * Parse enhanced function call with classification
      */
-    private function parse_function_call($call) {
+    private function parse_enhanced_function_call($call, $file_info = null) {
         $call = trim($call);
 
-        // Check if this looks like a file:line pattern
-        if (preg_match('/^(.+\.php):(\d+)$/', $call, $matches)) {
-            // This is file info for the previous function
-            return null; // We'll handle this differently
+        if (empty($call)) {
+            return null;
         }
 
         // Clean up function name
         $function_name = $this->normalize_function_name($call);
 
-        // Try to get file info from debug_backtrace if available
-        $file_info = $this->get_file_info_for_function($function_name);
-
-        if ($file_info) {
-            return $function_name . "()\n    " . $file_info;
-        } else {
-            return $function_name . "()";
+        if (empty($function_name)) {
+            return null;
         }
+
+        // Classify the function type
+        $type = $this->classify_function_type($function_name);
+
+        // Get file information
+        if ($file_info) {
+            $file_path = $file_info['file'];
+            $line_number = $file_info['line'];
+        } else {
+            $file_data = $this->get_enhanced_file_info($function_name);
+            $file_path = $file_data['file'] ?? null;
+            $line_number = $file_data['line'] ?? null;
+        }
+
+        // Apply namespace aliasing
+        $display_name = $this->apply_namespace_aliasing($function_name);
+
+        return array(
+            'function' => $function_name,
+            'display_name' => $display_name,
+            'type' => $type,
+            'file' => $file_path,
+            'line' => $line_number,
+            'is_plugin_entry' => $this->is_plugin_entry_point($function_name, $file_path)
+        );
     }
 
     /**
@@ -919,41 +1015,433 @@ class MT_Debug {
     }
 
     /**
-     * Get file info for a function (simplified approach)
+     * Classify function type for better filtering and display
      */
-    private function get_file_info_for_function($function_name) {
-        // This is a simplified approach - in real implementation,
-        // we would need to parse the caller string more intelligently
-        // to associate functions with their file locations
-
-        // Common WordPress core functions and their typical locations
-        $core_functions = array(
-            'update_meta_cache' => 'wp-includes/meta.php',
-            'get_metadata_raw' => 'wp-includes/meta.php',
-            'get_metadata' => 'wp-includes/meta.php',
-            'get_user_meta' => 'wp-includes/user.php',
-            'get_user_by' => 'wp-includes/pluggable.php',
-            'wp_validate_auth_cookie' => 'wp-includes/pluggable.php',
-            '_wp_get_current_user' => 'wp-includes/user.php',
-            'wp_get_current_user' => 'wp-includes/pluggable.php',
-            'apply_filters' => 'wp-includes/plugin.php',
-            'do_action' => 'wp-includes/plugin.php',
-            'WP_User->get_caps_data' => 'wp-includes/class-wp-user.php',
-            'WP_User->for_site' => 'wp-includes/class-wp-user.php',
-            'WP_User->init' => 'wp-includes/class-wp-user.php',
-            'WP_Hook->do_action' => 'wp-includes/class-wp-hook.php',
-            'WP_Hook->apply_filters' => 'wp-includes/class-wp-hook.php',
+    private function classify_function_type($function_name) {
+        // WordPress core wrapper/bootstrap functions to remove
+        $wp_wrappers = array(
+            'require', 'require_once', 'include', 'include_once',
+            "require('wp-blog-header.php')", "require_once('wp-load.php')",
+            "require_once('wp-config.php')", "require_once('wp-settings.php')",
+            'wp_initial_constants', 'wp_check_php_mysql_versions',
+            'wp_maintenance', 'timer_start', 'wp_debug_mode',
+            'wp_set_internal_encoding', 'wp_cache_init',
+            'wp_start_scraping_edited_file_errors', 'wp_load_alloptions',
+            'wp_start_object_cache', 'wp_not_installed', 'wp_blog_header',
+            'wp_loaded'
         );
 
-        // Check if we have file info for this function
-        foreach ($core_functions as $func => $file) {
-            if (strpos($function_name, $func) !== false || $func === $function_name) {
-                return $file;
+        // Hook functions (should be grouped)
+        $hook_functions = array(
+            'WP_Hook->do_action', 'WP_Hook->apply_filters',
+            'do_action', 'apply_filters', 'do_action_ref_array',
+            'apply_filters_ref_array'
+        );
+
+        // Check if it's a WordPress wrapper/bootstrap function
+        foreach ($wp_wrappers as $wrapper) {
+            if (strpos($function_name, $wrapper) !== false) {
+                return 'wp_wrapper';
             }
         }
 
-        return null;
+        // Check if it's a hook function
+        foreach ($hook_functions as $hook) {
+            if (strpos($function_name, $hook) !== false) {
+                return 'hook';
+            }
+        }
+
+        // Check for FQCN (Fully Qualified Class Name) with namespace
+        if (strpos($function_name, '\\') !== false) {
+            return 'fqcn_plugin';
+        }
+
+        // Plugin functions (non-core, non-vendor)
+        $plugin_patterns = array(
+            '/^MT_/', '/^mt_/', '/morden-toolkit/', '/class-.*\.php/',
+            '/^wpforms/', '/^woocommerce/', '/^yoast/', '/^elementor/',
+            '/^jetpack/', '/^gravityforms/', '/^acf/', '/^bbpress/',
+            '/^buddypress/', '/^wpcf7/', '/^wp_/', '/^WP_/',
+            '/plugins\/[^\/]+\/[^\/]+\.(php|inc)/',
+            '/themes\/[^\/]+\/functions\.php/'
+        );
+
+        // User/theme functions
+        $user_patterns = array(
+            '/themes\//', '/mu-plugins\//', '/uploads\//',
+            '/wp-content\/((?!plugins\/wordpress).)*/',
+            '/child-theme\//', '/custom\//', '/site-specific\//',
+            '/^custom_/', '/^theme_/', '/^child_/'
+        );
+
+        foreach ($plugin_patterns as $pattern) {
+            if (preg_match($pattern, $function_name)) {
+                return 'plugin';
+            }
+        }
+
+        foreach ($user_patterns as $pattern) {
+            if (preg_match($pattern, $function_name)) {
+                return 'user';
+            }
+        }
+
+        // Check if it's a WordPress core function (more comprehensive)
+        if (strpos($function_name, 'wp_') === 0 || strpos($function_name, 'WP_') === 0 ||
+            strpos($function_name, '_wp_') === 0 || strpos($function_name, 'wp-') !== false ||
+            strpos($function_name, 'get_') === 0 || strpos($function_name, 'is_') === 0 ||
+            strpos($function_name, 'has_') === 0 || strpos($function_name, 'the_') === 0 ||
+            strpos($function_name, 'wp-includes/') !== false ||
+            strpos($function_name, 'wp-admin/') !== false) {
+            return 'core';
+        }
+
+        // Check for vendor/composer functions
+        if (strpos($function_name, 'vendor/') !== false ||
+            strpos($function_name, 'Composer\\') !== false ||
+            strpos($function_name, 'Symfony\\') !== false ||
+            strpos($function_name, 'Psr\\') !== false) {
+            return 'vendor';
+        }
+
+        return 'unknown';
     }
+
+
+
+    /**
+     * Check if function should be included in trace (filtering logic)
+     */
+    private function should_include_in_trace($entry) {
+        if (!is_array($entry)) {
+            return false;
+        }
+
+        $type = $entry['type'] ?? 'unknown';
+        $function = $entry['function'] ?? '';
+
+        // Always include plugin entry points
+        if ($entry['is_plugin_entry'] ?? false) {
+            return true;
+        }
+
+        // Skip WordPress wrappers and vendor functions
+        if (in_array($type, array('wp_wrapper', 'vendor'))) {
+            return false;
+        }
+
+        // Include FQCN plugin functions (they're important)
+        if ($type === 'fqcn_plugin') {
+            return true;
+        }
+
+        // Skip bootstrap functions unless they're plugin-related
+        if ($type === 'bootstrap' && $entry['type'] !== 'plugin') {
+            return false;
+        }
+
+        // Include user and plugin functions
+        if (in_array($type, array('user', 'plugin'))) {
+            return true;
+        }
+
+        // Include important core functions but not repetitive hooks
+        if ($type === 'core') {
+            $important_functions = array(
+                'wp_die', 'wp_redirect', 'wp_enqueue_script',
+                'wp_enqueue_style', 'wp_head', 'wp_footer',
+                'current_user_can', 'get_user_by', 'wp_validate_auth_cookie',
+                'get_user_meta', 'get_metadata', 'WP_User'
+            );
+
+            foreach ($important_functions as $important) {
+                if (strpos($function, $important) !== false) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Limit hook functions but include some important ones
+        if ($type === 'hook') {
+            // Include hook functions with specific action names
+            if (preg_match('/(plugins_loaded|init|wp_loaded|admin_init|wpforms_loaded)/', $function)) {
+                return true;
+            }
+            return false;
+        }
+
+        return $type !== 'unknown'; // Include everything except unknown by default
+    }
+
+    /**
+     * Remove duplicate consecutive entries
+     */
+    private function deduplicate_trace_entries($entries) {
+        if (empty($entries)) {
+            return $entries;
+        }
+
+        $deduplicated = array();
+        $prev_function = null;
+        $consecutive_count = 0;
+
+        foreach ($entries as $entry) {
+            $current_function = $entry['function'] ?? '';
+
+            if ($current_function === $prev_function) {
+                $consecutive_count++;
+                if ($consecutive_count <= 2) { // Allow up to 2 consecutive
+                    $deduplicated[] = $entry;
+                } elseif ($consecutive_count === 3) {
+                    // Add "repeated" indicator
+                    $deduplicated[] = array(
+                        'function' => '... (repeated)',
+                        'display_name' => '... (repeated)',
+                        'type' => 'repeat',
+                        'file' => null,
+                        'line' => null
+                    );
+                }
+            } else {
+                $consecutive_count = 1;
+                $deduplicated[] = $entry;
+            }
+
+            $prev_function = $current_function;
+        }
+
+        return $deduplicated;
+    }
+
+    /**
+     * Apply namespace aliasing for better readability
+     */
+    private function apply_namespace_aliasing($function_name) {
+        // Handle FQCN (Fully Qualified Class Names) with namespaces
+        if (strpos($function_name, '\\') !== false) {
+            // Extract namespace and convert to plugin alias
+            if (preg_match('/^([^\\\\]+)\\\\(.+)$/', $function_name, $matches)) {
+                $namespace = $matches[1];
+                $class_method = $matches[2];
+
+                // Handle closures and anonymous functions
+                if (strpos($class_method, '{closure}') !== false) {
+                    return $namespace . ' → anon-function';
+                }
+
+                // Handle regular class methods
+                if (strpos($class_method, '->') !== false || strpos($class_method, '::') !== false) {
+                    return $namespace . ' → ' . $class_method;
+                }
+
+                // Just the class name
+                return $namespace . ' → ' . $class_method;
+            }
+        }
+
+        $aliases = array(
+            // Plugin namespace aliases
+            'MT_Plugin' => 'Plugin',
+            'MT_Debug' => 'Debug',
+            'MT_Query_Monitor' => 'QueryMonitor',
+            'MT_Htaccess' => 'Htaccess',
+            'MT_PHP_Config' => 'PhpConfig',
+            'MT_SMTP_Logger' => 'SmtpLogger',
+            'MT_WP_Config_Integration' => 'WpConfigIntegration',
+            'MT_File_Manager' => 'FileManager',
+
+            // WordPress core aliases
+            'WP_Hook->do_action' => 'Hook::do_action',
+            'WP_Hook->apply_filters' => 'Hook::apply_filters',
+            'WP_User->get_caps_data' => 'User::get_caps_data',
+            'WP_User->for_site' => 'User::for_site',
+            'WP_User->init' => 'User::init',
+            'WP_User::get_data_by' => 'User::get_data_by'
+        );
+
+        foreach ($aliases as $original => $alias) {
+            if (strpos($function_name, $original) !== false) {
+                return str_replace($original, $alias, $function_name);
+            }
+        }
+
+        // Shorten long file paths
+        $function_name = str_replace('/wp-content/plugins/morden-toolkit/', 'MT/', $function_name);
+        $function_name = str_replace('/wp-includes/', 'WP/', $function_name);
+        $function_name = str_replace('/wp-admin/', 'Admin/', $function_name);
+        $function_name = str_replace('/wp-content/plugins/', 'Plugin/', $function_name);
+        $function_name = str_replace('/wp-content/themes/', 'Theme/', $function_name);
+
+        return $function_name;
+    }
+
+    /**
+     * Detect plugin entry points
+     */
+    private function is_plugin_entry_point($function_name, $file_path = null) {
+        $entry_patterns = array(
+            // Plugin initialization functions
+            'mt_init', 'MT_Plugin::get_instance', 'register_activation_hook',
+            'register_deactivation_hook', 'add_action', 'add_filter',
+
+            // AJAX handlers
+            'wp_ajax_', 'wp_ajax_nopriv_',
+
+            // Plugin class constructors
+            'MT_Plugin->__construct', 'MT_Debug->__construct'
+        );
+
+        foreach ($entry_patterns as $pattern) {
+            if (strpos($function_name, $pattern) !== false) {
+                return true;
+            }
+        }
+
+        // Check file path for plugin entry
+        if ($file_path && strpos($file_path, 'morden-toolkit') !== false) {
+            $entry_files = array('morden-toolkit.php', 'class-plugin.php');
+            foreach ($entry_files as $file) {
+                if (strpos($file_path, $file) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Build formatted trace with colors and indentation
+     */
+    private function build_formatted_trace($trace_entries) {
+        if (empty($trace_entries)) {
+            return "No trace information available";
+        }
+
+        $output = array();
+
+        foreach ($trace_entries as $i => $entry) {
+            $line = $this->format_trace_entry($entry, $i);
+            if (!empty($line)) {
+                $output[] = $line;
+            }
+        }
+
+        return implode("\n", $output);
+    }
+
+    /**
+     * Format individual trace entry with colors and indentation
+     */
+    private function format_trace_entry($entry, $index) {
+        if (!is_array($entry)) {
+            return '';
+        }
+
+        $function = $entry['display_name'] ?? $entry['function'] ?? 'unknown';
+        $type = $entry['type'] ?? 'unknown';
+        $file = $entry['file'] ?? null;
+        $line = $entry['line'] ?? null;
+        $is_entry = $entry['is_plugin_entry'] ?? false;
+
+        // Color coding based on type
+        $colors = array(
+            'plugin' => '\033[1;32m',        // Bright green
+            'fqcn_plugin' => '\033[1;32m',   // Bright green for FQCN plugins
+            'user' => '\033[1;34m',          // Bright blue
+            'core' => '\033[0;37m',          // Light gray
+            'hook' => '\033[0;33m',          // Yellow
+            'wp_wrapper' => '\033[0;90m',    // Dark gray
+            'vendor' => '\033[0;35m',        // Purple
+            'bootstrap' => '\033[0;90m',     // Dark gray
+            'repeat' => '\033[0;90m',        // Dark gray
+            'unknown' => '\033[0;37m'        // Light gray
+        );
+
+        $reset = '\033[0m';
+        $color = $colors[$type] ?? $colors['unknown'];
+
+        // Build the line
+        $output = sprintf("%s%2d. %s%s%s()%s",
+            $is_entry ? '>>> ' : '    ',
+            $index + 1,
+            $color,
+            $function,
+            $reset,
+            $is_entry ? ' [ENTRY]' : ''
+        );
+
+        // Add file information if available
+        if ($file || $line) {
+            $file_info = '';
+            if ($file) {
+                $file_info .= basename($file);
+            }
+            if ($line) {
+                $file_info .= ':' . $line;
+            }
+            $output .= "\n      " . $color . "-> " . $file_info . $reset;
+        }
+
+        return $output;
+    }
+
+    /**
+     * Get enhanced file information with line numbers
+     */
+    private function get_enhanced_file_info($function_name) {
+        // This extends the original get_file_info_for_function with more complete mapping
+        $enhanced_map = array(
+            // Plugin functions with line numbers
+            'mt_init' => array('file' => 'morden-toolkit.php', 'line' => 45),
+            'MT_Plugin::get_instance' => array('file' => 'includes/class-plugin.php', 'line' => 26),
+            'MT_Plugin->__construct' => array('file' => 'includes/class-plugin.php', 'line' => 35),
+            'MT_Plugin->init_services' => array('file' => 'includes/class-plugin.php', 'line' => 72),
+            'MT_Debug->__construct' => array('file' => 'includes/class-debug.php', 'line' => 23),
+            'MT_Query_Monitor->__construct' => array('file' => 'includes/class-query-monitor.php', 'line' => 23),
+
+            // WordPress core functions
+            'update_meta_cache' => array('file' => 'wp-includes/meta.php', 'line' => 1189),
+            'get_metadata_raw' => array('file' => 'wp-includes/meta.php', 'line' => 659),
+            'get_metadata' => array('file' => 'wp-includes/meta.php', 'line' => 586),
+            'get_user_meta' => array('file' => 'wp-includes/user.php', 'line' => 1271),
+            'get_user_by' => array('file' => 'wp-includes/pluggable.php', 'line' => 109),
+            'wp_validate_auth_cookie' => array('file' => 'wp-includes/pluggable.php', 'line' => 750),
+            '_wp_get_current_user' => array('file' => 'wp-includes/user.php', 'line' => 3753),
+            'wp_get_current_user' => array('file' => 'wp-includes/pluggable.php', 'line' => 70),
+            'is_user_logged_in' => array('file' => 'wp-includes/pluggable.php', 'line' => 1234),
+            'apply_filters' => array('file' => 'wp-includes/plugin.php', 'line' => 205),
+            'do_action' => array('file' => 'wp-includes/plugin.php', 'line' => 456),
+            'WP_User->get_caps_data' => array('file' => 'wp-includes/class-wp-user.php', 'line' => 906),
+            'WP_User->for_site' => array('file' => 'wp-includes/class-wp-user.php', 'line' => 881),
+            'WP_User->init' => array('file' => 'wp-includes/class-wp-user.php', 'line' => 185),
+            'WP_Hook->do_action' => array('file' => 'wp-includes/class-wp-hook.php', 'line' => 312),
+            'WP_Hook->apply_filters' => array('file' => 'wp-includes/class-wp-hook.php', 'line' => 324),
+            'get_option' => array('file' => 'wp-includes/option.php', 'line' => 143),
+            'update_option' => array('file' => 'wp-includes/option.php', 'line' => 416),
+            'get_site_option' => array('file' => 'wp-includes/option.php', 'line' => 1502),
+            'get_user_locale' => array('file' => 'wp-includes/l10n.php', 'line' => 98),
+            'determine_locale' => array('file' => 'wp-includes/l10n.php', 'line' => 153),
+            'load_default_textdomain' => array('file' => 'wp-includes/l10n.php', 'line' => 954)
+        );
+
+        // Exact match
+        if (isset($enhanced_map[$function_name])) {
+            return $enhanced_map[$function_name];
+        }
+
+        // Partial match for class methods
+        foreach ($enhanced_map as $pattern => $info) {
+            if (strpos($function_name, $pattern) !== false) {
+                return $info;
+            }
+        }
+
+        return array('file' => null, 'line' => null);
+    }
+
 
     /**
      * Enhance caller information with simulated backtrace

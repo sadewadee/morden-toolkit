@@ -118,7 +118,7 @@ class MT_Query_Monitor {
         $this->metrics['execution_time'] = $this->metrics['end_time'] - $this->metrics['start_time'];
         $this->metrics['memory_usage'] = $this->metrics['end_memory'] - $this->metrics['start_memory'];
         $this->metrics['peak_memory'] = memory_get_peak_usage();
-        
+
         // Use more accurate query count calculation
         if (defined('SAVEQUERIES') && SAVEQUERIES && !empty($wpdb->queries)) {
             $this->metrics['query_count'] = count($wpdb->queries);
@@ -153,12 +153,12 @@ class MT_Query_Monitor {
      */
     private function get_accurate_query_count($metrics) {
         global $wpdb;
-        
+
         // Prioritize SAVEQUERIES data for accuracy
         if (defined('SAVEQUERIES') && SAVEQUERIES && !empty($wpdb->queries)) {
             return count($wpdb->queries);
         }
-        
+
         // Fallback to stored metrics
         return isset($metrics['query_count']) ? $metrics['query_count'] : 0;
     }
@@ -298,6 +298,36 @@ class MT_Query_Monitor {
                             }
                             ?>
                         </li>
+                        <li class="mt-perf-tab" data-tab="images">
+                            <span class="dashicons dashicons-format-image"></span>
+                            <?php
+                            if (function_exists('_e')) {
+                                _e('Images', 'morden-toolkit');
+                            } else {
+                                echo 'Images';
+                            }
+                            ?>
+                        </li>
+                        <li class="mt-perf-tab" data-tab="hooks">
+                            <span class="dashicons dashicons-admin-tools"></span>
+                            <?php
+                            if (function_exists('_e')) {
+                                _e('Hooks & Actions', 'morden-toolkit');
+                            } else {
+                                echo 'Hooks & Actions';
+                            }
+                            ?>
+                        </li>
+                        <li class="mt-perf-tab" data-tab="env">
+                            <span class="dashicons dashicons-admin-settings"></span>
+                            <?php
+                            if (function_exists('_e')) {
+                                _e('ENV', 'morden-toolkit');
+                            } else {
+                                echo 'ENV';
+                            }
+                            ?>
+                        </li>
                         <?php endif; ?>
                     </ul>
                 </div>
@@ -422,6 +452,45 @@ class MT_Query_Monitor {
                         ?></h4>
                         <div class="mt-styles-container">
                             <?php $this->render_styles_tab(); ?>
+                        </div>
+                    </div>
+                    <!-- Images Tab -->
+                    <div id="mt-perf-tab-images" class="mt-perf-tab-content">
+                        <h4><?php
+                        if (function_exists('_e')) {
+                            _e('Loaded Images', 'morden-toolkit');
+                        } else {
+                            echo 'Loaded Images';
+                        }
+                        ?></h4>
+                        <div class="mt-images-container">
+                            <?php $this->render_images_tab(); ?>
+                        </div>
+                    </div>
+                    <!-- Hooks & Actions Tab -->
+                    <div id="mt-perf-tab-hooks" class="mt-perf-tab-content">
+                        <h4><?php
+                        if (function_exists('_e')) {
+                            _e('WordPress Hooks & Actions', 'morden-toolkit');
+                        } else {
+                            echo 'WordPress Hooks & Actions';
+                        }
+                        ?></h4>
+                        <div class="mt-hooks-container">
+                            <?php $this->render_hooks_tab(); ?>
+                        </div>
+                    </div>
+                    <!-- ENV Tab -->
+                    <div id="mt-perf-tab-env" class="mt-perf-tab-content">
+                        <h4><?php
+                        if (function_exists('_e')) {
+                            _e('Environment Configuration', 'morden-toolkit');
+                        } else {
+                            echo 'Environment Configuration';
+                        }
+                        ?></h4>
+                        <div class="mt-env-container">
+                            <?php $this->render_env_tab(); ?>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -589,7 +658,7 @@ class MT_Query_Monitor {
             echo '<td class="query-number">' . ($index + 1) . '</td>';
             echo '<td class="query-time">';
             if ($time > 0.05) {
-                echo '<span class="slow-indicator" title="Slow Query">⚠️</span> ';
+                echo '<span class="slow-indicator" title="Slow Query"><span class="dashicons dashicons-warning"></span></span> ';
             }
             echo (function_exists('esc_html') ? esc_html($time_formatted) : htmlspecialchars($time_formatted)) . '</td>';
             echo '<td class="query-sql">';
@@ -600,7 +669,9 @@ class MT_Query_Monitor {
             echo '</button>';
             echo '</div>';
             echo '</td>';
-            echo '<td class="query-caller">' . (function_exists('esc_html') ? esc_html($stack) : htmlspecialchars($stack)) . '</td>';
+            // Format caller stack using enhanced formatting from MT_Debug
+            $formatted_stack = $this->format_enhanced_caller_stack($stack);
+            echo '<td class="query-caller">' . $formatted_stack . '</td>';
             echo '</tr>';
         }
 
@@ -1049,5 +1120,82 @@ class MT_Query_Monitor {
         if (strpos($sql, 'DESCRIBE') === 0) return 'DESCRIBE';
 
         return 'OTHER';
+    }
+
+    /**
+     * Format enhanced caller stack using MT_Debug functionality
+     */
+    private function format_enhanced_caller_stack($stack) {
+        if (empty($stack)) {
+            return '<span style="color: #999; font-style: italic;">No stack trace available</span>';
+        }
+
+        // Get or create MT_Debug instance to use enhanced formatting
+        if (class_exists('MT_Debug')) {
+            static $debug_instance = null;
+            if ($debug_instance === null) {
+                $debug_instance = new MT_Debug();
+            }
+
+            // Use reflection to access the private format_caller_stack method
+            try {
+                $reflection = new ReflectionClass($debug_instance);
+                $method = $reflection->getMethod('format_caller_stack');
+                $method->setAccessible(true);
+                $formatted = $method->invokeArgs($debug_instance, array($stack));
+
+                // Convert ANSI color codes to HTML styling for web display
+                $formatted = $this->convert_ansi_to_html($formatted);
+
+                // Add HTML wrapper for query monitor display
+                return '<div class="enhanced-caller-stack">' . $formatted . '</div>';
+            } catch (Exception $e) {
+                // Fallback to simple display if reflection fails
+                return (function_exists('esc_html') ? esc_html($stack) : htmlspecialchars($stack));
+            }
+        }
+
+        // Fallback to simple display if MT_Debug is not available
+        return (function_exists('esc_html') ? esc_html($stack) : htmlspecialchars($stack));
+    }
+
+    /**
+     * Convert ANSI color codes to HTML styling
+     */
+    private function convert_ansi_to_html($text) {
+        // Handle both escaped strings (\033) and actual ANSI escape codes (\x1b[)
+        $html = $text;
+
+        // First pass: Handle literal \033 strings (from string output)
+        $html = preg_replace('/\\\\033\[1;32m([^\\\\]+?)\\\\033\[0m/', '<span class="caller-entry plugin">$1</span>', $html);
+        $html = preg_replace('/\\\\033\[0;37m([^\\\\]+?)\\\\033\[0m/', '<span class="caller-entry core">$1</span>', $html);
+        $html = preg_replace('/\\\\033\[1;34m([^\\\\]+?)\\\\033\[0m/', '<span class="caller-entry user">$1</span>', $html);
+        $html = preg_replace('/\\\\033\[0;33m([^\\\\]+?)\\\\033\[0m/', '<span class="caller-entry hook">$1</span>', $html);
+        $html = preg_replace('/\\\\033\[0;90m([^\\\\]+?)\\\\033\[0m/', '<span class="caller-entry bootstrap">$1</span>', $html);
+        $html = preg_replace('/\\\\033\[0;36m([^\\\\]+?)\\\\033\[0m/', '<span class="caller-entry vendor">$1</span>', $html);
+
+        // Second pass: Handle actual ANSI escape codes (\x1b[)
+        $html = preg_replace('/\x1b\[1;32m([^\x1b]+?)\x1b\[0m/', '<span class="caller-entry plugin">$1</span>', $html);
+        $html = preg_replace('/\x1b\[0;37m([^\x1b]+?)\x1b\[0m/', '<span class="caller-entry core">$1</span>', $html);
+        $html = preg_replace('/\x1b\[1;34m([^\x1b]+?)\x1b\[0m/', '<span class="caller-entry user">$1</span>', $html);
+        $html = preg_replace('/\x1b\[0;33m([^\x1b]+?)\x1b\[0m/', '<span class="caller-entry hook">$1</span>', $html);
+        $html = preg_replace('/\x1b\[0;90m([^\x1b]+?)\x1b\[0m/', '<span class="caller-entry bootstrap">$1</span>', $html);
+        $html = preg_replace('/\x1b\[0;36m([^\x1b]+?)\x1b\[0m/', '<span class="caller-entry vendor">$1</span>', $html);
+
+        // Clean up any remaining ANSI codes
+        $html = preg_replace('/\\\\033\[[0-9;]*m/', '', $html);
+        $html = preg_replace('/\x1b\[[0-9;]*m/', '', $html);
+
+        // Remove any remaining decorative borders
+        $html = preg_replace('/={50,}/', '', $html);
+        $html = preg_replace('/^\s*CALLER STACK TRACE\s*$/m', '', $html);
+        $html = trim($html);
+
+        // Handle entry prefixes and file info
+        $html = preg_replace('/^(>>>\s+)(\d+\.)/m', '<span class="entry-prefix">$1</span>$2', $html);
+        $html = preg_replace('/(\[ENTRY\])/', '<span class="entry-tag">$1</span>', $html);
+        $html = preg_replace('/(-> [^\n]+)/', '<span class="file-info">$1</span>', $html);
+
+        return $html;
     }
 }

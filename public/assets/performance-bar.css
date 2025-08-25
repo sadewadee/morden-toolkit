@@ -80,7 +80,7 @@
 .mt-perf-details-content {
     margin: 0 auto !important;
     display: flex !important;
-    max-height: 50vh;
+    max-height: 50vh !important;
 }
 
 /* Sidebar Tabs */
@@ -649,6 +649,66 @@ body.admin-bar.mt-perf-active {
     width: 200px !important;
     font-size: 11px !important;
     color: #a0a5aa !important;
+}
+
+/* Enhanced Caller Stack Styling */
+.enhanced-caller-stack {
+    font-family: 'SFMono-Regular', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+    white-space: pre-line !important;
+    line-height: 1.4 !important;
+    font-size: 10px !important;
+}
+
+.enhanced-caller-stack .caller-header {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-bottom: 1px solid #464b50 !important;
+    padding-bottom: 2px !important;
+    margin-bottom: 4px !important;
+}
+
+.enhanced-caller-stack .caller-entry {
+    margin-bottom: 2px !important;
+}
+
+.enhanced-caller-stack .caller-entry.plugin {
+    color: #00d084 !important;
+}
+
+.enhanced-caller-stack .caller-entry.user {
+    color: #72aee6 !important;
+}
+
+.enhanced-caller-stack .caller-entry.core {
+    color: #a0a5aa !important;
+}
+
+.enhanced-caller-stack .caller-entry.hook {
+    color: #dba617 !important;
+}
+
+.enhanced-caller-stack .caller-entry.bootstrap {
+    color: #646970 !important;
+}
+
+.enhanced-caller-stack .caller-entry .entry-prefix {
+    color: #0073aa !important;
+    font-weight: 600 !important;
+}
+
+.enhanced-caller-stack .caller-entry .entry-tag {
+    background: #0073aa !important;
+    color: #ffffff !important;
+    padding: 1px 3px !important;
+    border-radius: 2px !important;
+    font-size: 9px !important;
+    margin-left: 4px !important;
+}
+
+.enhanced-caller-stack .caller-entry .file-info {
+    color: #8c8f94 !important;
+    font-style: italic !important;
+    margin-left: 8px !important;
 }
 
 /* Slow query styling */

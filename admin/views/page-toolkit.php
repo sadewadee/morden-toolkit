@@ -362,17 +362,17 @@ $setting_units = array(
                     <div class="mt-performance-preview">
                         <div class="mt-perf-preview-bar">
                             <div class="mt-perf-item">
-                                <span>🔄</span>
+                                <span class="dashicons dashicons-update"></span>
                                 <span class="value">15</span>
                                 <span class="label">queries</span>
                             </div>
                             <div class="mt-perf-item">
-                                <span>⏱️</span>
+                                <span class="dashicons dashicons-clock"></span>
                                 <span class="value">1.2s</span>
                                 <span class="label">time</span>
                             </div>
                             <div class="mt-perf-item">
-                                <span>💾</span>
+                                <span class="dashicons dashicons-database"></span>
                                 <span class="value">45.2MB</span>
                                 <span class="label">memory</span>
                             </div>

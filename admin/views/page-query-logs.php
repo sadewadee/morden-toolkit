@@ -550,7 +550,7 @@ function displayQueryDetailsTable(entry, targetId) {
         html += '<td class="query-number">' + queryNumber + '</td>';
         html += '<td class="query-time">';
         if (query.is_slow) {
-            html += '<span class="slow-indicator" title="Slow Query">⚠️</span> ';
+            html += '<span class="slow-indicator" title="Slow Query"><span class="dashicons dashicons-warning"></span></span> ';
         }
         html += query.time + '</td>';
         html += '<td class="query-sql">';
