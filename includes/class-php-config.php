@@ -6,49 +6,6 @@ if (!defined('ABSPATH')) {
 // Include WP Config Integration for safe wp-config.php editing
 require_once MT_PLUGIN_DIR . 'includes/class-wp-config-integration.php';
 
-// WordPress function fallbacks for standalone usage
-if (!function_exists('get_option')) {
-    function get_option($option, $default = false) {
-        return $default;
-    }
-}
-
-if (!function_exists('update_option')) {
-    function update_option($option, $value, $autoload = null) {
-        return true;
-    }
-}
-
-if (!function_exists('wp_remote_get')) {
-    function wp_remote_get($url, $args = array()) {
-        return array('response' => array('code' => 200), 'body' => '');
-    }
-}
-
-if (!function_exists('is_wp_error')) {
-    function is_wp_error($thing) {
-        return false;
-    }
-}
-
-if (!function_exists('wp_remote_retrieve_response_code')) {
-    function wp_remote_retrieve_response_code($response) {
-        return isset($response['response']['code']) ? $response['response']['code'] : 200;
-    }
-}
-
-if (!function_exists('__')) {
-    function __($text, $domain = 'default') {
-        return $text;
-    }
-}
-
-if (!function_exists('sanitize_text_field')) {
-    function sanitize_text_field($str) {
-        return trim(strip_tags($str));
-    }
-}
-
 class MT_PHP_Config {
     private $presets = array();
 
@@ -301,13 +258,13 @@ class MT_PHP_Config {
             if (function_exists('get_site_url')) {
                 return get_site_url();
             }
-            
+
             if (function_exists('home_url')) {
                 return home_url();
             }
 
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'example.com';
+            $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
             return $protocol . '://' . $host;
     }
 

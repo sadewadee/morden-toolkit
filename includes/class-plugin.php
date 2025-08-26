@@ -1,6 +1,11 @@
 <?php
 /**
  * Main plugin class - Service Container
+ *
+ * @package Morden_Toolkit
+ * @author Morden Team
+ * @license GPL-3.0-or-later
+ * @since 1.0.0
  */
 
 if (!defined('ABSPATH')) {
@@ -28,6 +33,7 @@ class MT_Plugin {
 
     private function init_hooks() {
         if (function_exists('add_action')) {
+            add_action('plugins_loaded', array($this, 'load_textdomain'));
             add_action('admin_menu', array($this, 'add_admin_menu'));
             add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
             add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
@@ -75,6 +81,12 @@ class MT_Plugin {
 
     public function get_service($name) {
         return isset($this->services[$name]) ? $this->services[$name] : null;
+    }
+
+    public function load_textdomain() {
+        if (function_exists('load_plugin_textdomain')) {
+            load_plugin_textdomain('morden-toolkit', false, dirname(plugin_basename(MT_PLUGIN_FILE)) . '/languages/');
+        }
     }
 
     public function add_admin_menu() {

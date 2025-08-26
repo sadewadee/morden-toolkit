@@ -5,6 +5,17 @@ All notable changes to Morden Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.17] - 2025-01-18
+
+### Changed
+- **Function Optimization**: Replaced custom `mt_format_bytes()` function with WordPress native `size_format()` function across all files
+- **Code Standardization**: Prioritized WordPress core functions over custom implementations for better compatibility and maintenance
+- **Linter Support**: Enhanced development environment with comprehensive WordPress function mocks in `/docs/index_functions_wp.php`
+- Updated all file size formatting in debug logs, SMTP logs, admin views, and query monitor to use WordPress standard `size_format()`
+
+### Removed
+- Removed custom `mt_format_bytes()` function from `helpers.php` as it's replaced by WordPress native `size_format()`
+
 ## [1.2.16] - 2025-01-18
 
 ### Added

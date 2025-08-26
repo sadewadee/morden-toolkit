@@ -1,8 +1,11 @@
 <?php
 /**
- * Helper functions for MT
+ * Helper functions for Morden Toolkit
+ *
+ * @package ModernToolkit
  */
 
+// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -52,14 +55,6 @@ function mt_get_htaccess_path() {
     return ABSPATH . '.htaccess';
 }
 
-function mt_format_bytes($size) {
-    $units = array('B', 'KB', 'MB', 'GB');
-    for ($i = 0; $size > 1024 && $i < count($units) - 1; $i++) {
-        $size /= 1024;
-    }
-    return round($size, 2) . ' ' . $units[$i];
-}
-
 function mt_format_time($time) {
     if ($time < 1) {
         return round($time * 1000) . 'ms';
@@ -86,7 +81,7 @@ function mt_get_debug_log_path() {
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-    
+
         $patterns = [
 
             '/define\s*\(\s*[\'"]WP_DEBUG_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
@@ -99,9 +94,9 @@ function mt_get_debug_log_path() {
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-        
+
                 $path = stripslashes($path);
-        
+
                 if (strpos($path, 'wp-errors-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
                     return $path;
                 }
@@ -130,7 +125,7 @@ function mt_get_query_log_path() {
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-    
+
         $patterns = [
 
             '/define\s*\(\s*[\'"]MT_QUERY_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
@@ -143,9 +138,9 @@ function mt_get_query_log_path() {
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-        
+
                 $path = stripslashes($path);
-        
+
                 if (strpos($path, 'wp-queries-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
                     return $path;
                 }

@@ -388,7 +388,7 @@ class MT_SMTP_Logger {
                 'resp_p' => 25
             ),
             'trans_depth' => 1,
-            'helo' => $_SERVER['SERVER_NAME'] ?? 'localhost',
+            'helo' => $_SERVER['SERVER_NAME'] ?? 'example.com',
             'mailfrom' => $this->extract_email($mailfrom),
             'rcptto' => $rcptto,
 
@@ -405,7 +405,7 @@ class MT_SMTP_Logger {
                 'cc' => $this->extract_header_addresses($headers, 'Cc'),
                 'bcc' => $this->extract_header_addresses($headers, 'Bcc'),
                 'return_path' => isset($headers['Return-Path']) ? $headers['Return-Path'] : '',
-                'message_id' => isset($headers['Message-ID']) ? $headers['Message-ID'] : '<' . $uid . '@' . ($_SERVER['SERVER_NAME'] ?? 'localhost') . '>',
+                'message_id' => isset($headers['Message-ID']) ? $headers['Message-ID'] : '<' . $uid . '@' . ($_SERVER['SERVER_NAME'] ?? 'example.com') . '>',
                 'in_reply_to' => isset($headers['In-Reply-To']) ? $headers['In-Reply-To'] : '',
                 'references' => isset($headers['References']) ? $headers['References'] : '',
                 'priority' => isset($headers['X-Priority']) ? $headers['X-Priority'] : 'normal',
@@ -424,14 +424,14 @@ class MT_SMTP_Logger {
             'cc' => $this->extract_header_addresses($headers, 'Cc'),
             'bcc' => $this->extract_header_addresses($headers, 'Bcc'),
             'reply_to' => isset($headers['Reply-To']) ? $headers['Reply-To'] : '',
-            'msg_id' => isset($headers['Message-ID']) ? $headers['Message-ID'] : '<' . $uid . '@' . ($_SERVER['SERVER_NAME'] ?? 'localhost') . '>',
+            'msg_id' => isset($headers['Message-ID']) ? $headers['Message-ID'] : '<' . $uid . '@' . ($_SERVER['SERVER_NAME'] ?? 'example.com') . '>',
             'in_reply_to' => isset($headers['In-Reply-To']) ? $headers['In-Reply-To'] : '',
             'subject' => $mail_data['subject'] ?? '',
             'x_originating_ip' => $this->log_ip_address ? ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1') : 'IP logging disabled',
             'first_received' => date('r', $timestamp),
             'second_received' => '',
             'last_reply' => '',
-            'path' => array($_SERVER['SERVER_NAME'] ?? 'localhost'),
+            'path' => array($_SERVER['SERVER_NAME'] ?? 'example.com'),
             'user_agent' => 'WordPress/' . get_bloginfo('version'),
             'tls' => $this->detect_tls_usage(),
             'fuids' => array(),
@@ -525,7 +525,7 @@ class MT_SMTP_Logger {
         if (isset($headers['Return-Path'])) {
             return $headers['Return-Path'];
         }
-        return get_option('admin_email', 'unknown@localhost');
+        return get_option('admin_email', 'unknown@example.com');
     }
 
     /**
@@ -819,23 +819,23 @@ class MT_SMTP_Logger {
      */
     private function get_smtp_server() {
         // First check if we have PHPMailer config from current session
-        if (!empty($this->current_smtp_config['host']) && $this->current_smtp_config['host'] !== 'localhost') {
+        if (!empty($this->current_smtp_config['host']) && $this->current_smtp_config['host'] !== 'example.com') {
             return $this->current_smtp_config['host'];
         }
 
         // Try to get from common SMTP plugin constants
-        if (defined('SMTP_HOST') && SMTP_HOST !== 'localhost') {
+        if (defined('SMTP_HOST') && SMTP_HOST !== 'example.com') {
             return SMTP_HOST;
         }
 
         // Check popular SMTP plugins
         $smtp_info = $this->detect_smtp_plugins();
-        if (!empty($smtp_info['host']) && $smtp_info['host'] !== 'localhost') {
+        if (!empty($smtp_info['host']) && $smtp_info['host'] !== 'example.com') {
             return $smtp_info['host'];
         }
 
-        // Fallback to localhost
-        return 'localhost';
+        // Fallback to example.com
+        return 'example.com';
     }
 
     /**
@@ -843,7 +843,7 @@ class MT_SMTP_Logger {
      */
     private function detect_smtp_plugins() {
         $smtp_info = array(
-            'host' => 'localhost',
+            'host' => 'example.com',
             'port' => 25,
             'plugin' => 'none',
             'service' => 'unknown'
@@ -1063,7 +1063,7 @@ class MT_SMTP_Logger {
                     'formatted_date' => date('d/m/Y', strtotime($date)),
                     'file' => $file,
                     'size' => filesize($file),
-                    'size_formatted' => mt_format_bytes(filesize($file))
+                    'size_formatted' => size_format(filesize($file))
                 );
             }
         }
@@ -1085,7 +1085,7 @@ class MT_SMTP_Logger {
             'current_log_file' => $this->current_log_file,
             'current_log_exists' => file_exists($this->current_log_file),
             'current_log_size' => file_exists($this->current_log_file) ?
-                mt_format_bytes(filesize($this->current_log_file)) : '0 B',
+                size_format(filesize($this->current_log_file)) : '0 B',
             'available_files' => $this->get_available_log_files()
         );
     }

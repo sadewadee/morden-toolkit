@@ -281,7 +281,7 @@ class MT_Debug {
             $info['main_debug_log'] = array(
                 'path' => $main_log_path,
                 'size' => $size,
-                'size_formatted' => mt_format_bytes($size),
+                'size_formatted' => size_format($size),
                 'modified' => filemtime($main_log_path),
                 'modified_formatted' => date('Y-m-d H:i:s', filemtime($main_log_path))
             );
@@ -303,7 +303,7 @@ class MT_Debug {
                         'path' => $log_file,
                         'filename' => basename($log_file),
                         'size' => $size,
-                        'size_formatted' => mt_format_bytes($size),
+                        'size_formatted' => size_format($size),
                         'modified' => filemtime($log_file),
                         'modified_formatted' => date('Y-m-d H:i:s', filemtime($log_file))
                     );
@@ -323,7 +323,7 @@ class MT_Debug {
                         'path' => $log_file,
                         'filename' => basename($log_file),
                         'size' => $size,
-                        'size_formatted' => mt_format_bytes($size),
+                        'size_formatted' => size_format($size),
                         'modified' => filemtime($log_file),
                         'modified_formatted' => date('Y-m-d H:i:s', filemtime($log_file))
                     );
@@ -340,7 +340,7 @@ class MT_Debug {
             $info['query_logs']['main'] = array(
                 'path' => $query_log_path,
                 'size' => $size,
-                'size_formatted' => mt_format_bytes($size),
+                'size_formatted' => size_format($size),
                 'modified' => filemtime($query_log_path),
                 'modified_formatted' => date('Y-m-d H:i:s', filemtime($query_log_path))
             );
@@ -361,7 +361,7 @@ class MT_Debug {
                     'path' => $backup_log,
                     'filename' => basename($backup_log),
                     'size' => $size,
-                    'size_formatted' => mt_format_bytes($size),
+                    'size_formatted' => size_format($size),
                     'modified' => filemtime($backup_log),
                     'modified_formatted' => date('Y-m-d H:i:s', filemtime($backup_log))
                 );
@@ -370,7 +370,7 @@ class MT_Debug {
             }
         }
 
-        $info['total_size_formatted'] = mt_format_bytes($info['total_size']);
+        $info['total_size_formatted'] = size_format($info['total_size']);
 
         return $info;
     }
@@ -652,12 +652,12 @@ class MT_Debug {
             'display_errors' => $display_errors,
             'log_file_exists' => file_exists(mt_get_debug_log_path()),
             'log_file_size' => file_exists(mt_get_debug_log_path()) ?
-                mt_format_bytes(filesize(mt_get_debug_log_path())) : '0 B',
+                size_format(filesize(mt_get_debug_log_path())) : '0 B',
             'query_log_file_exists' => file_exists(mt_get_query_log_path()),
             'query_log_file_size' => file_exists(mt_get_query_log_path()) ?
-                mt_format_bytes(filesize(mt_get_query_log_path())) : '0 B',
-            'query_log_total_size' => mt_format_bytes($this->get_query_log_total_size()),
-            'query_log_max_size' => mt_format_bytes(mt_get_query_log_max_size())
+                size_format(filesize(mt_get_query_log_path())) : '0 B',
+            'query_log_total_size' => size_format($this->get_query_log_total_size()),
+            'query_log_max_size' => size_format(mt_get_query_log_max_size())
         );
     }
 
@@ -773,7 +773,7 @@ class MT_Debug {
             $total_time += $query[1];
         }
         $log_content .= "Total Time: " . round($total_time * 1000, 2) . "ms\n";
-        $log_content .= "Memory Usage: " . mt_format_bytes(memory_get_peak_usage()) . "\n";
+        $log_content .= "Memory Usage: " . size_format(memory_get_peak_usage()) . "\n";
         $log_content .= "----------------------------------------\n";
 
         // Detail setiap query dengan enhanced caller stack
@@ -836,7 +836,7 @@ class MT_Debug {
         file_put_contents($log_path, '');
 
         // Log rotation info
-        mt_debug_log("Query log rotated. Size was " . mt_format_bytes($current_size));
+        mt_debug_log("Query log rotated. Size was " . size_format($current_size));
     }
 
     /**

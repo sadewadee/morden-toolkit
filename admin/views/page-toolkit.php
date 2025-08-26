@@ -224,7 +224,7 @@ $setting_units = array(
                     <?php if (file_exists(mt_get_debug_log_path())): ?>
                     <div class="mt-status-item">
                         <span class="dashicons dashicons-media-text"></span>
-                        <span><?php _e('Debug Log Size:', 'morden-toolkit'); ?> <?php echo mt_format_bytes(filesize(mt_get_debug_log_path())); ?></span>
+                        <span><?php _e('Debug Log Size:', 'morden-toolkit'); ?> <?php echo size_format(filesize(mt_get_debug_log_path())); ?></span>
                         <a href="<?php echo admin_url('tools.php?page=mt-logs'); ?>" class="button button-small" style="margin-left: 10px;">
                             <?php _e('View Debug Logs', 'morden-toolkit'); ?>
                         </a>
@@ -242,9 +242,9 @@ $setting_units = array(
                         </span>
                         <?php if (file_exists(mt_get_query_log_path())): ?>
                         <span style="margin-left: 10px; color: #646970;">
-                            <?php _e('Size:', 'morden-toolkit'); ?> <?php echo mt_format_bytes(filesize(mt_get_query_log_path())); ?>
+                            <?php _e('Size:', 'morden-toolkit'); ?> <?php echo size_format(filesize(mt_get_query_log_path())); ?>
                             <small style="margin-left: 5px; color: #007cba;">
-                                (<?php _e('Auto-rotates at', 'morden-toolkit'); ?> <?php echo mt_format_bytes(mt_get_query_log_max_size()); ?>)
+                                (<?php _e('Auto-rotates at', 'morden-toolkit'); ?> <?php echo size_format(mt_get_query_log_max_size()); ?>)
                             </small>
                         </span>
                         <?php endif; ?>
@@ -436,7 +436,7 @@ $setting_units = array(
                             <?php foreach ($htaccess_backups as $index => $backup): ?>
                             <a href="#" class="mt-restore-item" data-index="<?php echo $index; ?>">
                                 <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $backup['timestamp']); ?>
-                                <span class="size">(<?php echo mt_format_bytes($backup['size']); ?>)</span>
+                                <span class="size">(<?php echo size_format($backup['size']); ?>)</span>
                             </a>
                             <?php endforeach; ?>
                         </div>
