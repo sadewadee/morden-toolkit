@@ -6,12 +6,12 @@
  * Version: 1.2.16
  * Author: Morden Team
  * Author URI: https://mordenhost.com
- * License: GPL v2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * License: GPLv3 or later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: morden-toolkit
  * Domain Path: /languages
  * Requires at least: 5.0
- * Tested up to: 6.6
+ * Tested up to: 6.8
  * Requires PHP: 7.4
  *
  * Internal Logging Control:
@@ -29,14 +29,8 @@ define('MT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MT_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('MT_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
-function mt_load_textdomain() {
-    load_plugin_textdomain(
-        'morden-toolkit',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages/'
-    );
-}
-add_action('plugins_loaded', 'mt_load_textdomain');
+// Text domain loading is handled automatically by WordPress since version 4.6
+// when plugin is hosted on WordPress.org
 
 require_once MT_PLUGIN_DIR . 'includes/helpers.php';
 require_once MT_PLUGIN_DIR . 'includes/mt-internal-log.php';

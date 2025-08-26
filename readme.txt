@@ -2,7 +2,7 @@
 Contributors: mordenhost
 Tags: debug, developer, tools, query monitor, performance, htaccess, php config
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Stable tag: 1.2.16
 Requires PHP: 7.4
 License: GPLv3 or later

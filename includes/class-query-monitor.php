@@ -3279,7 +3279,7 @@ class MT_Query_Monitor {
 
                 $env_data[] = array(
                     'name' => 'Client Version',
-                    'value' => mysqli_get_client_version(),
+                    'value' => isset($wpdb) ? $wpdb->db_version() : 'Unknown',
                     'category' => 'Database',
                     'help' => ''
                 );

@@ -19,24 +19,6 @@ if (!function_exists('update_option')) {
     }
 }
 
-if (!function_exists('get_site_url')) {
-    function get_site_url($blog_id = null, $path = '', $scheme = null) {
-        return 'http://localhost';
-    }
-}
-
-if (!function_exists('home_url')) {
-    function home_url($path = '', $scheme = null) {
-        return 'http://localhost';
-    }
-}
-
-if (!function_exists('admin_url')) {
-    function admin_url($path = '', $scheme = 'admin') {
-        return 'http://localhost/wp-admin/';
-    }
-}
-
 if (!function_exists('wp_remote_get')) {
     function wp_remote_get($url, $args = array()) {
         return array('response' => array('code' => 200), 'body' => '');
@@ -316,17 +298,17 @@ class MT_PHP_Config {
     }
 
     private function get_fallback_site_url() {
-        try {
             if (function_exists('get_site_url')) {
                 return get_site_url();
             }
+            
+            if (function_exists('home_url')) {
+                return home_url();
+            }
 
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'example.com';
             return $protocol . '://' . $host;
-        } catch (Exception $e) {
-            return 'http://localhost';
-        }
     }
 
     private function fallback_http_request($url, $timeout = 5) {
