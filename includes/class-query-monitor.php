@@ -639,7 +639,7 @@ class MT_Query_Monitor {
         ?>
         <div id="mt-perf-details" class="mt-perf-details" style="display: none;">
             <div class="mt-perf-details-content">
-                <div class="mt-perf-sidebar">
+                <div class="mt-performance-sidebar">
                     <ul class="mt-perf-tabs">
                         <li class="mt-perf-tab active" data-tab="overview">
                             <span class="dashicons dashicons-dashboard"></span>
