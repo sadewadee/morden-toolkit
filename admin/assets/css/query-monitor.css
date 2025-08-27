@@ -65,13 +65,6 @@
 }
 
 /* Sidebar Tabs for Admin */
-.mt-perf-sidebar {
-	width: 200px !important;
-	background: #23282d !important;
-	border-right: 1px solid #464b50 !important;
-	flex-shrink: 0 !important;
-	overflow-y: auto !important;
-}
 
 .mt-perf-tabs {
 	list-style: none !important;
@@ -624,18 +617,14 @@
 	}
 }
 
+.hide {
+    display: none !important;
+}
 /* Responsive Design for Performance Panel Mobile */
 @media (max-width: 768px) {
 	.mt-perf-details-content {
 		flex-direction: column !important;
 		max-height: 60vh !important;
-	}
-
-	.mt-perf-sidebar {
-		width: 100% !important;
-		max-height: 150px !important;
-		border-right: none !important;
-		border-bottom: 1px solid #464b50 !important;
 	}
 
 	.mt-perf-tabs {

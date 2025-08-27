@@ -71,6 +71,12 @@ class MT_Query_Monitor {
 			array(),
 			'1.2.16'
 		);
+		wp_enqueue_style(
+			'mt-performance-bar',
+			$plugin_url . 'public/assets/performance-bar.css',
+			array(),
+			'1.2.16'
+		);
 
 		wp_enqueue_script(
 			'mt-query-monitor',
