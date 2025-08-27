@@ -116,7 +116,7 @@ class MT_PHP_Config {
                 'name' => 'Basic',
                 'description' => 'Suitable for small sites with light traffic',
                 'settings' => array(
-                    'memory_limit' => '128M',
+                    'memory_limit' => '256M',
                     'upload_max_filesize' => '8M',
                     'post_max_size' => '16M',
                     'max_execution_time' => '60',
@@ -128,7 +128,7 @@ class MT_PHP_Config {
                 'name' => 'Medium',
                 'description' => 'Good for most WordPress sites',
                 'settings' => array(
-                    'memory_limit' => '256M',
+                    'memory_limit' => '512M',
                     'upload_max_filesize' => '16M',
                     'post_max_size' => '32M',
                     'max_execution_time' => '120',
@@ -139,18 +139,6 @@ class MT_PHP_Config {
             'high' => array(
                 'name' => 'High Performance',
                 'description' => 'For high-traffic sites and complex applications',
-                'settings' => array(
-                    'memory_limit' => '512M',
-                    'upload_max_filesize' => '32M',
-                    'post_max_size' => '64M',
-                    'max_execution_time' => '300',
-                    'max_input_vars' => '5000',
-                    'max_input_time' => '300'
-                )
-            ),
-            'custom' => array(
-                'name' => 'Custom High Memory',
-                'description' => 'Maximum performance with 2GB memory (70% server capacity)',
                 'settings' => array(
                     'memory_limit' => '2048M',
                     'upload_max_filesize' => '64M',
@@ -166,26 +154,6 @@ class MT_PHP_Config {
     public function get_presets() {
         try {
             $presets = $this->presets;
-
-            if (isset($presets['custom'])) {
-                // Check if user has saved custom settings
-                $saved_custom_settings = function_exists('get_option') ? get_option('mt_custom_preset_settings', null) : null;
-
-                if ($saved_custom_settings && is_array($saved_custom_settings)) {
-                    // Use saved custom settings
-                    $presets['custom']['settings'] = $saved_custom_settings;
-                    $presets['custom']['description'] = 'User-defined configuration';
-                } else {
-                    // Use default optimal memory for new custom preset
-                    $memory_info = $this->get_server_memory_info();
-                    $presets['custom']['settings']['memory_limit'] = $memory_info['optimal_memory'];
-                    $presets['custom']['description'] = sprintf(
-                        'Maximum performance with %s memory (%d%% server capacity)',
-                        $memory_info['optimal_memory'],
-                        $memory_info['safe_percentage']
-                    );
-                }
-            }
 
             return $presets;
         } catch (Exception $e) {
@@ -1344,41 +1312,7 @@ class MT_PHP_Config {
         return $comparison;
     }
 
-    /**
-     * Validate custom preset settings
-     */
-    public function validate_custom_settings($settings) {
-        if (!is_array($settings)) {
-            return false;
-        }
 
-        $validated = array();
-        $required_settings = array(
-            'memory_limit',
-            'upload_max_filesize',
-            'post_max_size',
-            'max_execution_time',
-            'max_input_vars',
-            'max_input_time'
-        );
-
-        foreach ($required_settings as $setting) {
-            if (!isset($settings[$setting])) {
-                return false;
-            }
-
-            $value = function_exists('sanitize_text_field') ? sanitize_text_field($settings[$setting]) : trim(strip_tags($settings[$setting]));
-
-            // Validate each setting according to wp-config rules
-            if (!$this->validate_setting_value($setting, $value)) {
-                return false;
-            }
-
-            $validated[$setting] = $value;
-        }
-
-        return $validated;
-    }
 
     /**
      * Validate individual setting value
@@ -1419,38 +1353,6 @@ class MT_PHP_Config {
         }
 
         return $numeric;
-    }
-
-    /**
-     * Update custom preset with user-defined values
-     */
-    public function update_custom_preset($settings) {
-        if (!isset($this->presets['custom'])) {
-            $this->presets['custom'] = array(
-                'name' => 'Custom',
-                'description' => 'User-defined configuration'
-            );
-        }
-
-        $this->presets['custom']['settings'] = $settings;
-        return true;
-    }
-
-    /**
-     * Reset custom preset to default values
-     */
-    public function reset_custom_preset() {
-        $default_custom = array(
-            'memory_limit' => '256M',
-            'upload_max_filesize' => '64M',
-            'post_max_size' => '64M',
-            'max_execution_time' => '300',
-            'max_input_vars' => '3000',
-            'max_input_time' => '300'
-        );
-
-        $this->presets['custom']['settings'] = $default_custom;
-        return true;
     }
 
     /**

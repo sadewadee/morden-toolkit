@@ -27,16 +27,16 @@
     "name": "High Performance",
     "description": "For high-traffic sites and complex applications",
     "settings": {
-      "memory_limit": "512M",
-      "upload_max_filesize": "32M",
-      "post_max_size": "64M",
-      "max_execution_time": "300",
-      "max_input_vars": "5000",
-      "max_input_time": "300"
+      "memory_limit": "2048M",
+      "upload_max_filesize": "64M",
+      "post_max_size": "128M",
+      "max_execution_time": "600",
+      "max_input_vars": "10000",
+      "max_input_time": "600"
     }
   },
   "custom": {
-    "name": "Custom High Memory",
+    "name": "Ultra High Memory",
     "description": "Maximum performance with 2GB memory (70% server capacity)",
     "settings": {
       "memory_limit": "2048M",

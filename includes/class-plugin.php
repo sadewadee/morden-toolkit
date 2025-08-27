@@ -54,8 +54,6 @@ class MT_Plugin {
             add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
             add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
             add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
-            add_action('wp_ajax_mt_save_custom_preset', array($this, 'ajax_save_custom_preset'));
-            add_action('wp_ajax_mt_reset_custom_preset', array($this, 'ajax_reset_custom_preset'));
             add_action('wp_ajax_mt_test_debug_transformer', array($this, 'ajax_test_debug_transformer'));
             add_action('wp_ajax_mt_toggle_smtp_logging', array($this, 'ajax_toggle_smtp_logging'));
             add_action('wp_ajax_mt_toggle_smtp_ip_logging', array($this, 'ajax_toggle_smtp_ip_logging'));
@@ -655,7 +653,7 @@ class MT_Plugin {
         }
 
         $preset = sanitize_key($_POST['preset']);
-        $allowed_presets = array('basic', 'medium', 'high', 'custom');
+        $allowed_presets = array('basic', 'medium', 'high');
         if (!in_array($preset, $allowed_presets)) {
             wp_send_json_error(__('Invalid preset value.', 'morden-toolkit'));
         }
@@ -670,50 +668,6 @@ class MT_Plugin {
         }
     }
 
-    public function ajax_save_custom_preset() {
-        check_ajax_referer('mt_action', 'nonce');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Permission denied.', 'morden-toolkit'));
-        }
-
-        if (!isset($_POST['settings'])) {
-            wp_send_json_error(__('Missing settings parameter.', 'morden-toolkit'));
-        }
-
-        $settings = $_POST['settings'];
-        if (!is_array($settings)) {
-            wp_send_json_error(__('Invalid settings data.', 'morden-toolkit'));
-        }
-
-
-        $validated_settings = $this->services['php_config']->validate_custom_settings($settings);
-        if (!$validated_settings) {
-            wp_send_json_error(__('Invalid configuration values.', 'morden-toolkit'));
-        }
-
-
-        update_option('mt_custom_preset_settings', $validated_settings);
-
-
-        $this->services['php_config']->update_custom_preset($validated_settings);
-
-        wp_send_json_success(__('Custom preset saved successfully.', 'morden-toolkit'));
-    }
-
-    public function ajax_reset_custom_preset() {
-        check_ajax_referer('mt_action', 'nonce');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Permission denied.', 'morden-toolkit'));
-        }
-
-
-        delete_option('mt_custom_preset_settings');
-
-
-        $this->services['php_config']->reset_custom_preset();
-
-        wp_send_json_success(__('Custom preset reset to default values.', 'morden-toolkit'));
-    }
 
     public function ajax_test_debug_transformer() {
         check_ajax_referer('mt_action', 'nonce');

@@ -38,25 +38,6 @@ $php_config_method = $php_config_service->get_config_method_info();
 $current_php_config = $php_config_service->get_current_config();
 $server_memory_info = $php_config_service->get_server_memory_info();
 
-// Load custom preset settings
-$custom_settings = get_option('mt_custom_preset_settings', array());
-if (empty($custom_settings)) {
-    // Use default custom preset values if none saved
-    $custom_settings = array(
-        'memory_limit' => '256M',
-        'upload_max_filesize' => '64M',
-        'post_max_size' => '64M',
-        'max_execution_time' => '300',
-        'max_input_vars' => '3000',
-        'max_input_time' => '300'
-    );
-}
-
-// Update custom preset with saved settings
-if (isset($php_presets['custom'])) {
-    $php_presets['custom']['settings'] = $custom_settings;
-}
-
 // Setting labels and units for display
 $setting_labels = array(
     'memory_limit' => __('Memory Limit', 'morden-toolkit'),
@@ -477,6 +458,9 @@ $setting_units = array(
                         <?php _e('Configuration Method:', 'morden-toolkit'); ?>
                         <strong><?php echo ucfirst($php_config_method['method'] ?: 'Not Available'); ?></strong>
                     </p>
+                    <div class="mt-server-memory-info" style="margin-top: 10px; padding: 10px; background: #f1f1f1; border-radius: 4px;">
+                        <p><strong><?php _e('Server Memory Detection:', 'morden-toolkit'); ?></strong></p>
+                    </div>
                 </div>
 
                 <div class="mt-preset-selection">
@@ -488,61 +472,6 @@ $setting_units = array(
                             <div class="mt-preset-card">
                                 <h4><?php echo esc_html($preset['name']); ?></h4>
                                 <p class="description"><?php echo esc_html($preset['description']); ?></p>
-                                <?php if ($key === 'custom'): ?>
-                                <div class="mt-custom-preset-form hide" style="<?php echo $current_php_preset === 'custom' ? '' : 'display: none;'; ?>">
-                                    <h5><?php _e('Custom Settings:', 'morden-toolkit'); ?></h5>
-                                    <?php
-                                    $custom_settings = get_option('mt_custom_preset_settings', $preset['settings']);
-                                    $setting_labels = array(
-                                        'memory_limit' => __('Memory Limit', 'morden-toolkit'),
-                                        'upload_max_filesize' => __('Upload Max Filesize', 'morden-toolkit'),
-                                        'post_max_size' => __('Post Max Size', 'morden-toolkit'),
-                                        'max_execution_time' => __('Max Execution Time', 'morden-toolkit'),
-                                        'max_input_vars' => __('Max Input Vars', 'morden-toolkit'),
-                                        'max_input_time' => __('Max Input Time', 'morden-toolkit')
-                                    );
-                                    $setting_units = array(
-                                        'memory_limit' => 'M',
-                                        'upload_max_filesize' => 'M',
-                                        'post_max_size' => 'M',
-                                        'max_execution_time' => 's',
-                                        'max_input_vars' => '',
-                                        'max_input_time' => 's'
-                                    );
-                                    ?>
-                                    <div class="mt-custom-settings-grid">
-                                        <?php foreach ($preset['settings'] as $setting => $default_value): ?>
-                                        <div class="mt-custom-setting-item">
-                                            <label for="custom_<?php echo esc_attr($setting); ?>">
-                                                <?php echo esc_html($setting_labels[$setting] ?? ucwords(str_replace('_', ' ', $setting))); ?>:
-                                            </label>
-                                            <div class="mt-input-with-unit">
-                                                <input type="text"
-                                                       id="custom_<?php echo esc_attr($setting); ?>"
-                                                       name="custom_settings[<?php echo esc_attr($setting); ?>]"
-                                                       value="<?php echo esc_attr(str_replace($setting_units[$setting], '', $custom_settings[$setting] ?? $default_value)); ?>"
-                                                       class="mt-custom-input"
-                                                       data-setting="<?php echo esc_attr($setting); ?>"
-                                                       placeholder="<?php echo esc_attr(str_replace($setting_units[$setting], '', $default_value)); ?>">
-                                                <?php if (!empty($setting_units[$setting])): ?>
-                                                <span class="mt-input-unit"><?php echo esc_html($setting_units[$setting]); ?></span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <div class="mt-custom-preset-actions">
-                                        <button type="button" id="save-custom-preset" class="button button-secondary">
-                                            <span class="dashicons dashicons-saved"></span>
-                                            <?php _e('Save Custom Settings', 'morden-toolkit'); ?>
-                                        </button>
-                                        <button type="button" id="reset-custom-preset" class="button">
-                                            <span class="dashicons dashicons-undo"></span>
-                                            <?php _e('Reset to Default', 'morden-toolkit'); ?>
-                                        </button>
-                                    </div>
-                                </div>
-                                <?php else: ?>
                                 <div class="mt-preset-settings">
                                     <?php foreach ($preset['settings'] as $setting => $value): ?>
                                     <div class="mt-setting-item">
@@ -551,7 +480,6 @@ $setting_units = array(
                                     </div>
                                     <?php endforeach; ?>
                                 </div>
-                                <?php endif; ?>
                             </div>
                         </label>
                         <?php endforeach; ?>
