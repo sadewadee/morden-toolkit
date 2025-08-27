@@ -213,14 +213,6 @@ class MT_Plugin {
             wp_enqueue_script(
                 'mt-performance-bar',
                 MT_PLUGIN_URL . 'public/assets/performance-bar.js',
-                array('jquery'),
-                MT_VERSION,
-                true
-            );
-
-            wp_enqueue_script(
-                'mt-performance-tabs',
-                MT_PLUGIN_URL . 'public/assets/performance-tabs.js',
                 array(),
                 MT_VERSION,
                 true

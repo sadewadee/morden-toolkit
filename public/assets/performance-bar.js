@@ -7,6 +7,11 @@
 
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
+        // Check if we're in admin area - if so, let admin.js handle everything
+        if (document.body.classList.contains('wp-admin')) {
+            return;
+        }
+
         initializePerformanceBar();
         adjustBodyPadding();
     });

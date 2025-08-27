@@ -35,6 +35,15 @@
 	cursor: pointer !important;
 }
 
+/* Admin Bar Click Handler */
+#wp-admin-bar-mt-performance-monitor {
+    cursor: pointer !important;
+}
+
+#wp-admin-bar-mt-performance-monitor .ab-item {
+    cursor: pointer !important;
+}
+
 .mt-perf-details {
 	position: fixed;
 	bottom: 0;
@@ -46,6 +55,76 @@
 	border-top: 2px solid #0073aa;
 	font-size: 13px;
 	box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.mt-perf-details-content {
+	margin: 0 auto !important;
+	display: flex !important;
+	max-height: 50vh !important;
+	width: 100% !important;
+}
+
+/* Sidebar Tabs for Admin */
+.mt-perf-sidebar {
+	width: 200px !important;
+	background: #23282d !important;
+	border-right: 1px solid #464b50 !important;
+	flex-shrink: 0 !important;
+	overflow-y: auto !important;
+}
+
+.mt-perf-tabs {
+	list-style: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.mt-perf-tab {
+	display: block !important;
+	padding: 12px 15px !important;
+	color: #a0a5aa !important;
+	text-decoration: none !important;
+	border-bottom: 1px solid #464b50 !important;
+	cursor: pointer !important;
+	transition: all 0.2s ease !important;
+	background: none !important;
+	border: none !important;
+	width: 100% !important;
+	text-align: left !important;
+}
+
+.mt-perf-tab:hover {
+	background: #32373c !important;
+	color: #ffffff !important;
+}
+
+.mt-perf-tab.active {
+	background: #0073aa !important;
+	color: #ffffff !important;
+}
+
+.mt-perf-tab .dashicons {
+	margin-right: 8px !important;
+	font-size: 16px !important;
+	width: 16px !important;
+	height: 16px !important;
+	vertical-align: middle !important;
+}
+
+/* Content Area for Admin */
+.mt-perf-content {
+	flex: 1 !important;
+	padding: 20px !important;
+	overflow-y: auto !important;
+	background: #32373c !important;
+}
+
+.mt-perf-tab-content {
+	display: none !important;
+}
+
+.mt-perf-tab-content.active {
+	display: block !important;
 }
 
 .mt-perf-details h4 {
@@ -542,5 +621,47 @@
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 8px;
+	}
+}
+
+/* Responsive Design for Performance Panel Mobile */
+@media (max-width: 768px) {
+	.mt-perf-details-content {
+		flex-direction: column !important;
+		max-height: 60vh !important;
+	}
+
+	.mt-perf-sidebar {
+		width: 100% !important;
+		max-height: 150px !important;
+		border-right: none !important;
+		border-bottom: 1px solid #464b50 !important;
+	}
+
+	.mt-perf-tabs {
+		display: flex !important;
+		overflow-x: auto !important;
+		white-space: nowrap !important;
+	}
+
+	.mt-perf-tab {
+		flex-shrink: 0 !important;
+		padding: 8px 12px !important;
+		font-size: 12px !important;
+	}
+
+	.mt-perf-content {
+		padding: 15px !important;
+	}
+}
+
+@media (max-width: 480px) {
+	.mt-perf-tab .dashicons {
+		display: none !important;
+	}
+
+	.mt-perf-tab {
+		padding: 8px 10px !important;
+		font-size: 11px !important;
 	}
 }

@@ -557,6 +557,22 @@
             return false;
         });
 
+        // Handle performance tab clicks
+        $(document).on('click', '.mt-perf-tab', function(e) {
+            e.preventDefault();
+            const tabName = $(this).data('tab');
+
+            // Remove active class from all tabs
+            $('.mt-perf-tab').removeClass('active');
+            $('.mt-perf-tab-content').removeClass('active');
+
+            // Add active class to selected tab and content
+            $(this).addClass('active');
+            $('#mt-perf-tab-' + tabName).addClass('active');
+
+            return false;
+        });
+
         // Close details panel when clicking outside
         $(document).on('click', function(e) {
             const $detailsPanel = $('#mt-perf-details');
