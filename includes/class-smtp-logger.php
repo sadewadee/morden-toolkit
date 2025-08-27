@@ -2,6 +2,11 @@
 /**
  * SMTP Logger - Email logging with JSON Lines format
  * Enhanced to properly hook into wp_mail() and capture comprehensive email data
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 if (!defined('ABSPATH')) {

@@ -1,12 +1,14 @@
 <?php
-
 /**
  * Integration class untuk menggunakan WPConfigTransformer dalam MT PHP Config
  *
  * Menggantikan metode manual editing wp-config.php yang rentan error
  * dengan implementasi yang lebih aman menggunakan WPConfigTransformer
  *
- * @package Morden_Toolkit
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  * @since 1.0.0
  */
 

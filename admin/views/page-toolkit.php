@@ -1,6 +1,11 @@
 <?php
 /**
  * Main Admin Page Template
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 if (!defined('ABSPATH')) {

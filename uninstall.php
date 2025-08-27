@@ -1,6 +1,11 @@
 <?php
 /**
  * Uninstall script for Morden Toolkit
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 if (!defined('WP_UNINSTALL_PLUGIN')) {

@@ -4,6 +4,11 @@
  *
  * Provides controlled internal logging that can be enabled/disabled
  * via wp-config.php constant: MT_INTERNAL_LOGGING
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 if (!defined('ABSPATH')) {

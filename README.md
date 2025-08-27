@@ -1,20 +1,29 @@
 # Morden Toolkit
 
+**Contributors:** sadewadee
+**Tags:** debug, performance, monitoring, htaccess, php-config, developer-tools
+**Requires at least:** 5.0
+**Tested up to:** 6.6
+**Requires PHP:** 7.4
+**Stable tag:** 1.2.16
+**License:** GPL v3 or later
+**License URI:** https://www.gnu.org/licenses/gpl-3.0.html
+
 Lightweight developer tools for WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
 
-## Overview
+## Description
 
 Morden Toolkit is a WordPress plugin that provides essential developer tools with a simple UI and safety-first approach. This plugin is designed to provide easy access to debugging, performance monitoring, configuration file editing, and PHP settings management with automatic backup systems.
 
-## Features
+### Features
 
-### 🔧 Debug Management
+#### 🔧 Debug Management
 - **One-click debug mode toggle** - Enable/disable WP_DEBUG, WP_DEBUG_LOG, etc.
 - **Smart debug log viewer** - Filter by level, time, search logs
 - **Safe configuration** - Auto-backup wp-config.php before modifications
 - **Clear debug logs** - Clean logs with one click
 
-### Query Monitor & Performance
+#### 📊 Query Monitor & Performance
 - **Admin bar integration** - Performance metrics integrated with WordPress admin bar
 - **Unified display** - Execution time, memory usage, and query count in one indicator
 - **Query Monitor style** - Visual design consistent with popular developer tools
@@ -24,19 +33,34 @@ Morden Toolkit is a WordPress plugin that provides essential developer tools wit
 - **Mobile responsive** - Optimal display on all device sizes
 - **SMTP Logging** - Log all outgoing emails sent via `wp_mail` for easy debugging.
 
-### File Editor
+#### 📝 File Editor
 - **Safe .htaccess editing** - Built-in syntax validation
 - **Auto-backup system** - Max 3 backups with timestamp
 - **One-click restore** - Rollback to previous backup
 - **Common snippets** - WordPress rewrite, caching, compression, security headers
 - **Site accessibility test** - Auto-restore if site breaks
+- **Duplicate prevention** - Prevents adding the same snippet twice
+- **503 Error protection** - Enhanced validation to prevent service unavailable errors
 
-### ⚙️ PHP Configuration
+#### ⚙️ PHP Configuration
 - **Preset-based config** - Basic, Medium, High performance presets
 - **Multiple methods** - .htaccess, wp-config.php, .user.ini support
 - **Auto-detection** - Smart method selection based on server environment
 - **Current config display** - View active PHP settings
 - **Visual comparison** - Compare current vs preset values
+
+### Security Features
+
+- **Capability checking** - Requires `manage_options`
+- **Nonce verification** - All AJAX requests protected
+- **Content validation** - Block malicious code patterns
+- **Advanced fail-safe mechanism** - Multi-layer protection for wp-config.php modifications
+- **Atomic operations** - Safe file operations with rollback and emergency recovery
+- **Comprehensive validation** - PHP syntax, site accessibility, and WordPress constants validation
+- **Multiple backup points** - Enhanced backup system with pre-restore emergency backups
+- **Post-rollback validation** - Ensures site accessibility after recovery operations
+- **Site monitoring** - Test accessibility after .htaccess changes
+- **Clean uninstall** - Remove all modifications on plugin deletion
 
 ## Installation
 
@@ -77,6 +101,8 @@ wp plugin install morden-toolkit.zip --activate
 3. File is automatically backed up before save
 4. Restore from backup if needed
 5. Insert common snippets with one-click
+6. Duplicate snippets are automatically prevented
+7. Enhanced 503 error protection ensures site stability
 
 ### PHP Config
 1. Select **PHP Config** tab
@@ -85,18 +111,40 @@ wp plugin install morden-toolkit.zip --activate
 4. Apply configuration
 5. System auto-detects best method (.htaccess, wp-config, .user.ini)
 
-## Security Features
+## Screenshots
 
-- **Capability checking** - Requires `manage_options`
-- **Nonce verification** - All AJAX requests protected
-- **Content validation** - Block malicious code patterns
-- **Advanced fail-safe mechanism** - Multi-layer protection for wp-config.php modifications
-- **Atomic operations** - Safe file operations with rollback and emergency recovery
-- **Comprehensive validation** - PHP syntax, site accessibility, and WordPress constants validation
-- **Multiple backup points** - Enhanced backup system with pre-restore emergency backups
-- **Post-rollback validation** - Ensures site accessibility after recovery operations
-- **Site monitoring** - Test accessibility after .htaccess changes
-- **Clean uninstall** - Remove all modifications on plugin deletion
+1. **Main Dashboard** - Overview of all tools and current status
+2. **Debug Management** - Toggle debug settings and view logs
+3. **Query Monitor** - Performance metrics and database monitoring
+4. **Htaccess Editor** - Safe file editing with backup system
+5. **PHP Configuration** - Preset-based PHP settings management
+
+## Frequently Asked Questions
+
+### Is this plugin safe to use on production sites?
+
+Yes, this plugin includes multiple safety features:
+- Automatic backups before any file modifications
+- Content validation to prevent malicious code
+- Site accessibility testing after changes
+- One-click restore functionality
+- Capability checking and nonce verification
+
+### What happens if I break my site?
+
+The plugin includes comprehensive fail-safe mechanisms:
+- Automatic backup creation before any changes
+- Site accessibility testing after modifications
+- One-click restore to previous working state
+- Emergency recovery procedures
+
+### Can I use this with other debugging plugins?
+
+Yes, Morden Toolkit is designed to work alongside other debugging tools. It focuses on providing essential developer tools in one lightweight package.
+
+### Does this plugin modify my theme files?
+
+No, this plugin only modifies configuration files (wp-config.php, .htaccess) and creates its own database tables for logging. Your theme files remain untouched.
 
 ## System Requirements
 
@@ -105,69 +153,33 @@ wp plugin install morden-toolkit.zip --activate
 - **MySQL:** 5.6+ or MariaDB 10.1+
 - **Server:** Apache with mod_rewrite or Nginx
 
-## File Structure
+## Upgrade Notice
 
-```
-morden-toolkit/
-├── morden-toolkit.php          # Main plugin file
-├── uninstall.php              # Cleanup on uninstall
-├── includes/                  # Core classes
-│   ├── class-plugin.php       # Service container
-│   ├── class-debug.php        # Debug management
-│   ├── class-query-monitor.php # Performance monitoring
-│   ├── class-htaccess.php     # File editing
-│   ├── class-php-config.php   # PHP configuration
-│   ├── class-file-manager.php # Backup/restore
-│   └── helpers.php           # Utility functions
-├── admin/                    # Admin interface
-│   ├── views/               # Template files
-│   └── assets/             # CSS/JS files
-├── public/                  # Frontend assets
-│   └── assets/             # Performance bar CSS/JS
-├── data/                   # Configuration data
-│   └── presets/           # PHP config presets
-├── docs/                  # Documentation
-├── tests/                 # Unit & integration tests
-└── languages/            # Translation files
-```
-
-## Development
-
-### Local Setup
-```bash
-git clone https://github.com/morden-pro/morden-toolkit.git
-cd morden-toolkit
-composer install --dev
-npm install --dev
-```
-
-### Running Tests
-```bash
-# Unit tests
-vendor/bin/phpunit tests/unit/
-
-# Integration tests
-vendor/bin/phpunit tests/integration/
-
-# All tests
-vendor/bin/phpunit
-```
-
-### Code Standards
-- WordPress Coding Standards
-- PHP 7.4+ compatibility
-- JSHint for JavaScript
-- SCSS for styles
-
-## Contributing
-
-1. Fork repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+### 1.2.16
+- Enhanced htaccess validation with duplicate prevention
+- Added 503 error protection for better site stability
+- Improved performance monitoring capabilities
+- Bug fixes and security improvements
 
 ## Changelog
+
+### [1.2.16] - 2025-08-28
+#### Added
+- Enhanced htaccess validation with duplicate snippet prevention
+- 503 error protection for site stability
+- Improved performance monitoring with real-time updates
+- Better error handling and user feedback
+
+#### Fixed
+- WordPress Coding Standards compliance improvements
+- Security enhancements for environment data exposure
+- Asset separation and proper enqueuing
+- HTTP API compliance for external requests
+
+#### Improved
+- Centralized URL handling for better security
+- Helper functions for code maintainability
+- Internationalization support
 
 ### [1.0.0] - 2024-08-16
 #### Added
@@ -183,13 +195,11 @@ vendor/bin/phpunit
 
 ## License
 
-GPL v2 or later - see [LICENSE](LICENSE) file
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
-## Support
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-- **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/sadewadee/morden-toolkit/issues)
-- **Support Forum:** [WordPress.org Support](https://wordpress.org/support/plugin/morden-toolkit/)
+You should have received a copy of the GNU General Public License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 ## Credits
 

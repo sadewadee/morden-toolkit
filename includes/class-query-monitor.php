@@ -1,96 +1,25 @@
 <?php
 /**
  * Query Monitor Service - Performance metrics display
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
+ * @since 1.2.16
  */
 
 if (!defined('ABSPATH')) {
-    exit;
+	exit;
 }
 
-// WordPress function fallbacks for standalone testing
-if (!function_exists('is_user_logged_in')) {
-    function is_user_logged_in() { return true; }
-}
-if (!function_exists('add_action')) {
-    function add_action($hook, $callback, $priority = 10) { return true; }
-}
-if (!function_exists('current_user_can')) {
-    function current_user_can($capability) { return true; }
-}
-if (!function_exists('esc_html')) {
-    function esc_html($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
-}
-if (!function_exists('esc_attr')) {
-    function esc_attr($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
-}
-if (!function_exists('esc_url')) {
-    function esc_url($url) { return htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); }
-}
-if (!function_exists('_e')) {
-    function _e($text, $domain = 'default') { echo $text; }
-}
-if (!function_exists('__')) {
-    function __($text, $domain = 'default') { return $text; }
-}
-if (!function_exists('printf')) {
-    function printf($format, ...$args) { echo sprintf($format, ...$args); }
-}
-if (!function_exists('get_transient')) {
-    function get_transient($transient) { return false; }
-}
-if (!function_exists('set_transient')) {
-    function set_transient($transient, $value, $expiration = 0) { return true; }
-}
-if (!function_exists('get_current_user_id')) {
-    function get_current_user_id() { return 1; }
-}
-if (!function_exists('get_bloginfo')) {
-    function get_bloginfo($show = '') { return 'Test Site'; }
-}
-if (!function_exists('get_option')) {
-    function get_option($option, $default = false) { return $default; }
-}
-if (!function_exists('mt_format_bytes')) {
-    function mt_format_bytes($bytes) {
-        if ($bytes >= 1073741824) {
-            return number_format($bytes / 1073741824, 2) . 'GB';
-        } elseif ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2) . 'MB';
-        } elseif ($bytes >= 1024) {
-            return number_format($bytes / 1024, 2) . 'KB';
-        } else {
-            return $bytes . 'B';
-        }
-    }
-}
-
-// Mock global variables for testing
-if (!isset($wpdb)) {
-    $wpdb = new stdClass();
-    $wpdb->num_queries = 0;
-    $wpdb->queries = array();
-}
-if (!isset($wp_scripts)) {
-    $wp_scripts = new stdClass();
-    $wp_scripts->done = array();
-    $wp_scripts->registered = array();
-    $wp_scripts->groups = array();
-}
-if (!isset($wp_styles)) {
-    $wp_styles = new stdClass();
-    $wp_styles->done = array();
-    $wp_styles->registered = array();
-}
-if (!defined('ABSPATH')) {
-    define('ABSPATH', '/var/www/html/');
-}
-if (!defined('SAVEQUERIES')) {
-    define('SAVEQUERIES', false);
-}
-if (!defined('SCRIPT_DEBUG')) {
-    define('SCRIPT_DEBUG', false);
-}
-
+/**
+ * MT Query Monitor Class
+ *
+ * Provides performance monitoring and metrics display for WordPress
+ *
+ * @since 1.2.16
+ */
 class MT_Query_Monitor {
 
     private $metrics = array();
@@ -101,21 +30,81 @@ class MT_Query_Monitor {
     private $real_time_hooks = array();
     private $hook_execution_order = 0;
 
-    public function __construct() {
-        if (get_option('mt_query_monitor_enabled') && is_user_logged_in()) {
-            // Initialize domain collectors
-            $this->init_domain_collectors();
+	/**
+	 * Constructor - Initialize the Query Monitor
+	 *
+	 * Sets up the performance monitoring if enabled and user is logged in.
+	 */
+	public function __construct() {
+		if (get_option('mt_query_monitor_enabled') && is_user_logged_in()) {
+			// Initialize domain collectors
+			$this->init_domain_collectors();
 
-            // TEMPORARILY DISABLED: Start real-time hook monitoring immediately
-            // $this->start_realtime_hook_monitoring();
+			// TEMPORARILY DISABLED: Start real-time hook monitoring immediately
+			// $this->start_realtime_hook_monitoring();
 
-            // TEMPORARILY DISABLED: Capture bootstrap snapshots at various phases
-            // $this->capture_bootstrap_snapshots();
+			// TEMPORARILY DISABLED: Capture bootstrap snapshots at various phases
+			// $this->capture_bootstrap_snapshots();
 
-            add_action('init', array($this, 'start_performance_tracking'));
-            add_action('admin_bar_menu', array($this, 'add_admin_bar_metrics'), 999);
-        }
-    }
+			add_action('init', array($this, 'start_performance_tracking'));
+			add_action('admin_bar_menu', array($this, 'add_admin_bar_metrics'), 999);
+			add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
+			add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
+		}
+	}
+
+	/**
+	 * Enqueue CSS and JS assets for the query monitor
+	 *
+	 * @since 1.2.16
+	 */
+	public function enqueue_assets() {
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+
+		$plugin_url = plugin_dir_url(dirname(__FILE__));
+
+		wp_enqueue_style(
+			'mt-query-monitor',
+			$plugin_url . 'admin/assets/css/query-monitor.css',
+			array(),
+			'1.2.16'
+		);
+
+		wp_enqueue_script(
+			'mt-query-monitor',
+			$plugin_url . 'admin/assets/js/query-monitor.js',
+			array('jquery'),
+			'1.2.16',
+			true
+		);
+
+		// Localize script with translatable strings
+		wp_localize_script('mt-query-monitor', 'mtQueryMonitorL10n', array(
+			'enableRealTimeUpdates' => __('Enable Real-time Updates', 'morden-toolkit'),
+			'stopRealTimeUpdates' => __('Stop Real-time Updates', 'morden-toolkit'),
+			'statusActive' => __('Active', 'morden-toolkit'),
+			'statusStatic' => __('Static View', 'morden-toolkit'),
+			'statusRefreshing' => __('Refreshing...', 'morden-toolkit'),
+			'statusUpdated' => __('Updated', 'morden-toolkit'),
+			'statusError' => __('Error', 'morden-toolkit'),
+			'viewDetails' => __('View Details', 'morden-toolkit'),
+			'hideDetails' => __('Hide Details', 'morden-toolkit'),
+			'toggle' => __('Toggle', 'morden-toolkit'),
+			'hide' => __('Hide', 'morden-toolkit'),
+		));
+
+		// Pass AJAX data
+		if (function_exists('wp_create_nonce')) {
+			wp_localize_script('mt-query-monitor', 'mtHookMonitor', array(
+				'ajaxUrl' => admin_url('admin-ajax.php'),
+				'nonce' => wp_create_nonce('mt_monitor_hooks_nonce'),
+				'isActive' => false,
+				'interval' => null
+			));
+		}
+	}
 
     /**
      * Initialize domain-specific collectors similar to Query Monitor
@@ -280,7 +269,8 @@ class MT_Query_Monitor {
      */
     public function ajax_monitor_hooks() {
         // Verify nonce for security
-        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'mt_monitor_hooks_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if (!wp_verify_nonce($nonce, 'mt_monitor_hooks_nonce')) {
             wp_die('Security check failed');
         }
 
@@ -960,788 +950,103 @@ class MT_Query_Monitor {
                 </div>
             </div>
         </div>
-        <style>
-        /* Admin bar MT performance styling - similar to Query Monitor */
-        #wp-admin-bar-mt-performance-monitor .ab-icon {
-            background-color: #0073aa !important;
-            color: #fff !important;
-            font-weight: bold !important;
-            width: auto !important;
-            padding: 0 6px !important;
-            border-radius: 2px !important;
-            margin-right: 6px !important;
-            font-size: 11px !important;
-            line-height: 20px !important;
-        }
-
-        #wp-admin-bar-mt-performance-monitor .ab-icon {
-            display: none !important;
-        }
-
-        #wp-admin-bar-mt-performance-monitor .ab-label small {
-            font-size: 9px !important;
-            font-weight: normal !important;
-        }
-
-        #wp-admin-bar-mt-performance-monitor:hover .ab-icon {
-            background-color: #005a87 !important;
-        }
-
-        #wp-admin-bar-mt-performance-monitor.menupop .ab-item {
-            cursor: pointer !important;
-        }
-
-        .mt-perf-details {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #32373c;
-            color: #ffffff;
-            z-index: 99999;
-            border-top: 2px solid #0073aa;
-
-            font-size: 13px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-
-        .mt-perf-details h4 {
-            margin: 0 0 10px 0;
-            color: #ffffff;
-            font-size: 14px;
-        }
-
-        .mt-perf-table {
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .mt-perf-table td {
-            padding: 3px 0;
-            color: #a0a5aa;
-        }
-
-        .mt-perf-table td:first-child {
-            width: 40%;
-        }
-
-        .mt-perf-table td:last-child {
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        /* Tab Filters */
-        .mt-tab-filters {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #2c3338;
-            border-radius: 4px;
-        }
-
-        .mt-tab-filters label {
-            display: inline-block;
-            margin-right: 20px;
-            color: #a0a5aa;
-            font-size: 12px;
-        }
-
-        .mt-tab-filters select {
-            margin-left: 8px;
-            padding: 4px 8px;
-            background: #32373c;
-            border: 1px solid #555;
-            color: #ffffff;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        /* Hook Type Badges */
-        .hook-type {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .hook-type-action {
-            background: #007cba;
-            color: white;
-        }
-
-        .hook-type-filter {
-            background: #00a32a;
-            color: white;
-        }
-
-        /* Environment Tab Styling */
-        .env-category {
-            background: #23282d !important;
-            border-left: 3px solid #0073aa;
-            font-weight: bold;
-            vertical-align: top;
-            padding: 10px !important;
-        }
-
-        .env-category-section {
-            margin-bottom: 25px;
-            flex: 0 0 calc(50% - 1rem);
-        }
-
-        .mt-env-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .env-category-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .env-category-title {
-            margin: 0 0 10px 0;
-            padding: 8px 12px;
-            background: #0073aa;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 4px 4px 0 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .env-category-table {
-            margin-top: 0 !important;
-            border-top: none;
-        }
-
-        /* Sortable Column Headers */
-        .sortable {
-            cursor: pointer;
-            position: relative;
-            padding-right: 20px !important;
-            user-select: none;
-            transition: background-color 0.2s ease;
-        }
-
-        .sortable:hover {
-            background: #2c3338 !important;
-        }
-
-        .sortable:after {
-            content: '↕';
-            position: absolute;
-            right: 8px;
-            font-size: 12px;
-            color: #666;
-            opacity: 0.6;
-        }
-
-        .sortable.sorted-asc:after {
-            content: '↑';
-            color: #0073aa;
-            opacity: 1;
-        }
-
-        .sortable.sorted-desc:after {
-            content: '↓';
-            color: #0073aa;
-            opacity: 1;
-        }
-
-        .sortable:active {
-            background: #1e2328 !important;
-        }
-
-        /* File Size and Load Time Status Colors */
-        .file-size-good {
-            color: #00a32a;
-        }
-
-        .file-size-warning {
-            color: #dba617;
-        }
-
-        .file-size-danger {
-            color: #d63638;
-        }
-
-        .load-time-good {
-            color: #00a32a;
-        }
-
-        .load-time-warning {
-            color: #dba617;
-        }
-
-        .load-time-danger {
-            color: #d63638;
-        }
-
-        /* Hooks Tab Specific Styling */
-        .mt-hook-handle {
-            vertical-align: top;
-            font-weight: 500;
-            /* background: #f9f9f9; */
-        }
-
-        .mt-hooks-table tr:nth-child(even) .mt-hook-handle {
-            /* background: #f1f1f1; */
-        }
-
-        .mt-hooks-table .query-sql code {
-            display: inline-block;
-            margin: 2px 0;
-            padding: 2px 4px;
-            background: #f0f0f0;
-            border-radius: 2px;
-            font-size: 11px;
-        }
-
-        .mt-hooks-table .sql-container {
-            line-height: 1.4;
-        }
-
-        /* Grouped hooks visual separation */
-        .mt-hooks-table tr[data-hook]:not([data-hook=""]) + tr[data-hook]:not([data-hook=""]) {
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .mt-hooks-table .mt-hook-handle[rowspan] {
-            border-right: 3px solid #0073aa;
-        }
-
-        /* Real-time Hooks Styling */
-        .mt-realtime-hooks-table .query-number {
-            font-weight: bold;
-            color: #0073aa;
-        }
-
-        .phase-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .phase-mu-plugins { background: #8b4513; color: white; }
-        .phase-plugins { background: #2e8b57; color: white; }
-        .phase-theme-setup { background: #4682b4; color: white; }
-        .phase-after-theme-setup { background: #9370db; color: white; }
-        .phase-pre-init { background: #ff6347; color: white; }
-        .phase-init { background: #ff4500; color: white; }
-        .phase-loaded { background: #ffa500; color: white; }
-        .phase-request-parsing { background: #ffd700; color: black; }
-        .phase-pre-template { background: #adff2f; color: black; }
-        .phase-template { background: #32cd32; color: white; }
-        .phase-complete { background: #006400; color: white; }
-
-        .domain-badge {
-            display: inline-block;
-            padding: 2px 4px;
-            border-radius: 2px;
-            font-size: 9px;
-            font-weight: bold;
-            margin-right: 4px;
-        }
-
-        .domain-database { background: #dc3545; color: white; }
-        .domain-http { background: #007bff; color: white; }
-        .domain-template { background: #28a745; color: white; }
-        .domain-rewrite { background: #ffc107; color: black; }
-        .domain-capabilities { background: #6f42c1; color: white; }
-        .domain-cache { background: #20c997; color: white; }
-        .domain-assets { background: #fd7e14; color: white; }
-
-        .caller-frame {
-            font-size: 11px;
-            margin: 1px 0;
-            padding: 2px;
-            background: #f8f9fa;
-            border-radius: 2px;
-        }
-
-        .mt-realtime-summary {
-            margin-top: 15px;
-            padding: 10px;
-            /* background: #f0f8ff; */
-            border-left: 4px solid #0073aa;
-        }
-
-        .mt-realtime-summary h5 {
-            margin: 0 0 8px 0;
-            color: #0073aa;
-        }
-
-        .mt-realtime-summary ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        /* Real-time Controls Styling */
-        .mt-realtime-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            /* background: #f8f9fa; */
-            border-radius: 4px;
-            border-left: 4px solid #0073aa;
-        }
-
-        .mt-realtime-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .mt-realtime-status {
-            font-size: 12px;
-            color: #666;
-        }
-
-        #mt-status-text {
-            font-weight: bold;
-        }
-
-        #mt-status-text.active {
-            color: #28a745;
-        }
-
-        #mt-status-text.error {
-            color: #dc3545;
-        }
-
-        .status-good {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .status-warning {
-            color: #ffc107;
-            font-weight: bold;
-        }
-
-        .status-danger {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        /* Performance Summary Improvements */
-        .mt-realtime-summary {
-            /* background: #e8f5e8; */
-            border-left-color: #28a745;
-        }
-
-        .mt-realtime-summary #hooks-count,
-        .mt-realtime-summary #memory-usage {
-            font-weight: bold;
-            color: #0073aa;
-        }
-
-        /* Responsive adjustments for controls */
-        @media (max-width: 768px) {
-            .mt-realtime-controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-
-            .mt-tab-filters {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .mt-realtime-actions {
-                justify-content: center;
-            }
-        }
-
-        /* Bootstrap Tab Styling */
-        .bootstrap-phase {
-            font-weight: 500;
-        }
-
-        .hook-growth.positive {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .hook-growth.neutral {
-            color: #6c757d;
-        }
-
-        .toggle-bootstrap-details {
-            color: #007cba;
-            text-decoration: none;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .toggle-bootstrap-details:hover {
-            text-decoration: underline;
-        }
-
-        .bootstrap-details {
-            margin-top: 8px;
-            padding: 8px;
-            background: #f9f9f9;
-            border-radius: 3px;
-            font-size: 11px;
-            line-height: 1.4;
-        }
-
-        .mt-bootstrap-summary {
-            margin-top: 15px;
-            padding: 10px;
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-        }
-
-        /* Domain Panels Styling */
-        .mt-domain-panels {
-            display: grid;
-            gap: 15px;
-        }
-
-        .mt-domain-panel {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .domain-panel-title {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            margin: 0;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .domain-icon {
-            width: 16px;
-            height: 16px;
-            display: inline-block;
-            margin-right: 8px;
-            border-radius: 2px;
-        }
-
-        .domain-icon-database { background: #dc3545; }
-        .domain-icon-http { background: #007bff; }
-        .domain-icon-template { background: #28a745; }
-        .domain-icon-rewrite { background: #ffc107; }
-        .domain-icon-capabilities { background: #6f42c1; }
-        .domain-icon-cache { background: #20c997; }
-        .domain-icon-assets { background: #fd7e14; }
-
-        .domain-count {
-            font-size: 12px;
-            color: #666;
-            font-weight: normal;
-        }
-
-        .toggle-domain-panel {
-            padding: 4px 8px;
-            background: #007cba;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .toggle-domain-panel:hover {
-            background: #005a87;
-        }
-
-        .domain-panel-content {
-            padding: 15px;
-        }
-
-        .domain-hooks-table {
-            margin-bottom: 15px;
-        }
-
-        .domain-insights {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            border-left: 3px solid #007cba;
-        }
-
-        .domain-insights h6 {
-            margin: 0 0 8px 0;
-            color: #007cba;
-            font-size: 13px;
-        }
-
-        .domain-insights p {
-            margin: 0;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #555;
-        }
-
-        /* Responsive adjustments */
-        @media (min-width: 1200px) {
-        .env-category-section { flex: 0 0 calc(25% - 1rem); } /* 4 columns on wide */
-        }
-        @media (max-width: 768px) {
-            .mt-domain-panels {
-                grid-template-columns: 1fr;
-            }
-
-            .domain-panel-title {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-        }
-        </style>
-        <script>
-        // Enhanced MT Hook monitoring JavaScript with real-time capability
-        document.addEventListener('DOMContentLoaded', function() {
-            // Real-time monitoring functionality
-            const toggleButton = document.getElementById('mt-toggle-realtime');
-            const refreshButton = document.getElementById('mt-refresh-hooks');
-            const statusText = document.getElementById('mt-status-text');
-            const hooksCount = document.getElementById('hooks-count');
-            const memoryUsage = document.getElementById('memory-usage');
-
-            if (toggleButton) {
-                toggleButton.addEventListener('click', function() {
-                    if (!window.mtHookMonitor) {
-                        console.warn('MT Hook Monitor not initialized');
-                        return;
-                    }
-
-                    if (window.mtHookMonitor.isActive) {
-                        stopRealTimeMonitoring();
-                    } else {
-                        startRealTimeMonitoring();
-                    }
-                });
-            }
-
-            if (refreshButton) {
-                refreshButton.addEventListener('click', function() {
-                    refreshHookData();
-                });
-            }
-
-            function startRealTimeMonitoring() {
-                if (!window.mtHookMonitor) return;
-
-                window.mtHookMonitor.isActive = true;
-                toggleButton.textContent = 'Stop Real-time Updates';
-                toggleButton.classList.remove('button-primary');
-                toggleButton.classList.add('button-secondary');
-                statusText.textContent = 'Active';
-                statusText.classList.add('active');
-
-                // Poll for updates every 5 seconds (reasonable for demo purposes)
-                window.mtHookMonitor.interval = setInterval(function() {
-                    refreshHookData();
-                }, 5000);
-
-                console.log('Real-time hook monitoring started (every 5 seconds)');
-            }
-
-            function stopRealTimeMonitoring() {
-                if (!window.mtHookMonitor) return;
-
-                window.mtHookMonitor.isActive = false;
-
-                if (window.mtHookMonitor.interval) {
-                    clearInterval(window.mtHookMonitor.interval);
-                    window.mtHookMonitor.interval = null;
-                }
-
-                toggleButton.textContent = 'Enable Real-time Updates';
-                toggleButton.classList.add('button-primary');
-                toggleButton.classList.remove('button-secondary');
-                statusText.textContent = 'Static View';
-                statusText.classList.remove('active');
-
-                console.log('Real-time hook monitoring stopped');
-            }
-
-            function refreshHookData() {
-                if (!window.mtHookMonitor) return;
-
-                const originalText = statusText.textContent;
-                statusText.textContent = 'Refreshing...';
-
-                // Send AJAX request for updated hook data
-                const formData = new FormData();
-                formData.append('action', 'mt_monitor_hooks');
-                formData.append('nonce', window.mtHookMonitor.nonce);
-
-                fetch(window.mtHookMonitor.ajaxUrl, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateHookDisplay(data);
-                        statusText.textContent = window.mtHookMonitor.isActive ? 'Active' : 'Updated';
-                        statusText.classList.remove('error');
-                    } else {
-                        console.error('Failed to fetch hook data:', data);
-                        statusText.textContent = 'Error';
-                        statusText.classList.add('error');
-                    }
-                })
-                .catch(error => {
-                    console.error('AJAX error:', error);
-                    statusText.textContent = 'Error';
-                    statusText.classList.add('error');
-                });
-            }
-
-            function updateHookDisplay(data) {
-                // Update summary statistics
-                if (hooksCount && data.hooks_captured !== undefined) {
-                    hooksCount.textContent = data.hooks_captured;
-                }
-
-                if (memoryUsage && data.memory_usage) {
-                    memoryUsage.textContent = formatBytes(data.memory_usage);
-                }
-
-                // Log recent hooks for debugging
-                if (data.recent_hooks && data.recent_hooks.length > 0) {
-                    console.log('Recent hooks:', data.recent_hooks.map(h => h.hook).join(', '));
-                }
-
-                if (data.domain_summary) {
-                    console.log('Domain summary:', data.domain_summary);
-                }
-            }
-
-            function formatBytes(bytes) {
-                if (bytes >= 1073741824) {
-                    return (bytes / 1073741824).toFixed(2) + 'GB';
-                } else if (bytes >= 1048576) {
-                    return (bytes / 1048576).toFixed(2) + 'MB';
-                } else if (bytes >= 1024) {
-                    return (bytes / 1024).toFixed(2) + 'KB';
-                } else {
-                    return bytes + 'B';
-                }
-            }
-            // Toggle bootstrap details
-            document.querySelectorAll('.toggle-bootstrap-details').forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var phase = this.getAttribute('data-phase');
-                    var details = document.getElementById('bootstrap-details-' + phase);
-                    if (details) {
-                        details.style.display = details.style.display === 'none' ? 'block' : 'none';
-                        this.textContent = details.style.display === 'none' ? 'View Details' : 'Hide Details';
-                    }
-                });
-            });
-
-            // Toggle domain panels
-            document.querySelectorAll('.toggle-domain-panel').forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var domain = this.getAttribute('data-domain');
-                    var content = document.getElementById('domain-content-' + domain);
-                    if (content) {
-                        content.style.display = content.style.display === 'none' ? 'block' : 'none';
-                        this.textContent = content.style.display === 'none' ? 'Toggle' : 'Hide';
-                    }
-                });
-            });
-
-            // Real-time hooks filtering
-            var phaseFilter = document.getElementById('mt-realtime-phase-filter');
-            var domainFilter = document.getElementById('mt-realtime-domain-filter');
-            var limitSelect = document.getElementById('mt-realtime-limit');
-
-            if (phaseFilter || domainFilter) {
-                // Populate filter options from existing data
-                var realtimeTable = document.querySelector('.mt-realtime-hooks-table tbody');
-                if (realtimeTable) {
-                    var phases = new Set();
-                    var domains = new Set();
-
-                    realtimeTable.querySelectorAll('tr').forEach(function(row) {
-                        var phase = row.getAttribute('data-phase');
-                        var domain = row.getAttribute('data-domain');
-                        if (phase) phases.add(phase);
-                        if (domain && domain !== 'uncategorized') domains.add(domain);
-                    });
-
-                    // Populate phase filter
-                    if (phaseFilter) {
-                        phases.forEach(function(phase) {
-                            var option = document.createElement('option');
-                            option.value = phase;
-                            option.textContent = phase.replace(/-/g, ' ').toUpperCase();
-                            phaseFilter.appendChild(option);
-                        });
-                    }
-
-                    // Populate domain filter
-                    if (domainFilter) {
-                        domains.forEach(function(domain) {
-                            var option = document.createElement('option');
-                            option.value = domain;
-                            option.textContent = domain.toUpperCase();
-                            domainFilter.appendChild(option);
-                        });
-                    }
-                }
-
-                // Filter functionality
-                function filterRealtimeHooks() {
-                    var selectedPhase = phaseFilter ? phaseFilter.value : '';
-                    var selectedDomain = domainFilter ? domainFilter.value : '';
-                    var limit = limitSelect ? parseInt(limitSelect.value) : 50;
-
-                    if (realtimeTable) {
-                        var rows = realtimeTable.querySelectorAll('tr');
-                        var visibleCount = 0;
-
-                        rows.forEach(function(row) {
-                            var rowPhase = row.getAttribute('data-phase');
-                            var rowDomain = row.getAttribute('data-domain');
-                            var show = true;
-
-                            if (selectedPhase && rowPhase !== selectedPhase) show = false;
-                            if (selectedDomain && rowDomain !== selectedDomain) show = false;
-                            if (limit > 0 && visibleCount >= limit) show = false;
-
-                            row.style.display = show ? '' : 'none';
-                            if (show) visibleCount++;
-                        });
-                    }
-                }
-
-                if (phaseFilter) phaseFilter.addEventListener('change', filterRealtimeHooks);
-                if (domainFilter) domainFilter.addEventListener('change', filterRealtimeHooks);
-                if (limitSelect) limitSelect.addEventListener('change', filterRealtimeHooks);
-            }
-
-            // Script initialization is now handled by performance-tabs.js
-        });
-        </script>
         <?php
-    }
+	}
 
-    /**
-     * Get performance status class based on metrics
+	/**
+	 * Get secure site URL information to avoid direct $_SERVER usage
+	 *
+	 * @return array
+	 */
+	private function get_secure_site_info() {
+		if (function_exists('home_url')) {
+			$home_url = home_url();
+			$parsed_url = parse_url($home_url);
+			return array(
+				'url' => $home_url,
+				'host' => $parsed_url['host'] ?? 'localhost',
+				'scheme' => $parsed_url['scheme'] ?? 'http'
+			);
+		}
+
+		return array(
+			'url' => 'http://localhost',
+			'host' => 'localhost',
+			'scheme' => 'http'
+		);
+	}
+
+	/**
+	 * Build full URL and metadata for asset source
+	 * Centralizes URL handling to avoid $_SERVER usage
+	 *
+	 * @param string $src Asset source URL or path
+	 * @return array
+	 */
+	private function get_asset_url_info($src) {
+		$file_size = 'N/A';
+		$load_time = 'N/A';
+		$component_type = 'Unknown';
+
+		// Determine if external or local
+		if (strpos($src, 'http') === 0) {
+			$parsed_url = parse_url($src);
+			$hostname = $parsed_url['host'];
+
+			// Check for external sources like Google Fonts
+			if (strpos($hostname, 'fonts.googleapis.com') !== false ||
+				strpos($hostname, 'fonts.gstatic.com') !== false) {
+				$component_type = 'WordPress Core Component (Herald Fonts)';
+			}
+
+			$clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($src) : htmlspecialchars($src)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
+
+			// Try to get file size for external files
+			$file_size = $this->get_remote_file_size($src);
+			$load_time = $this->get_estimated_load_time($src);
+		} else {
+			// Handle relative URLs - use secure site info
+			$site_info = $this->get_secure_site_info();
+			$hostname = $site_info['host'];
+			$full_url = $site_info['url'] . ltrim($src, '/');
+			$clickable_url = '<a href="' . (function_exists('esc_url') ? esc_url($full_url) : htmlspecialchars($full_url)) . '" target="_blank" style="color: #0073aa; text-decoration: none;">' . (function_exists('esc_html') ? esc_html($src) : htmlspecialchars($src)) . '</a>';
+
+			// Try to get local file size
+			$local_path = ABSPATH . ltrim($src, '/');
+			if (file_exists($local_path)) {
+				$file_size = function_exists('mt_format_bytes') ? mt_format_bytes(filesize($local_path)) : $this->mt_format_bytes(filesize($local_path));
+				$load_time = $this->get_estimated_load_time($src, filesize($local_path));
+			}
+		}
+
+		// Determine component type from path
+		if (strpos($src, '/plugins/') !== false) {
+			$component_type = 'Plugin';
+			preg_match('/\/plugins\/([^\/]+)/', $src, $matches);
+			if (isset($matches[1])) {
+				$component_type = 'Plugin: ' . ucwords(str_replace('-', ' ', $matches[1]));
+			}
+		} elseif (strpos($src, '/themes/') !== false) {
+			$component_type = 'Theme';
+			preg_match('/\/themes\/([^\/]+)/', $src, $matches);
+			if (isset($matches[1])) {
+				$component_type = 'Theme: ' . ucwords(str_replace('-', ' ', $matches[1]));
+			}
+		} elseif (strpos($src, '/wp-includes/') !== false || strpos($src, '/wp-admin/') !== false) {
+			$component_type = 'WordPress Core';
+		}
+
+		return array(
+			'hostname' => $hostname,
+			'clickable_url' => $clickable_url,
+			'file_size' => $file_size,
+			'load_time' => $load_time,
+			'component_type' => $component_type
+		);
+	}
+
+	/**
+	 * Get performance status class based on metrics
      */
     private function get_performance_status_class($execution_time, $query_count, $memory) {
         // Define thresholds
@@ -1852,123 +1157,111 @@ class MT_Query_Monitor {
     /**
      * Get remote file size with safe measurement
      */
-    private function get_remote_file_size($url) {
-        // Use cached result if available
-        $cache_key = 'mt_file_size_' . md5($url);
-        $cached_size = get_transient($cache_key);
-        if ($cached_size !== false) {
-            return $cached_size;
-        }
+	/**
+	 * Get remote file size with safe measurement using WP HTTP API
+	 *
+	 * @since 1.2.16
+	 * @param string $url The URL to check
+	 * @return string Formatted file size
+	 */
+	private function get_remote_file_size($url) {
+		// Use cached result if available
+		$cache_key = 'mt_file_size_' . md5($url);
+		$cached_size = get_transient($cache_key);
+		if ($cached_size !== false) {
+			return $cached_size;
+		}
 
-        // Try to get actual file size with safe timeout
-        if (function_exists('curl_init')) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_NOBODY, true);
-            curl_setopt($ch, CURLOPT_HEADER, true);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // 3 second timeout
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 2 second connect timeout
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Morden Toolkit Performance Monitor/1.0');
+		// Try to get actual file size using WP HTTP API
+		$response = wp_remote_head($url, array(
+			'timeout' => 3,
+			'redirection' => 3,
+			'user-agent' => 'Morden Toolkit Performance Monitor/1.0',
+			'sslverify' => false,
+		));
 
-            $headers = curl_exec($ch);
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+			$headers = wp_remote_retrieve_headers($response);
+			if (isset($headers['content-length'])) {
+				$size_bytes = intval($headers['content-length']);
+				$formatted_size = $this->mt_format_bytes($size_bytes);
+				// Cache for 1 hour
+				set_transient($cache_key, $formatted_size, 3600);
+				return $formatted_size;
+			}
+		}
 
-            if ($http_code === 200 && $headers) {
-                if (preg_match('/Content-Length:\s*(\d+)/i', $headers, $matches)) {
-                    $size_bytes = intval($matches[1]);
-                    $formatted_size = function_exists('mt_format_bytes') ? mt_format_bytes($size_bytes) : $this->mt_format_bytes($size_bytes);
-                    // Cache for 1 hour
-                    if (function_exists('set_transient')) {
-                        set_transient($cache_key, $formatted_size, 3600);
-                    }
-                    return $formatted_size;
-                }
-            }
-        }
+		// Fallback to domain-based estimates
+		$domain = parse_url($url, PHP_URL_HOST);
+		$fallback_size = __('Unknown', 'morden-toolkit');
 
-        // Fallback to domain-based estimates
-        $domain = parse_url($url, PHP_URL_HOST);
-        $fallback_size = 'Unknown';
+		if (strpos($domain, 'fonts.googleapis.com') !== false) {
+			$fallback_size = '~3KB';
+		} elseif (strpos($domain, 'fonts.gstatic.com') !== false) {
+			$fallback_size = '~25KB';
+		} else {
+			$fallback_size = '~50KB';
+		}
 
-        if (strpos($domain, 'fonts.googleapis.com') !== false) {
-            $fallback_size = '~3KB';
-        } elseif (strpos($domain, 'fonts.gstatic.com') !== false) {
-            $fallback_size = '~25KB';
-        } else {
-            $fallback_size = '~50KB';
-        }
+		// Cache fallback for 30 minutes
+		set_transient($cache_key, $fallback_size, 1800);
+		return $fallback_size;
+	}
 
-        // Cache fallback for 30 minutes
-        if (function_exists('set_transient')) {
-            set_transient($cache_key, $fallback_size, 1800);
-        }
-        return $fallback_size;
-    }
+	/**
+	 * Get estimated load time with real measurement using WP HTTP API
+	 *
+	 * @since 1.2.16
+	 * @param string $url The URL to check
+	 * @param int|null $file_size Local file size for estimation
+	 * @return string Formatted load time with color
+	 */
+	private function get_estimated_load_time($url, $file_size = null) {
+		// Use cached result if available
+		$cache_key = 'mt_load_time_' . md5($url);
+		$cached_time = get_transient($cache_key);
+		if ($cached_time !== false) {
+			return $cached_time;
+		}
 
-    /**
-     * Get estimated load time with real measurement
-     */
-    private function get_estimated_load_time($url, $file_size = null) {
-        // Use cached result if available
-        $cache_key = 'mt_load_time_' . md5($url);
-        $cached_time = get_transient($cache_key);
-        if ($cached_time !== false) {
-            return $cached_time;
-        }
+		// For local files, estimate based on file size
+		if ($file_size && !filter_var($url, FILTER_VALIDATE_URL)) {
+			if ($file_size < 10000) return $this->format_load_time_with_color(5, 'good');
+			if ($file_size < 50000) return $this->format_load_time_with_color(25, 'good');
+			if ($file_size < 100000) return $this->format_load_time_with_color(75, 'warning');
+			if ($file_size < 500000) return $this->format_load_time_with_color(150, 'warning');
+			return $this->format_load_time_with_color(300, 'danger');
+		}
 
-        // For local files, estimate based on file size
-        if ($file_size && !filter_var($url, FILTER_VALIDATE_URL)) {
-            if ($file_size < 10000) return $this->format_load_time_with_color(5, 'good');
-            if ($file_size < 50000) return $this->format_load_time_with_color(25, 'good');
-            if ($file_size < 100000) return $this->format_load_time_with_color(75, 'warning');
-            if ($file_size < 500000) return $this->format_load_time_with_color(150, 'warning');
-            return $this->format_load_time_with_color(300, 'danger');
-        }
+		// For external files, try real measurement using WP HTTP API
+		if (strpos($url, 'http') === 0) {
+			$start_time = microtime(true);
 
-        // For external files, try real measurement
-        if (strpos($url, 'http') === 0 && function_exists('curl_init')) {
-            $start_time = microtime(true);
+			$response = wp_remote_head($url, array(
+				'timeout' => 5,
+				'redirection' => 3,
+				'user-agent' => 'Morden Toolkit Performance Monitor/1.0',
+				'sslverify' => false,
+			));
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_NOBODY, true);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // 3 second connect timeout
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Morden Toolkit Performance Monitor/1.0');
+			$end_time = microtime(true);
+			$load_time_ms = round(($end_time - $start_time) * 1000);
 
-            $result = curl_exec($ch);
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+			if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+				$formatted_time = $this->format_load_time_with_color($load_time_ms, $this->get_load_time_status($load_time_ms));
+				// Cache for 30 minutes
+				set_transient($cache_key, $formatted_time, 1800);
+				return $formatted_time;
+			}
+		}
 
-            $end_time = microtime(true);
-            $load_time_ms = round(($end_time - $start_time) * 1000);
+		// Fallback estimates
+		if (strpos($url, 'http') === 0) {
+			return $this->format_load_time_with_color(120, 'warning'); // Default external estimate
+		}
 
-            if ($http_code === 200) {
-                $formatted_time = $this->format_load_time_with_color($load_time_ms, $this->get_load_time_status($load_time_ms));
-                // Cache for 30 minutes
-                if (function_exists('set_transient')) {
-                    set_transient($cache_key, $formatted_time, 1800);
-                }
-                return $formatted_time;
-            }
-        }
-
-        // Fallback estimates
-        if (strpos($url, 'http') === 0) {
-            return $this->format_load_time_with_color(120, 'warning'); // Default external estimate
-        }
-
-        return 'N/A';
-    }
+		return __('N/A', 'morden-toolkit');
+	}
 
     /**
      * Get load time status based on milliseconds
@@ -2696,19 +1989,6 @@ class MT_Query_Monitor {
 
         echo '</tbody>';
         echo '</table>';
-
-        // Add nonce for AJAX security
-        if (function_exists('wp_create_nonce')) {
-            $nonce = wp_create_nonce('mt_monitor_hooks_nonce');
-            echo '<script>';
-            echo 'window.mtHookMonitor = {';
-            echo '  ajaxUrl: "' . admin_url('admin-ajax.php') . '",';
-            echo '  nonce: "' . $nonce . '",';
-            echo '  isActive: false,';
-            echo '  interval: null';
-            echo '};';
-            echo '</script>';
-        }
     }
 
     /**
@@ -3197,8 +2477,8 @@ class MT_Query_Monitor {
         );
 
         $env_data[] = array(
-            'name' => 'User',
-            'value' => (function_exists('get_current_user') ? get_current_user() : 'Unknown') . ':' . (function_exists('getmygid') ? getmygid() : 'Unknown'),
+            'name' => 'User/Group',
+            'value' => 'Hidden for security',
             'category' => 'PHP',
             'help' => ''
         );
@@ -3285,22 +2565,22 @@ class MT_Query_Monitor {
                 );
 
                 $env_data[] = array(
-                    'name' => 'User',
-                    'value' => DB_USER,
+                    'name' => 'Database User',
+                    'value' => 'Hidden for security',
                     'category' => 'Database',
                     'help' => ''
                 );
 
                 $env_data[] = array(
-                    'name' => 'Host',
-                    'value' => DB_HOST,
+                    'name' => 'Database Host',
+                    'value' => 'Hidden for security',
                     'category' => 'Database',
                     'help' => ''
                 );
 
                 $env_data[] = array(
-                    'name' => 'Database',
-                    'value' => DB_NAME,
+                    'name' => 'Database Name',
+                    'value' => 'Hidden for security',
                     'category' => 'Database',
                     'help' => ''
                 );
@@ -3440,28 +2720,28 @@ class MT_Query_Monitor {
         // Server Environment - Comprehensive
         $env_data[] = array(
             'name' => 'Software',
-            'value' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+            'value' => 'Hidden for security',
             'category' => 'Server',
             'help' => ''
         );
 
         $env_data[] = array(
             'name' => 'Version',
-            'value' => 'Unknown', // This would need server-specific detection
+            'value' => 'Hidden for security',
             'category' => 'Server',
             'help' => ''
         );
 
         $env_data[] = array(
             'name' => 'IP Address',
-            'value' => $_SERVER['SERVER_ADDR'] ?? ($_SERVER['LOCAL_ADDR'] ?? 'Unknown'),
+            'value' => 'Hidden for security',
             'category' => 'Server',
             'help' => ''
         );
 
         $env_data[] = array(
             'name' => 'Host',
-            'value' => $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? 'Unknown',
+            'value' => 'Hidden for security',
             'category' => 'Server',
             'help' => ''
         );
@@ -3481,8 +2761,8 @@ class MT_Query_Monitor {
         );
 
         $env_data[] = array(
-            'name' => 'Basic Auth',
-            'value' => isset($_SERVER['PHP_AUTH_USER']) ? 'true' : 'false',
+            'name' => 'Authentication',
+            'value' => 'Information hidden for security',
             'category' => 'Server',
             'help' => ''
         );

@@ -1,6 +1,11 @@
 <?php
 /**
  * Helper functions for MT
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 if (!defined('ABSPATH')) {
@@ -86,7 +91,7 @@ function mt_get_debug_log_path() {
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-    
+
         $patterns = [
 
             '/define\s*\(\s*[\'"]WP_DEBUG_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
@@ -99,9 +104,9 @@ function mt_get_debug_log_path() {
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-        
+
                 $path = stripslashes($path);
-        
+
                 if (strpos($path, 'wp-errors-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
                     return $path;
                 }
@@ -130,7 +135,7 @@ function mt_get_query_log_path() {
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-    
+
         $patterns = [
 
             '/define\s*\(\s*[\'"]MT_QUERY_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
@@ -143,9 +148,9 @@ function mt_get_query_log_path() {
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-        
+
                 $path = stripslashes($path);
-        
+
                 if (strpos($path, 'wp-queries-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
                     return $path;
                 }

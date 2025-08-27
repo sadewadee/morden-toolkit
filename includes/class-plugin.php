@@ -1,6 +1,11 @@
 <?php
 /**
  * Main plugin class - Service Container
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 if (!defined('ABSPATH')) {
@@ -299,7 +304,7 @@ class MT_Plugin {
         $result = $this->services['debug']->toggle_debug_constant($constant, $enabled);
 
         if ($result) {
-    
+
             $status = $this->services['debug']->get_debug_status();
 
             wp_send_json_success(array(
@@ -489,7 +494,7 @@ class MT_Plugin {
 
         $debug_status = $this->services['debug']->get_debug_status();
 
-        
+
         $log_info = array(
             'query_log_file_exists' => $debug_status['query_log_file_exists'],
             'query_log_file_size' => $debug_status['query_log_file_size'],
@@ -535,7 +540,7 @@ class MT_Plugin {
             $max_debug_size = mt_get_debug_log_max_size();
 
             if ($debug_log_size > $max_debug_size) {
-        
+
                 $this->truncate_debug_log($debug_log_path, 10000);
             }
         }
@@ -680,16 +685,16 @@ class MT_Plugin {
             wp_send_json_error(__('Invalid settings data.', 'morden-toolkit'));
         }
 
-        
+
         $validated_settings = $this->services['php_config']->validate_custom_settings($settings);
         if (!$validated_settings) {
             wp_send_json_error(__('Invalid configuration values.', 'morden-toolkit'));
         }
 
-        
+
         update_option('mt_custom_preset_settings', $validated_settings);
 
-        
+
         $this->services['php_config']->update_custom_preset($validated_settings);
 
         wp_send_json_success(__('Custom preset saved successfully.', 'morden-toolkit'));
@@ -701,10 +706,10 @@ class MT_Plugin {
             wp_send_json_error(__('Permission denied.', 'morden-toolkit'));
         }
 
-        
+
         delete_option('mt_custom_preset_settings');
 
-        
+
         $this->services['php_config']->reset_custom_preset();
 
         wp_send_json_success(__('Custom preset reset to default values.', 'morden-toolkit'));

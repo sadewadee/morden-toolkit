@@ -1,6 +1,11 @@
 <?php
 /**
  * File Manager Service - Backup and restore functionality
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
  */
 
 // Prevent direct access

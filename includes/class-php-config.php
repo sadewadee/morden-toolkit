@@ -1,4 +1,13 @@
 <?php
+/**
+ * PHP Configuration Service - Preset-based PHP settings management
+ *
+ * @package Morden Toolkit
+ * @author Morden Team
+ * @license GPL v3 or later
+ * @link https://github.com/sadewadee/morden-toolkit
+ */
+
 if (!defined('ABSPATH')) {
     exit;
 }
