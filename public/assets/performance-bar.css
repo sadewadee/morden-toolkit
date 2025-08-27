@@ -84,12 +84,12 @@
 }
 
 /* Sidebar Tabs */
-.mt-perf-sidebar {
+.mt-performance-sidebar {
     width: 200px !important;
     background: #23282d !important;
     border-right: 1px solid #464b50 !important;
     flex-shrink: 0 !important;
-    overflow-y: scroll;
+    overflow-y: auto !important;
 }
 
 .mt-perf-tabs {
@@ -771,8 +771,9 @@ body.admin-bar.mt-perf-active {
         max-height: 50vh !important;
     }
 
-    .mt-perf-sidebar {
+    .mt-performance-sidebar {
         width: 100% !important;
+        max-height: 150px !important;
         border-right: none !important;
         border-bottom: 1px solid #464b50 !important;
     }
