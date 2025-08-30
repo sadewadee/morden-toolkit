@@ -5,7 +5,7 @@
 **Requires at least:** 5.0
 **Tested up to:** 6.6
 **Requires PHP:** 7.4
-**Stable tag:** 1.2.16
+**Stable tag:** 1.2.18
 **License:** GPL v3 or later
 **License URI:** https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -155,6 +155,13 @@ No, this plugin only modifies configuration files (wp-config.php, .htaccess) and
 
 ## Upgrade Notice
 
+### 1.2.18
+- Code cleanup and optimization
+- Removed excessive comments and non-English content
+- Improved code formatting and maintainability
+- Enhanced WordPress coding standards compliance
+- Bug fixes and performance improvements
+
 ### 1.2.16
 - Enhanced htaccess validation with duplicate prevention
 - Added 503 error protection for better site stability
@@ -162,6 +169,23 @@ No, this plugin only modifies configuration files (wp-config.php, .htaccess) and
 - Bug fixes and security improvements
 
 ## Changelog
+
+### [1.2.18] - 2025-08-30
+#### Added
+- Code cleanup and optimization
+- Enhanced code maintainability
+- Improved WordPress coding standards compliance
+
+#### Fixed
+- Removed excessive comments and redundant code
+- Cleaned up non-English content
+- Fixed code formatting and spacing issues
+- Improved function organization
+
+#### Improved
+- Better code readability
+- Enhanced performance through code optimization
+- Cleaner codebase structure
 
 ### [1.2.16] - 2025-08-28
 #### Added
