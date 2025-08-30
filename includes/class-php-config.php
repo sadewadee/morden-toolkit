@@ -15,67 +15,6 @@ if (!defined('ABSPATH')) {
 // Include WP Config Integration for safe wp-config.php editing
 require_once MT_PLUGIN_DIR . 'includes/class-wp-config-integration.php';
 
-// WordPress function fallbacks for standalone usage
-if (!function_exists('get_option')) {
-    function get_option($option, $default = false) {
-        return $default;
-    }
-}
-
-if (!function_exists('update_option')) {
-    function update_option($option, $value, $autoload = null) {
-        return true;
-    }
-}
-
-if (!function_exists('get_site_url')) {
-    function get_site_url($blog_id = null, $path = '', $scheme = null) {
-        return 'http://localhost';
-    }
-}
-
-if (!function_exists('home_url')) {
-    function home_url($path = '', $scheme = null) {
-        return 'http://localhost';
-    }
-}
-
-if (!function_exists('admin_url')) {
-    function admin_url($path = '', $scheme = 'admin') {
-        return 'http://localhost/wp-admin/';
-    }
-}
-
-if (!function_exists('wp_remote_get')) {
-    function wp_remote_get($url, $args = array()) {
-        return array('response' => array('code' => 200), 'body' => '');
-    }
-}
-
-if (!function_exists('is_wp_error')) {
-    function is_wp_error($thing) {
-        return false;
-    }
-}
-
-if (!function_exists('wp_remote_retrieve_response_code')) {
-    function wp_remote_retrieve_response_code($response) {
-        return isset($response['response']['code']) ? $response['response']['code'] : 200;
-    }
-}
-
-if (!function_exists('__')) {
-    function __($text, $domain = 'default') {
-        return $text;
-    }
-}
-
-if (!function_exists('sanitize_text_field')) {
-    function sanitize_text_field($str) {
-        return trim(strip_tags($str));
-    }
-}
-
 class MT_PHP_Config {
     private $presets = array();
 
@@ -294,15 +233,9 @@ class MT_PHP_Config {
 
     private function get_fallback_site_url() {
         try {
-            if (function_exists('get_site_url')) {
-                return get_site_url();
-            }
-
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            return $protocol . '://' . $host;
+            return get_site_url();
         } catch (Exception $e) {
-            return 'http://localhost';
+            return defined('WP_HOME') ? WP_HOME : 'https://example.com';
         }
     }
 
@@ -345,11 +278,10 @@ class MT_PHP_Config {
 
     private function test_site_accessibility() {
         try {
-            $fallback_url = $this->get_fallback_site_url();
             $test_endpoints = [
-                function_exists('home_url') ? home_url('/') : $fallback_url . '/',
-                function_exists('admin_url') ? admin_url('admin.php') : $fallback_url . '/wp-admin/admin.php',
-                function_exists('home_url') ? home_url('/wp-cron.php') : $fallback_url . '/wp-cron.php'
+                home_url('/'),
+                admin_url('admin.php'),
+                home_url('/wp-cron.php')
             ];
 
             if (empty($test_endpoints)) {
@@ -367,29 +299,20 @@ class MT_PHP_Config {
                 while ($attempts < $max_attempts && !$success) {
                     $timeout = 10 + ($attempts * 5);
 
-                    if (function_exists('wp_remote_get')) {
-                        $response = wp_remote_get($test_url, [
-                            'timeout' => $timeout,
-                            'sslverify' => false,
-                            'user-agent' => 'Morden Toolkit Config Test',
-                            'headers' => [
-                                'Cache-Control' => 'no-cache',
-                                'Pragma' => 'no-cache'
-                            ],
-                            'cookies' => [],
-                            'redirection' => 3
-                        ]);
-                    } else {
-                        $response = $this->fallback_http_request($test_url, $timeout);
-                    }
+                    $response = wp_remote_get($test_url, [
+                        'timeout' => $timeout,
+                        'sslverify' => false,
+                        'user-agent' => 'Morden Toolkit Config Test',
+                        'headers' => [
+                            'Cache-Control' => 'no-cache',
+                            'Pragma' => 'no-cache'
+                        ],
+                        'cookies' => [],
+                        'redirection' => 3
+                    ]);
 
-                    $is_error = function_exists('is_wp_error') ? is_wp_error($response) : (isset($response['error']));
-                    if (!$is_error) {
-                        if (function_exists('wp_remote_retrieve_response_code')) {
-                            $status_code = wp_remote_retrieve_response_code($response);
-                        } else {
-                            $status_code = isset($response['response']['code']) ? $response['response']['code'] : 200;
-                        }
+                    if (!is_wp_error($response)) {
+                        $status_code = wp_remote_retrieve_response_code($response);
 
                         if ($status_code >= 200 && $status_code < 400) {
                             $success = true;
@@ -401,7 +324,7 @@ class MT_PHP_Config {
                         }
                     } else {
                         $error_msg = 'Unknown error';
-                        if (function_exists('is_wp_error') && is_wp_error($response)) {
+                        if (is_wp_error($response)) {
                             $error_msg = $response->get_error_message();
                         } elseif (isset($response['error'])) {
                             $error_msg = isset($response['message']) ? $response['message'] : 'HTTP request failed';

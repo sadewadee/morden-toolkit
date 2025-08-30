@@ -1,17 +1,17 @@
 # Morden Toolkit
 
-**Contributors:** sadewadee
-**Tags:** debug, performance, monitoring, htaccess, php-config, developer-tools
-**Requires at least:** 5.0
-**Tested up to:** 6.8
-**Requires PHP:** 7.4
-**Stable tag:** 1.2.18
-**License:** GPL v3 or later
-**License URI:** https://www.gnu.org/licenses/gpl-3.0.html
+Contributors: sadewadee
+Tags: debug, performance, monitoring, htaccess, php-config, developer-tools
+Requires at least: 5.0
+Tested up to: 6.8
+Requires PHP: 7.4
+Stable tag: 1.2.18
+License: GPL v3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Lightweight developer tools for WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
 
-## Description
+== Description ==
 
 Morden Toolkit is a WordPress plugin that provides essential developer tools with a simple UI and safety-first approach. This plugin is designed to provide easy access to debugging, performance monitoring, configuration file editing, and PHP settings management with automatic backup systems.
 
@@ -119,10 +119,9 @@ wp plugin install morden-toolkit.zip --activate
 4. **Htaccess Editor** - Safe file editing with backup system
 5. **PHP Configuration** - Preset-based PHP settings management
 
-## Frequently Asked Questions
+== Frequently Asked Questions ==
 
-### Is this plugin safe to use on production sites?
-
+= Is this plugin safe to use on production sites? =
 Yes, this plugin includes multiple safety features:
 - Automatic backups before any file modifications
 - Content validation to prevent malicious code
@@ -130,92 +129,43 @@ Yes, this plugin includes multiple safety features:
 - One-click restore functionality
 - Capability checking and nonce verification
 
-### What happens if I break my site?
-
+= What happens if I break my site? =
 The plugin includes comprehensive fail-safe mechanisms:
 - Automatic backup creation before any changes
 - Site accessibility testing after modifications
 - One-click restore to previous working state
 - Emergency recovery procedures
 
-### Can I use this with other debugging plugins?
-
+= Can I use this with other debugging plugins? =
 Yes, Morden Toolkit is designed to work alongside other debugging tools. It focuses on providing essential developer tools in one lightweight package.
 
-### Does this plugin modify my theme files?
-
+= Does this plugin modify my theme files? =
 No, this plugin only modifies configuration files (wp-config.php, .htaccess) and creates its own database tables for logging. Your theme files remain untouched.
 
-## System Requirements
+== Changelog ==
 
-- **WordPress:** 5.0 or higher
-- **PHP:** 7.4 or higher
-- **MySQL:** 5.6+ or MariaDB 10.1+
-- **Server:** Apache with mod_rewrite or Nginx
+= 1.2.18 =
+* Code cleanup and optimization
+* Enhanced code maintainability
+* Improved WordPress coding standards compliance
+* Bug fixes and performance improvements
 
-## Upgrade Notice
+= 1.2.16 =
+* Enhanced htaccess validation with duplicate snippet prevention
+* 503 error protection for site stability
+* Improved performance monitoring with real-time updates
+* Better error handling and user feedback
 
-### 1.2.18
-- Code cleanup and optimization
-- Removed excessive comments and non-English content
-- Improved code formatting and maintainability
-- Enhanced WordPress coding standards compliance
-- Bug fixes and performance improvements
-
-### 1.2.16
-- Enhanced htaccess validation with duplicate prevention
-- Added 503 error protection for better site stability
-- Improved performance monitoring capabilities
-- Bug fixes and security improvements
-
-## Changelog
-
-### [1.2.18] - 2025-08-30
-#### Added
-- Code cleanup and optimization
-- Enhanced code maintainability
-- Improved WordPress coding standards compliance
-
-#### Fixed
-- Removed excessive comments and redundant code
-- Cleaned up non-English content
-- Fixed code formatting and spacing issues
-- Improved function organization
-
-#### Improved
-- Better code readability
-- Enhanced performance through code optimization
-- Cleaner codebase structure
-
-### [1.2.16] - 2025-08-28
-#### Added
-- Enhanced htaccess validation with duplicate snippet prevention
-- 503 error protection for site stability
-- Improved performance monitoring with real-time updates
-- Better error handling and user feedback
-
-#### Fixed
-- WordPress Coding Standards compliance improvements
-- Security enhancements for environment data exposure
-- Asset separation and proper enqueuing
-- HTTP API compliance for external requests
-
-#### Improved
-- Centralized URL handling for better security
-- Helper functions for code maintainability
-- Internationalization support
-
-### [1.0.0] - 2024-08-16
-#### Added
-- Initial release
-- Debug management with wp-config.php integration
-- Query monitor with performance bar
-- Safe .htaccess editor with auto-backup
-- PHP configuration presets with multi-method support
-- Comprehensive admin interface with tabbed navigation
-- Security features and permission checking
-- Complete test suite
-- Translation support
+= 1.0.0 =
+* Initial release
+* Debug management with wp-config.php integration
+* Query monitor with performance bar
+* Safe .htaccess editor with auto-backup
+* PHP configuration presets with multi-method support
+* Comprehensive admin interface with tabbed navigation
+* Security features and permission checking
+* Complete test suite
+* Translation support
 
 ## License
 

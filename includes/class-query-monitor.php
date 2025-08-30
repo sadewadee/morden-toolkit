@@ -2555,9 +2555,15 @@ class MT_Query_Monitor {
                     'help' => ''
                 );
 
+                global $wpdb;
+                $client_version = 'Unknown';
+                if ($wpdb && method_exists($wpdb, 'db_version')) {
+                    $client_version = $wpdb->db_version();
+                }
+
                 $env_data[] = array(
                     'name' => 'Client Version',
-                    'value' => mysqli_get_client_version(),
+                    'value' => $client_version,
                     'category' => 'Database',
                     'help' => ''
                 );

@@ -145,7 +145,7 @@ function mt_cleanup_transients() {
 }
 
 function mt_cleanup_log_files() {
-    $log_directory = ABSPATH . 'wp-content/morden-toolkit/';
+    $log_directory = WP_CONTENT_DIR . '/morden-toolkit/';
 
     if (!is_dir($log_directory)) {
         return 0;

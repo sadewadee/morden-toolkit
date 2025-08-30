@@ -29,15 +29,6 @@ define('MT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MT_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('MT_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
-function mt_load_textdomain() {
-    load_plugin_textdomain(
-        'morden-toolkit',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages/'
-    );
-}
-add_action('plugins_loaded', 'mt_load_textdomain');
-
 require_once MT_PLUGIN_DIR . 'includes/helpers.php';
 require_once MT_PLUGIN_DIR . 'includes/mt-internal-log.php';
 require_once MT_PLUGIN_DIR . 'includes/class-plugin.php';

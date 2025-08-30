@@ -75,7 +75,7 @@ function mt_get_debug_log_path() {
     if (defined('WP_DEBUG_LOG') && is_string(WP_DEBUG_LOG) && !in_array(WP_DEBUG_LOG, ['true', 'false', '1', '0'], true)) {
         $custom_path = WP_DEBUG_LOG;
 
-        if (!is_absolute_path($custom_path)) {
+        if (!mt_is_absolute_path($custom_path)) {
             $custom_path = ABSPATH . ltrim($custom_path, '/');
         }
 
@@ -113,8 +113,8 @@ function mt_get_debug_log_path() {
  * @param string $path Path to check
  * @return bool True if absolute path
  */
-function is_absolute_path($path) {
-    return (substr($path, 0, 1) === '/' || preg_match('/^[a-zA-Z]:[\\\\]/', $path));
+function mt_is_absolute_path($path) {
+    return (substr($path, 0, 1) === '/' || preg_match('/^[a-zA-Z]:[\\]/', $path));
 }
 
 
