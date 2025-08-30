@@ -1,9 +1,9 @@
 <?php
 /**
- * Integration class untuk menggunakan WPConfigTransformer dalam MT PHP Config
+ * Integration class for using WPConfigTransformer in MT PHP Config
  *
- * Menggantikan metode manual editing wp-config.php yang rentan error
- * dengan implementasi yang lebih aman menggunakan WPConfigTransformer
+ * Replaces manual wp-config.php editing methods that are prone to errors
+ * with safer implementation using WPConfigTransformer
  *
  * @package Morden Toolkit
  * @author Morden Team

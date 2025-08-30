@@ -44,7 +44,6 @@ function mt_get_wp_config_path() {
         return $config_path;
     }
 
-
     $parent_config = dirname(ABSPATH) . '/wp-config.php';
     if (file_exists($parent_config)) {
         return $parent_config;
@@ -73,11 +72,8 @@ function mt_format_time($time) {
 }
 
 function mt_get_debug_log_path() {
-
     if (defined('WP_DEBUG_LOG') && is_string(WP_DEBUG_LOG) && !in_array(WP_DEBUG_LOG, ['true', 'false', '1', '0'], true)) {
-
         $custom_path = WP_DEBUG_LOG;
-
 
         if (!is_absolute_path($custom_path)) {
             $custom_path = ABSPATH . ltrim($custom_path, '/');
@@ -86,25 +82,19 @@ function mt_get_debug_log_path() {
         return $custom_path;
     }
 
-
     $wp_config_path = mt_get_wp_config_path();
     if ($wp_config_path && file_exists($wp_config_path)) {
         $content = file_get_contents($wp_config_path);
 
-
         $patterns = [
-
             '/define\s*\(\s*[\'"]WP_DEBUG_LOG[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
-
             '/define\s*\(\s*[\'"]WP_DEBUG_LOG[\'"]\s*,\s*[\'"]\\\\?[\'"]([^\\\\]+)\\\\?[\'"][\'"] *\)/',
-
             '/define\s*\(\s*"WP_DEBUG_LOG"\s*,\s*[\'"]([^\'"]+)[\'"]\s*\)/',
         ];
 
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $path = $matches[1];
-
                 $path = stripslashes($path);
 
                 if (strpos($path, 'wp-errors-') !== false || (strpos($path, '/') !== false && strpos($path, '.log') !== false)) {
@@ -113,7 +103,6 @@ function mt_get_debug_log_path() {
             }
         }
     }
-
 
     return WP_CONTENT_DIR . '/debug.log';
 }

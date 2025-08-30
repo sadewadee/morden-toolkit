@@ -2,7 +2,7 @@
  * Query Monitor Performance Bar JavaScript
  *
  * @package Morden_Toolkit
- * @since 1.2.16
+ * @since 1.2.18
  */
 
 // Enhanced MT Hook monitoring JavaScript with real-time capability

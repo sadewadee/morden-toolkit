@@ -6,7 +6,7 @@
  * @author Morden Team
  * @license GPL v3 or later
  * @link https://github.com/sadewadee/morden-toolkit
- * @since 1.2.16
+ * @since 1.2.18
  */
 
 if (!defined('ABSPATH')) {
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
  *
  * Provides performance monitoring and metrics display for WordPress
  *
- * @since 1.2.16
+ * @since 1.2.18
  */
 class MT_Query_Monitor {
 
@@ -37,14 +37,7 @@ class MT_Query_Monitor {
 	 */
 	public function __construct() {
 		if (get_option('mt_query_monitor_enabled') && is_user_logged_in()) {
-			// Initialize domain collectors
 			$this->init_domain_collectors();
-
-			// TEMPORARILY DISABLED: Start real-time hook monitoring immediately
-			// $this->start_realtime_hook_monitoring();
-
-			// TEMPORARILY DISABLED: Capture bootstrap snapshots at various phases
-			// $this->capture_bootstrap_snapshots();
 
 			add_action('init', array($this, 'start_performance_tracking'));
 			add_action('admin_bar_menu', array($this, 'add_admin_bar_metrics'), 999);
@@ -56,7 +49,7 @@ class MT_Query_Monitor {
 	/**
 	 * Enqueue CSS and JS assets for the query monitor
 	 *
-	 * @since 1.2.16
+	 * @since 1.2.18
 	 */
 	public function enqueue_assets() {
 		if (!current_user_can('manage_options')) {
@@ -69,24 +62,23 @@ class MT_Query_Monitor {
 			'mt-query-monitor',
 			$plugin_url . 'admin/assets/css/query-monitor.css',
 			array(),
-			'1.2.16'
+			'1.2.18'
 		);
 		wp_enqueue_style(
 			'mt-performance-bar',
 			$plugin_url . 'public/assets/performance-bar.css',
 			array(),
-			'1.2.16'
+			'1.2.18'
 		);
 
 		wp_enqueue_script(
 			'mt-query-monitor',
 			$plugin_url . 'admin/assets/js/query-monitor.js',
 			array('jquery'),
-			'1.2.16',
+			'1.2.18',
 			true
 		);
 
-		// Localize script with translatable strings
 		wp_localize_script('mt-query-monitor', 'mtQueryMonitorL10n', array(
 			'enableRealTimeUpdates' => __('Enable Real-time Updates', 'morden-toolkit'),
 			'stopRealTimeUpdates' => __('Stop Real-time Updates', 'morden-toolkit'),
@@ -1166,7 +1158,7 @@ class MT_Query_Monitor {
 	/**
 	 * Get remote file size with safe measurement using WP HTTP API
 	 *
-	 * @since 1.2.16
+	 * @since 1.2.18
 	 * @param string $url The URL to check
 	 * @return string Formatted file size
 	 */
@@ -1217,7 +1209,7 @@ class MT_Query_Monitor {
 	/**
 	 * Get estimated load time with real measurement using WP HTTP API
 	 *
-	 * @since 1.2.16
+	 * @since 1.2.18
 	 * @param string $url The URL to check
 	 * @param int|null $file_size Local file size for estimation
 	 * @return string Formatted load time with color

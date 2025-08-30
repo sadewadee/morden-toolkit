@@ -32,39 +32,41 @@ class MT_Plugin {
     }
 
     private function init_hooks() {
-        if (function_exists('add_action')) {
-            add_action('admin_menu', array($this, 'add_admin_menu'));
-            add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-            add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
-            add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
-            add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
-            add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
-            add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
-            add_action('wp_ajax_mt_get_query_logs', array($this, 'ajax_get_query_logs'));
-            add_action('wp_ajax_mt_clear_query_log', array($this, 'ajax_clear_query_log'));
-            add_action('wp_ajax_mt_clear_all_query_logs', array($this, 'ajax_clear_all_query_logs'));
-            add_action('wp_ajax_mt_cleanup_query_logs', array($this, 'ajax_cleanup_query_logs'));
-            add_action('wp_ajax_mt_cleanup_debug_logs', array($this, 'ajax_cleanup_debug_logs'));
-            add_action('wp_ajax_mt_clear_all_debug_logs', array($this, 'ajax_clear_all_debug_logs'));
-            add_action('wp_ajax_mt_cleanup_all_logs', array($this, 'ajax_cleanup_all_logs'));
-            add_action('wp_ajax_mt_cleanup_query_rotation_logs', array($this, 'ajax_cleanup_query_rotation_logs'));
-            add_action('wp_ajax_mt_get_log_info', array($this, 'ajax_get_log_info'));
-            add_action('wp_ajax_mt_download_query_logs', array($this, 'ajax_download_query_logs'));
-            add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
-            add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
-            add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
-            add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
-            add_action('wp_ajax_mt_test_debug_transformer', array($this, 'ajax_test_debug_transformer'));
-            add_action('wp_ajax_mt_toggle_smtp_logging', array($this, 'ajax_toggle_smtp_logging'));
-            add_action('wp_ajax_mt_toggle_smtp_ip_logging', array($this, 'ajax_toggle_smtp_ip_logging'));
-            add_action('wp_ajax_mt_get_smtp_logs', array($this, 'ajax_get_smtp_logs'));
-            add_action('wp_ajax_mt_clear_smtp_logs', array($this, 'ajax_clear_smtp_logs'));
-            add_action('wp_ajax_mt_cleanup_smtp_logs', array($this, 'ajax_cleanup_smtp_logs'));
-            add_action('wp_ajax_mt_download_smtp_logs', array($this, 'ajax_download_smtp_logs'));
+        // Admin menu and scripts
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
 
-            add_action('init', array($this, 'schedule_log_cleanup'));
-            add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
-        }
+        // AJAX handlers
+        add_action('wp_ajax_mt_toggle_debug', array($this, 'ajax_toggle_debug'));
+        add_action('wp_ajax_mt_toggle_debug_constant', array($this, 'ajax_toggle_debug_constant'));
+        add_action('wp_ajax_mt_clear_debug_log', array($this, 'ajax_clear_debug_log'));
+        add_action('wp_ajax_mt_get_debug_log', array($this, 'ajax_get_debug_log'));
+        add_action('wp_ajax_mt_get_query_logs', array($this, 'ajax_get_query_logs'));
+        add_action('wp_ajax_mt_clear_query_log', array($this, 'ajax_clear_query_log'));
+        add_action('wp_ajax_mt_clear_all_query_logs', array($this, 'ajax_clear_all_query_logs'));
+        add_action('wp_ajax_mt_cleanup_query_logs', array($this, 'ajax_cleanup_query_logs'));
+        add_action('wp_ajax_mt_cleanup_debug_logs', array($this, 'ajax_cleanup_debug_logs'));
+        add_action('wp_ajax_mt_clear_all_debug_logs', array($this, 'ajax_clear_all_debug_logs'));
+        add_action('wp_ajax_mt_cleanup_all_logs', array($this, 'ajax_cleanup_all_logs'));
+        add_action('wp_ajax_mt_cleanup_query_rotation_logs', array($this, 'ajax_cleanup_query_rotation_logs'));
+        add_action('wp_ajax_mt_get_log_info', array($this, 'ajax_get_log_info'));
+        add_action('wp_ajax_mt_download_query_logs', array($this, 'ajax_download_query_logs'));
+        add_action('wp_ajax_mt_toggle_query_monitor', array($this, 'ajax_toggle_query_monitor'));
+        add_action('wp_ajax_mt_save_htaccess', array($this, 'ajax_save_htaccess'));
+        add_action('wp_ajax_mt_restore_htaccess', array($this, 'ajax_restore_htaccess'));
+        add_action('wp_ajax_mt_apply_php_preset', array($this, 'ajax_apply_php_preset'));
+        add_action('wp_ajax_mt_test_debug_transformer', array($this, 'ajax_test_debug_transformer'));
+        add_action('wp_ajax_mt_toggle_smtp_logging', array($this, 'ajax_toggle_smtp_logging'));
+        add_action('wp_ajax_mt_toggle_smtp_ip_logging', array($this, 'ajax_toggle_smtp_ip_logging'));
+        add_action('wp_ajax_mt_get_smtp_logs', array($this, 'ajax_get_smtp_logs'));
+        add_action('wp_ajax_mt_clear_smtp_logs', array($this, 'ajax_clear_smtp_logs'));
+        add_action('wp_ajax_mt_cleanup_smtp_logs', array($this, 'ajax_cleanup_smtp_logs'));
+        add_action('wp_ajax_mt_download_smtp_logs', array($this, 'ajax_download_smtp_logs'));
+
+        // Scheduled tasks
+        add_action('init', array($this, 'schedule_log_cleanup'));
+        add_action('mt_daily_log_cleanup', array($this, 'daily_log_cleanup'));
     }
 
     private function init_services() {
@@ -81,112 +83,99 @@ class MT_Plugin {
     }
 
     public function add_admin_menu() {
-        if (function_exists('add_management_page')) {
-            add_management_page(
-                function_exists('__') ? __('Morden Toolkit', 'morden-toolkit') : 'Morden Toolkit',
-                function_exists('__') ? __('Morden Toolkit', 'morden-toolkit') : 'Morden Toolkit',
-                'manage_options',
-                'mt',
-                array($this, 'render_admin_page')
-            );
-        }
+        add_management_page(
+            __('Morden Toolkit', 'morden-toolkit'),
+            __('Morden Toolkit', 'morden-toolkit'),
+            'manage_options',
+            'mt',
+            array($this, 'render_admin_page')
+        );
 
-        if (function_exists('add_submenu_page')) {
-            add_submenu_page(
-                'tools.php',
-                function_exists('__') ? __('Debug Logs', 'morden-toolkit') : 'Debug Logs',
-                function_exists('__') ? __('Debug Logs', 'morden-toolkit') : 'Debug Logs',
-                'manage_options',
-                'mt-logs',
-                array($this, 'render_logs_page')
-            );
+        add_submenu_page(
+            'tools.php',
+            __('Debug Logs', 'morden-toolkit'),
+            __('Debug Logs', 'morden-toolkit'),
+            'manage_options',
+            'mt-logs',
+            array($this, 'render_logs_page')
+        );
 
-            add_submenu_page(
-                'tools.php',
-                function_exists('__') ? __('Query Logs', 'morden-toolkit') : 'Query Logs',
-                function_exists('__') ? __('Query Logs', 'morden-toolkit') : 'Query Logs',
-                'manage_options',
-                'mt-query-logs',
-                array($this, 'render_query_logs_page')
-            );
+        add_submenu_page(
+            'tools.php',
+            __('Query Logs', 'morden-toolkit'),
+            __('Query Logs', 'morden-toolkit'),
+            'manage_options',
+            'mt-query-logs',
+            array($this, 'render_query_logs_page')
+        );
 
-            add_submenu_page(
-                'tools.php',
-                function_exists('__') ? __('SMTP Logs', 'morden-toolkit') : 'SMTP Logs',
-                function_exists('__') ? __('SMTP Logs', 'morden-toolkit') : 'SMTP Logs',
-                'manage_options',
-                'mt-smtp-logs',
-                array($this, 'render_smtp_logs_page')
-            );
-        }
+        add_submenu_page(
+            'tools.php',
+            __('SMTP Logs', 'morden-toolkit'),
+            __('SMTP Logs', 'morden-toolkit'),
+            'manage_options',
+            'mt-smtp-logs',
+            array($this, 'render_smtp_logs_page')
+        );
     }
 
     public function enqueue_admin_scripts($hook) {
-
         if (!in_array($hook, array('tools_page_mt', 'tools_page_mt-logs', 'tools_page_mt-query-logs', 'tools_page_mt-smtp-logs'))) {
             return;
         }
 
-        if (function_exists('wp_enqueue_style')) {
+        wp_enqueue_style(
+            'mt-admin',
+            MT_PLUGIN_URL . 'admin/assets/admin.css',
+            array(),
+            MT_VERSION
+        );
+
+        if ($hook === 'tools_page_mt-query-logs') {
             wp_enqueue_style(
-                'mt-admin',
-                MT_PLUGIN_URL . 'admin/assets/admin.css',
+                'mt-query-logs',
+                MT_PLUGIN_URL . 'admin/assets/css/query-logs.css',
                 array(),
                 MT_VERSION
             );
-
-            if ($hook === 'tools_page_mt-query-logs') {
-                wp_enqueue_style(
-                    'mt-query-logs',
-                    MT_PLUGIN_URL . 'admin/assets/css/query-logs.css',
-                    array(),
-                    MT_VERSION
-                );
-            }
         }
 
-        if (function_exists('wp_enqueue_script')) {
-            wp_enqueue_script(
-                'mt-admin',
-                MT_PLUGIN_URL . 'admin/assets/admin.js',
-                array('jquery'),
-                MT_VERSION,
-                false
-            );
-        }
+        wp_enqueue_script(
+            'mt-admin',
+            MT_PLUGIN_URL . 'admin/assets/admin.js',
+            array('jquery'),
+            MT_VERSION,
+            false
+        );
 
-        if (function_exists('wp_localize_script')) {
-            wp_localize_script('mt-admin', 'mtToolkit', array(
-                'ajaxurl' => function_exists('admin_url') ? admin_url('admin-ajax.php') : '/wp-admin/admin-ajax.php',
-                'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('mt_action') : '',
-                'strings' => array(
-                    'confirm_clear_logs' => function_exists('__') ? __('Are you sure you want to clear all debug logs?', 'morden-toolkit') : 'Are you sure you want to clear all debug logs?',
-                    'confirm_restore_htaccess' => function_exists('__') ? __('Are you sure you want to restore this backup?', 'morden-toolkit') : 'Are you sure you want to restore this backup?',
-                    'error_occurred' => function_exists('__') ? __('An error occurred. Please try again.', 'morden-toolkit') : 'An error occurred. Please try again.',
-                    'success' => function_exists('__') ? __('Operation completed successfully.', 'morden-toolkit') : 'Operation completed successfully.',
-                )
-            ));
-        }
+        wp_localize_script('mt-admin', 'mtToolkit', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('mt_action'),
+            'strings' => array(
+                'confirm_clear_logs' => __('Are you sure you want to clear all debug logs?', 'morden-toolkit'),
+                'confirm_restore_htaccess' => __('Are you sure you want to restore this backup?', 'morden-toolkit'),
+                'error_occurred' => __('An error occurred. Please try again.', 'morden-toolkit'),
+                'success' => __('Operation completed successfully.', 'morden-toolkit'),
+            )
+        ));
     }
 
     public function enqueue_frontend_scripts() {
-        $enabled = (function_exists('get_option') ? get_option('mt_query_monitor_enabled') : false) &&
-                   (function_exists('is_user_logged_in') ? is_user_logged_in() : false) &&
-                   (function_exists('current_user_can') ? current_user_can('manage_options') : false);
+        $enabled = get_option('mt_query_monitor_enabled') &&
+                   is_user_logged_in() &&
+                   current_user_can('manage_options');
 
         if (!$enabled) {
             return;
         }
 
-        if (function_exists('wp_enqueue_script')) {
-            wp_enqueue_script(
-                'mt-admin',
-                MT_PLUGIN_URL . 'admin/assets/admin.js',
-                array('jquery'),
-                MT_VERSION,
-                false
-            );
-        }
+        wp_enqueue_script(
+            'mt-admin',
+            MT_PLUGIN_URL . 'admin/assets/admin.js',
+            array('jquery'),
+            MT_VERSION,
+            false
+        );
 
         if (function_exists('wp_localize_script')) {
             wp_localize_script('mt-admin', 'mtToolkit', array(

@@ -3,7 +3,7 @@
  * Plugin Name: Morden Toolkit
  * Plugin URI: https://github.com/sadewadee/morden-toolkit
  * Description: Lightweight developer tools for WordPress: Debug Manager, Query Monitor, Htaccess Editor, PHP Config presets.
- * Version: 1.2.16
+ * Version: 1.2.18
  * Author: Morden Team
  * Author URI: https://mordenhost.com
  * License: GPL v3 or later
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MT_VERSION', '1.2.16');
+define('MT_VERSION', '1.2.18');
 define('MT_PLUGIN_FILE', __FILE__);
 define('MT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MT_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -60,7 +60,6 @@ register_activation_hook(__FILE__, function() {
         add_option('mt_debug_enabled', false);
     }
 
-
     $old_query_monitor = get_option('morden_query_monitor_enabled');
     if ($old_query_monitor !== false) {
         update_option('mt_query_monitor_enabled', $old_query_monitor);
@@ -72,7 +71,6 @@ register_activation_hook(__FILE__, function() {
     if (!get_option('mt_htaccess_backups')) {
         add_option('mt_htaccess_backups', array());
     }
-
 
     $old_php_preset = get_option('morden_php_preset');
     if ($old_php_preset !== false) {

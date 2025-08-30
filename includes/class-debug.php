@@ -27,11 +27,9 @@ class MT_Debug {
     public function sync_debug_status() {
         $actual_wp_debug = defined('WP_DEBUG') && WP_DEBUG;
 
-        if (function_exists('get_option') && function_exists('update_option')) {
-            $stored_option = get_option('mt_debug_enabled', null);
-            if ($stored_option === null || $stored_option !== $actual_wp_debug) {
-                update_option('mt_debug_enabled', $actual_wp_debug);
-            }
+        $stored_option = get_option('mt_debug_enabled', null);
+        if ($stored_option === null || $stored_option !== $actual_wp_debug) {
+            update_option('mt_debug_enabled', $actual_wp_debug);
         }
     }
 
@@ -40,16 +38,13 @@ class MT_Debug {
     }
 
     public function toggle_debug($enable = true) {
-        // Use WPConfigTransformer for safe debug constant management
         $debug_settings = $this->get_debug_constants();
 
         if (!$enable) {
-            // Convert all values to false for disabling
             foreach ($debug_settings as $key => $value) {
                 $debug_settings[$key] = false;
             }
         } else {
-            // Convert string values to boolean for enabling
             foreach ($debug_settings as $key => $value) {
                 if ($value === 'true') {
                     $debug_settings[$key] = true;
@@ -59,7 +54,6 @@ class MT_Debug {
             }
         }
 
-        // Use enhanced method for custom WP_DEBUG_LOG paths
         return MT_WP_Config_Integration::apply_debug_constants_enhanced($debug_settings, $enable);
     }
 
@@ -70,8 +64,6 @@ class MT_Debug {
     public function disable_debug() {
         $result = $this->toggle_debug(false);
 
-        // Optional: Auto-cleanup logs when debug is disabled
-        // This can be controlled via filter hook
         $auto_cleanup = apply_filters('mt_debug_auto_cleanup_on_disable', false);
 
         if ($auto_cleanup && $result) {
@@ -82,25 +74,18 @@ class MT_Debug {
     }
 
     public function toggle_debug_constant($constant, $enable) {
-        // Prepare debug settings for WPConfigTransformer
         $debug_settings = array();
 
-        // Auto-enable WP_DEBUG if any debug constant is being enabled
         if ($enable && $constant !== 'WP_DEBUG') {
             $debug_settings['WP_DEBUG'] = true;
         }
 
-        // Handle special case for display_errors (ini setting)
         if ($constant === 'display_errors') {
-            // For display_errors, we still need to handle it as ini_set
-            // But let's use WPConfigTransformer's ini_set handling if available
             $debug_settings['display_errors'] = $enable ? '1' : '0';
         } else {
-            // Regular debug constants
             $debug_settings[$constant] = $enable;
         }
 
-        // Use enhanced method for custom WP_DEBUG_LOG paths
         return MT_WP_Config_Integration::apply_debug_constants_enhanced($debug_settings, true);
     }
 
