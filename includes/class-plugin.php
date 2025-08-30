@@ -588,11 +588,18 @@ class MT_Plugin {
             wp_send_json_error(__('Missing content parameter.', 'morden-toolkit'));
         }
 
-
+        // Sanitize the content
         $content = wp_unslash($_POST['content']);
 
-
+        // Remove all HTML tags and dangerous content
         $content = wp_kses($content, array());
+
+        // Additional sanitization using helper function
+        $content = mt_sanitize_file_content($content);
+
+        if ($content === false) {
+            wp_send_json_error(__('Content contains potentially dangerous code and was rejected.', 'morden-toolkit'));
+        }
 
         $result = $this->services['htaccess']->save_htaccess($content);
 
