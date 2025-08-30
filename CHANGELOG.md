@@ -450,7 +450,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Details
 - **Minimum Requirements:** WordPress 5.0+, PHP 7.4+
-- **Tested Up To:** WordPress 6.6, PHP 8.3
+- **Tested Up To:** WordPress 6.8, PHP 8.3
 - **File Size:** ~150KB (excluding documentation)
 - **Database Impact:** Minimal (using WordPress options API)
 - **Performance Impact:** Negligible when disabled, minimal when active

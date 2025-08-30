@@ -11,7 +11,7 @@
  * Text Domain: morden-toolkit
  * Domain Path: /languages
  * Requires at least: 5.0
- * Tested up to: 6.6
+ * Tested up to: 6.8
  * Requires PHP: 7.4
  *
  * Internal Logging Control:

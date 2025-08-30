@@ -119,3 +119,4 @@ test*.php
 *test.php
 *.test.php
 .qoder/
+.gitignore

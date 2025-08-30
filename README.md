@@ -3,7 +3,7 @@
 **Contributors:** sadewadee
 **Tags:** debug, performance, monitoring, htaccess, php-config, developer-tools
 **Requires at least:** 5.0
-**Tested up to:** 6.6
+**Tested up to:** 6.8
 **Requires PHP:** 7.4
 **Stable tag:** 1.2.18
 **License:** GPL v3 or later
